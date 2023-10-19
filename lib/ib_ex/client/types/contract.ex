@@ -1,0 +1,106 @@
+defmodule IbEx.Client.Types.Contract do
+  defstruct conid: nil,
+            symbol: nil,
+            security_type: nil,
+            last_trade_date_or_contract_month: nil,
+            strike: 0,
+            right: nil,
+            multiplier: nil,
+            exchange: nil,
+            currency: nil,
+            local_symbol: nil,
+            primary_exchange: nil,
+            trading_class: nil,
+            include_expired: false,
+            security_id_type: nil,
+            security_id: nil,
+            combo_legs_description: nil,
+            combo_legs: [],
+            delta_neutral_contract: nil,
+            description: nil,
+            issuer_id: nil
+
+  @type t :: %__MODULE__{
+          conid: binary(),
+          security_type: binary(),
+          last_trade_date_or_contract_month: binary(),
+          strike: float(),
+          right: binary(),
+          multiplier: binary(),
+          exchange: binary(),
+          currency: binary(),
+          local_symbol: binary(),
+          primary_exchange: binary(),
+          trading_class: binary(),
+          include_expired: boolean(),
+          security_id_type: binary(),
+          security_id: binary(),
+          combo_legs_description: binary(),
+          combo_legs: list(),
+          delta_neutral_contract: binary(),
+          description: binary(),
+          issuer_id: binary()
+        }
+
+  @rights ~w(C CALL P PUT ?)
+  @security_types ~w(STK OPT FUT IND FOP CASH BAG WAR BOND CMDTY NEWS FUND)
+
+  def rights, do: @rights
+  def security_types, do: @security_types
+
+  @spec new(map()) :: t()
+  def new(attrs) when is_map(attrs) do
+    struct(__MODULE__, attrs)
+  end
+
+  def serialize(%__MODULE__{} = contract) do
+    [
+      contract.conid,
+      contract.symbol,
+      contract.security_type,
+      contract.last_trade_date_or_contract_month,
+      contract.strike,
+      contract.right,
+      contract.multiplier,
+      contract.exchange,
+      contract.primary_exchange,
+      contract.currency,
+      contract.local_symbol,
+      contract.trading_class,
+      contract.include_expired
+    ]
+  end
+
+  @serialized_fields_order [
+    :conid,
+    :symbol,
+    :security_type,
+    :last_trade_date_or_contract_month,
+    :strike,
+    :right,
+    :multiplier,
+    :exchange,
+    :currency,
+    :local_symbol,
+    :trading_class
+  ]
+
+  def deserialize(data) when is_list(data) do
+    @serialized_fields_order
+    |> Enum.zip(data)
+    |> Enum.into(%{})
+    |> new()
+  end
+
+  def to_string(%__MODULE__{} = contract) do
+    Enum.join(
+      [
+        contract.security_type,
+        contract.symbol,
+        contract.currency,
+        contract.exchange
+      ],
+      " "
+    )
+  end
+end
