@@ -9,6 +9,7 @@ defmodule IbEx.Client.Messages.MatchingSymbols.RequestTest do
 
       assert request.request_id == 1
       assert request.pattern == "AAPL"
+      assert request.message_id == 81
     end
   end
 
