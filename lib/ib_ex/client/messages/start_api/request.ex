@@ -1,6 +1,6 @@
 defmodule IbEx.Client.Messages.StartApi.Request do
   @moduledoc """
-  Sent after connection's been initialized. Starts the API connection
+  Message sent after connection's been initialized. Starts the API connection
   it's responses are the ManagedAccounts message, NextValidId and info messages
   regarding the data connections
   """
