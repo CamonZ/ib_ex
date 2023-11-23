@@ -4,7 +4,7 @@ defmodule IbEx.Client.Messages.StartApi.RequestTest do
   alias IbEx.Client.Messages.StartApi.Request
 
   describe "new/1" do
-    test "returns a MatchingSymbols Request message" do
+    test "returns a StartApi Request message" do
       assert {:ok, %Request{} = request} = Request.new([])
 
       assert request.message_id == 71
