@@ -4,12 +4,12 @@ defmodule IbEx.Client.Messages.Ids.Request do
   alias IbEx.Client.Messages.Base
   alias IbEx.Client.Messages.Requests
 
-  defstruct message_id: nil, version: @message_version, number_of_ids: nil
+  defstruct message_id: nil, version: @message_version, number_of_ids: 1
 
-  def new(number_of_ids \\ 1) do
+  def new do
     case Requests.message_id_for(__MODULE__) do
       {:ok, id} ->
-        {:ok, %__MODULE__{message_id: id, number_of_ids: number_of_ids}}
+        {:ok, %__MODULE__{message_id: id}}
 
       :error ->
         {:error, :not_implemented}
