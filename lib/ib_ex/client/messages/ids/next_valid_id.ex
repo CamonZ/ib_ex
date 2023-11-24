@@ -1,4 +1,4 @@
-defmodule IbEx.Client.Messages.Misc.NextValidId do
+defmodule IbEx.Client.Messages.Ids.NextValidId do
   require Logger
 
   defstruct version: nil, next_valid_id: nil
@@ -19,7 +19,7 @@ defmodule IbEx.Client.Messages.Misc.NextValidId do
 
   defimpl Inspect, for: __MODULE__ do
     def inspect(msg, _opts) do
-      "<-- %NextValidId{version: #{msg.version} next_valid_id: #{msg.next_valid_id}}"
+      "<-- %NextValidId{version: #{msg.version}, next_valid_id: #{msg.next_valid_id}}"
     end
   end
 end
