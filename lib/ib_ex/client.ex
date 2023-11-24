@@ -155,7 +155,7 @@ defmodule IbEx.Client do
       {:ok, %Messages.Misc.ManagedAccounts{} = msg} ->
         {:noreply, Map.put(state, :managed_accounts, msg.accounts)}
 
-      {:ok, %Messages.Misc.NextValidId{} = msg} ->
+      {:ok, %Messages.Ids.NextValidId{} = msg} ->
         {:noreply, Map.put(state, :next_valid_id, msg.next_valid_id)}
 
       {:ok, _} ->
