@@ -10,10 +10,10 @@ defmodule IbEx.Client.Messages.Responses do
     "3" => Messages.Orders.Status,
     "4" => Messages.ErrorInfo.Base,
     "5" => Messages.Orders.OpenOrder,
-    "6" => "account_value",
+    "6" => Messages.AccountData.AccountDetail,
     "7" => "portfolio_value",
-    "8" => "account_update_time",
-    "9" => Messages.Misc.NextValidId,
+    "8" => Messages.AccountData.AccountDetail,
+    "9" => Messages.Ids.NextValidId,
     "10" => "contract_data",
     "11" => "execution_data",
     "12" => "market_depth",
@@ -34,7 +34,7 @@ defmodule IbEx.Client.Messages.Responses do
     "51" => "fundamental_data",
     "52" => "contract_data_end",
     "53" => "open_order_end",
-    "54" => "account_download_end",
+    "54" => Messages.AccountData.AccountDownloadEnd,
     "55" => "execution_data_end",
     "56" => "deta_neutral_validation",
     "57" => "tick_snapshot_end",
@@ -108,7 +108,7 @@ defmodule IbEx.Client.Messages.Responses do
       {:error, {:not_implemented, _type}} ->
         fields = Base.get_fields(str)
 
-        Logger.warning("Frame #{inspect(fields, limit: :infinity)}")
+        Logger.warning("<-- #{inspect(fields, limit: :infinity)}")
 
       err ->
         Logger.warning("Frame: #{inspect(str, printable_limit: :infinity)}")

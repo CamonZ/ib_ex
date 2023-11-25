@@ -1,7 +1,8 @@
 defmodule IbEx.Client.Messages.CurrentTime.Response do
+  @moduledoc """
+  Message response with the current TWS client time.
+  """
   defstruct version: nil, timestamp: nil
-
-  require Logger
 
   def from_fields([version_str, epoch_str]) do
     with {version, _} <- Integer.parse(version_str),
@@ -14,8 +15,7 @@ defmodule IbEx.Client.Messages.CurrentTime.Response do
     end
   end
 
-  def from_fields(fields) do
-    Logger.warning("Trying to parse message as CurrentTime: #{inspect(fields)}")
+  def from_fields(_fields) do
     {:error, :invalid_args}
   end
 

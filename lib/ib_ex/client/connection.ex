@@ -78,7 +78,6 @@ defmodule IbEx.Client.Connection do
 
   @impl true
   def handle_info({:tcp, _, data}, state) do
-    Logger.info("<- #{IO.inspect(data, limit: :infinity)}")
     Client.process_message(state.client, data)
     {:noreply, state}
   end
