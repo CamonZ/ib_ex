@@ -1,27 +1,30 @@
 defmodule IbEx.Client.Types.Contract do
-  defstruct conid: nil,
-            symbol: nil,
-            security_type: nil,
-            last_trade_date_or_contract_month: nil,
-            strike: 0,
-            right: nil,
-            multiplier: nil,
-            exchange: nil,
-            currency: nil,
-            local_symbol: nil,
-            primary_exchange: nil,
-            trading_class: nil,
+  defstruct conid: 0,
+            symbol: "",
+            security_type: "",
+            last_trade_date_or_contract_month: "",
+            strike: 0.0,
+            right: "",
+            multiplier: "",
+            # setting this as default same as defined in the IBKR clients
+            exchange: "SMART",
+            currency: "",
+            local_symbol: "",
+            primary_exchange: "",
+            trading_class: "",
             include_expired: false,
-            security_id_type: nil,
-            security_id: nil,
+            # CUSIP;SEDOL;ISIN;RIC
+            security_id_type: "",
+            security_id: "",
             combo_legs_description: nil,
             combo_legs: [],
             delta_neutral_contract: nil,
-            description: nil,
-            issuer_id: nil
+            description: "",
+            issuer_id: ""
 
   @type t :: %__MODULE__{
           conid: binary(),
+          symbol: binary(),
           security_type: binary(),
           last_trade_date_or_contract_month: binary(),
           strike: float(),
@@ -53,8 +56,8 @@ defmodule IbEx.Client.Types.Contract do
     struct(__MODULE__, attrs)
   end
 
-  def serialize(%__MODULE__{} = contract) do
-    [
+  def serialize(%__MODULE__{} = contract, include_expired \\ true) do
+    fields = [
       contract.conid,
       contract.symbol,
       contract.security_type,
@@ -66,9 +69,14 @@ defmodule IbEx.Client.Types.Contract do
       contract.primary_exchange,
       contract.currency,
       contract.local_symbol,
-      contract.trading_class,
-      contract.include_expired
+      contract.trading_class
     ]
+
+    if include_expired do
+      fields ++ [contract.include_expired]
+    else
+      fields
+    end
   end
 
   @serialized_fields_order [
