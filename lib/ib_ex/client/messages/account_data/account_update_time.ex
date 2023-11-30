@@ -24,6 +24,7 @@ defmodule IbEx.Client.Messages.AccountData.AccountUpdateTime do
     case Time.from_iso8601("#{hour_minute}:00") do
       {:ok, time} ->
         NaiveDateTime.new(Date.utc_today(), time)
+
       _ ->
         {:error, :invalid_args}
     end

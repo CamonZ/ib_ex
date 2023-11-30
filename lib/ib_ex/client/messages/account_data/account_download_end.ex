@@ -4,7 +4,7 @@ defmodule IbEx.Client.Messages.AccountData.AccountDownloadEnd do
   """
 
   defstruct version: nil, account: nil
-  
+
   def from_fields([version_str, account]) do
     case Integer.parse(version_str) do
       {version, _} ->
@@ -24,7 +24,7 @@ defmodule IbEx.Client.Messages.AccountData.AccountDownloadEnd do
   def from_fields(_fields) do
     {:error, :invalid_args}
   end
-  
+
   defimpl Inspect, for: __MODULE__ do
     def inspect(msg, _opts) do
       "<-- AccountDownloadEnd{account: #{msg.account}}"

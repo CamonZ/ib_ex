@@ -70,7 +70,7 @@ defmodule IbEx.Client.Messages.AccountData.AccountDetail do
   """
 
   defstruct version: nil, field: nil, value: nil, currency: nil, account: nil
-  
+
   def from_fields([version_str, field, value, currency, account]) do
     case Integer.parse(version_str) do
       {version, _} ->
@@ -93,7 +93,7 @@ defmodule IbEx.Client.Messages.AccountData.AccountDetail do
   def from_fields(_fields) do
     {:error, :invalid_args}
   end
-  
+
   defimpl Inspect, for: __MODULE__ do
     def inspect(msg, _opts) do
       "<-- AccountDetail{field: #{msg.field}, value: #{msg.value}, currency: #{msg.currency}, account: #{msg.account}}"

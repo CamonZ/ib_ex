@@ -7,11 +7,11 @@ defmodule IbEx.Client.Messages.AccountData.Request do
   defstruct message_id: nil, version: @message_version, subscribe: nil, account_code: nil
 
   @type t :: %__MODULE__{
-    message_id: non_neg_integer(),
-    version: non_neg_integer(),
-    subscribe: boolean(),
-    account_code: binary() | nil
-  }
+          message_id: non_neg_integer(),
+          version: non_neg_integer(),
+          subscribe: boolean(),
+          account_code: binary() | nil
+        }
 
   @spec new(boolean(), binary() | nil) :: {:ok, t()} | {:error, :not_implemented}
   def new(subscribe, account_code \\ nil) do

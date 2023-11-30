@@ -4,8 +4,6 @@ defmodule IbEx.Client.Messages.MatchingSymbols.SymbolSamples do
 
   Within the contract descriptions is the list of contracts that match the specified
   pattern.
-
-
   """
 
   defstruct request_id: nil, contracts: []
