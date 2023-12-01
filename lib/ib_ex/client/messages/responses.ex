@@ -74,7 +74,7 @@ defmodule IbEx.Client.Messages.Responses do
     "92" => "reroute_mkt_depth_req",
     "93" => "market_rule",
     "94" => "profit_and_loss",
-    "95" => "profit_and_loss_single",
+    "95" => IbEx.Client.Messages.Pnl.Single,
     "96" => "historical_ticks",
     "97" => "historical_ticks_bid_ask",
     "98" => Messages.HistoricalTicks.Last,
