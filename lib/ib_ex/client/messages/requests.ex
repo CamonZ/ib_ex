@@ -71,7 +71,7 @@ defmodule IbEx.Client.Messages.Requests do
     "market_rule" => 91,
     "profit_and_loss" => 92,
     "cancel_profit_and_loss" => 93,
-    "profit_and_loss_single" => 94,
+    Messages.Pnl.SingleRequest => 94,
     "cancel_profit_and_loss_single" => 95,
     Messages.HistoricalTicks.Request => 96,
     Messages.TickByTickData.Request => 97,
