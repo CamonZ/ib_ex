@@ -17,7 +17,7 @@ defmodule IbEx.Client.Messages.Pnl.AllPositionsRequest do
           message_id: integer(),
           request_id: String.t(),
           account: String.t(),
-          model_code: String.t(),
+          model_code: String.t()
         }
 
   @spec new(String.t(), String.t(), String.t()) :: {:ok, t()} | {:error, :not_implemented}
@@ -51,7 +51,7 @@ defmodule IbEx.Client.Messages.Pnl.AllPositionsRequest do
     def inspect(msg, _opts) do
       """
       --> Pnl.AllPositionsRequest{
-        id: #{msg.message_id},
+        message_id: #{msg.message_id},
         request_id: #{msg.request_id},
         account: #{msg.account},
         model_code: #{msg.model_code}

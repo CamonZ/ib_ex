@@ -4,7 +4,7 @@ defmodule IbEx.Client.Messages.Pnl.AllPositionsUpdate do
   """
 
   alias IbEx.Client.Utils
-  
+
   defstruct request_id: nil, daily_pnl: nil, unrealized_pnl: nil, realized_pnl: nil
 
   def from_fields([request_id, daily_str, unrealized_str, realized_str]) do
@@ -14,7 +14,7 @@ defmodule IbEx.Client.Messages.Pnl.AllPositionsUpdate do
         request_id: request_id,
         daily_pnl: Utils.to_decimal(daily_str),
         unrealized_pnl: Utils.to_decimal(unrealized_str),
-        realized_pnl: Utils.to_decimal(realized_str),
+        realized_pnl: Utils.to_decimal(realized_str)
       }
     }
   rescue
@@ -29,7 +29,7 @@ defmodule IbEx.Client.Messages.Pnl.AllPositionsUpdate do
   defimpl Inspect, for: __MODULE__ do
     def inspect(msg, _opts) do
       """
-      --> Pnl.AllPositionsUpdate{
+      <-- Pnl.AllPositionsUpdate{
         request_id: #{msg.request_id},
         daily_pnl: #{msg.daily_pnl},
         unrealized_pnl: #{msg.unrealized_pnl},
