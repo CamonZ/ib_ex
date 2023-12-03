@@ -1,6 +1,6 @@
-defmodule IbEx.Client.Messages.Pnl.SingleRequest do
+defmodule IbEx.Client.Messages.Pnl.SinglePositionRequest do
   @moduledoc """
-  Request used to request the PnL of a single position.
+  Message used to request the PnL of a single position on a given trading day.
 
   The input parameters to create this message are:
 
@@ -10,8 +10,9 @@ defmodule IbEx.Client.Messages.Pnl.SingleRequest do
   model_code: (undetermined)
   """
 
+  alias IbEx.Client.Messages.Pnl.AllPositionsRequest
   alias IbEx.Client.Messages.Requests
-
+  
   defstruct message_id: nil, request_id: nil, account: nil, model_code: "", conid: nil
 
   @type t :: %__MODULE__{
@@ -24,21 +25,13 @@ defmodule IbEx.Client.Messages.Pnl.SingleRequest do
 
   @spec new(String.t(), String.t(), String.t(), String.t()) :: {:ok, t()} | {:error, :not_implemented}
   def new(request_id, account, conid, model_code \\ "") do
-    case Requests.message_id_for(__MODULE__) do
-      {:ok, message_id} ->
-        {
-          :ok,
-          %__MODULE__{
-            message_id: message_id,
-            request_id: request_id,
-            account: account,
-            conid: conid,
-            model_code: model_code
-          }
-        }
-
+    with {:ok, base_msg} <- AllPositionsRequest.new(request_id, account, model_code),
+         {:ok, message_id} <- Requests.message_id_for(__MODULE__) do
+      msg = struct(__MODULE__, Map.from_struct(base_msg))
+      {:ok, %{msg | message_id: message_id, conid: conid}}
+    else
       _ ->
-        {:error, :not_implemented}
+        {:error, :invalid_args}
     end
   end
 
@@ -53,7 +46,7 @@ defmodule IbEx.Client.Messages.Pnl.SingleRequest do
   defimpl Inspect, for: __MODULE__ do
     def inspect(msg, _opts) do
       """
-      --> Pnl.SingleRequest{
+      --> Pnl.SinglePositionRequest{
         id: #{msg.message_id},
         request_id: #{msg.request_id},
         account: #{msg.account},
