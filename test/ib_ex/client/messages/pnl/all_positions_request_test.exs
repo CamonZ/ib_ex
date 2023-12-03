@@ -42,7 +42,7 @@ defmodule IbEx.Client.Messages.Pnl.AllPositionsRequestTest do
       assert Inspect.inspect(msg, []) ==
                """
                --> Pnl.AllPositionsRequest{
-                 id: 92,
+                 message_id: 92,
                  request_id: 70001,
                  account: GU12345678,
                  model_code: 

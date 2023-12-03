@@ -48,7 +48,7 @@ defmodule IbEx.Client.Messages.TickByTickData.TickByTick do
 
   defimpl Inspect, for: __MODULE__ do
     def inspect(msg, _opts) do
-      "--> TickByTick{request_id: #{msg.request_id}, tick: #{inspect(msg.tick)}}"
+      "<-- TickByTick{request_id: #{msg.request_id}, tick: #{inspect(msg.tick)}}"
     end
   end
 end

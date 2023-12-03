@@ -4,8 +4,7 @@ defmodule IbEx.Client.Messages.Pnl.SinglePositionUpdate do
   """
 
   alias IbEx.Client.Utils
-  
-  
+
   defstruct request_id: nil, position: nil, daily_pnl: nil, unrealized_pnl: nil, realized_pnl: nil, value: nil
 
   def from_fields([request_id, position_str, daily_str, unrealized_str, realized_str, value_str]) do
@@ -32,7 +31,7 @@ defmodule IbEx.Client.Messages.Pnl.SinglePositionUpdate do
   defimpl Inspect, for: __MODULE__ do
     def inspect(msg, _opts) do
       """
-      --> Pnl.SinglePositionUpdate{
+      <-- Pnl.SinglePositionUpdate{
         request_id: #{msg.request_id},
         position: #{msg.position},
         daily_pnl: #{msg.daily_pnl},

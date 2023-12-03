@@ -12,7 +12,7 @@ defmodule IbEx.Client.Messages.Pnl.SinglePositionRequest do
 
   alias IbEx.Client.Messages.Pnl.AllPositionsRequest
   alias IbEx.Client.Messages.Requests
-  
+
   defstruct message_id: nil, request_id: nil, account: nil, model_code: "", conid: nil
 
   @type t :: %__MODULE__{
@@ -47,7 +47,7 @@ defmodule IbEx.Client.Messages.Pnl.SinglePositionRequest do
     def inspect(msg, _opts) do
       """
       --> Pnl.SinglePositionRequest{
-        id: #{msg.message_id},
+        message_id: #{msg.message_id},
         request_id: #{msg.request_id},
         account: #{msg.account},
         model_code: #{msg.model_code},

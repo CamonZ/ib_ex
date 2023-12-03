@@ -5,7 +5,8 @@ defmodule IbEx.Client.Messages.Pnl.SinglePositionUpdateTest do
 
   describe "from_fields/1" do
     test "returns the parsed message with the PnL for the given position" do
-      assert {:ok, msg} = SinglePositionUpdate.from_fields(["90004", "0", "1.665208", "1.7976931348623157E308", "1.665208", "0.0"])
+      assert {:ok, msg} =
+               SinglePositionUpdate.from_fields(["90004", "0", "1.665208", "1.7976931348623157E308", "1.665208", "0.0"])
 
       assert msg.request_id == "90004"
       assert msg.position == 0
@@ -33,7 +34,7 @@ defmodule IbEx.Client.Messages.Pnl.SinglePositionUpdateTest do
 
       assert inspect(pnl_single) ==
                """
-               --> Pnl.SinglePositionUpdate{
+               <-- Pnl.SinglePositionUpdate{
                  request_id: 12345,
                  position: 100,
                  daily_pnl: 10.5,

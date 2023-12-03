@@ -29,7 +29,7 @@ defmodule IbEx.Client.Messages.Pnl.AllPositionsUpdateTest do
 
       assert inspect(pnl_single) ==
                """
-               --> Pnl.AllPositionsUpdate{
+               <-- Pnl.AllPositionsUpdate{
                  request_id: 90001,
                  daily_pnl: -11.483693125,
                  unrealized_pnl: 0.0,

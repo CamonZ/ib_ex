@@ -47,7 +47,7 @@ defmodule IbEx.Client.Messages.Pnl.SinglePositionRequestTest do
       assert Inspect.inspect(msg, []) ==
                """
                --> Pnl.SinglePositionRequest{
-                 id: 94,
+                 message_id: 94,
                  request_id: 70001,
                  account: GU12345678,
                  model_code: ,
