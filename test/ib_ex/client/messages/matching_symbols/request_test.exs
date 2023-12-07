@@ -1,5 +1,5 @@
 defmodule IbEx.Client.Messages.MatchingSymbols.RequestTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
 
   alias IbEx.Client.Messages.MatchingSymbols.Request
 

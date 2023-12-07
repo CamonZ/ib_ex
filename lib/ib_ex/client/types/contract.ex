@@ -1,9 +1,9 @@
 defmodule IbEx.Client.Types.Contract do
-  defstruct conid: 0,
+  defstruct conid: "0",
             symbol: "",
             security_type: "",
             last_trade_date_or_contract_month: "",
-            strike: 0.0,
+            strike: "0.0",
             right: "",
             multiplier: "",
             # setting this as default same as defined in the IBKR clients
@@ -27,7 +27,7 @@ defmodule IbEx.Client.Types.Contract do
           symbol: binary(),
           security_type: binary(),
           last_trade_date_or_contract_month: binary(),
-          strike: float(),
+          strike: binary(),
           right: binary(),
           multiplier: binary(),
           exchange: binary(),
@@ -48,8 +48,42 @@ defmodule IbEx.Client.Types.Contract do
   @rights ~w(C CALL P PUT ?)
   @security_types ~w(STK OPT FUT IND FOP CASH BAG WAR BOND CMDTY NEWS FUND)
 
+  @serialized_fields_order [
+    :conid,
+    :symbol,
+    :security_type,
+    :last_trade_date_or_contract_month,
+    :strike,
+    :right,
+    :multiplier,
+    :exchange,
+    :currency,
+    :local_symbol,
+    :trading_class
+  ]
+
   def rights, do: @rights
   def security_types, do: @security_types
+
+  @spec from_serialized_fields(list(binary())) :: {:ok, t()} | {:error, :invalid_args}
+  @doc """
+  Used to create a contract from the ExecutionData or OpenOrder messages which carries 11
+  fields for the contract
+  """
+
+  def from_serialized_fields(fields) when is_list(fields) and length(fields) == 11 do
+    contract =
+      @serialized_fields_order
+      |> Enum.zip(fields)
+      |> Enum.into(%{})
+      |> new()
+
+    {:ok, contract}
+  end
+
+  def from_serialized_fields(_) do
+    {:error, :invalid_args}
+  end
 
   @spec new(map()) :: t()
   def new(attrs) when is_map(attrs) do
@@ -77,38 +111,5 @@ defmodule IbEx.Client.Types.Contract do
     else
       fields
     end
-  end
-
-  @serialized_fields_order [
-    :conid,
-    :symbol,
-    :security_type,
-    :last_trade_date_or_contract_month,
-    :strike,
-    :right,
-    :multiplier,
-    :exchange,
-    :currency,
-    :local_symbol,
-    :trading_class
-  ]
-
-  def deserialize(data) when is_list(data) do
-    @serialized_fields_order
-    |> Enum.zip(data)
-    |> Enum.into(%{})
-    |> new()
-  end
-
-  def to_string(%__MODULE__{} = contract) do
-    Enum.join(
-      [
-        contract.security_type,
-        contract.symbol,
-        contract.currency,
-        contract.exchange
-      ],
-      " "
-    )
   end
 end

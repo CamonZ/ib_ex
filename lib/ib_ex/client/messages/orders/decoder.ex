@@ -130,8 +130,14 @@ defmodule IbEx.Client.Messages.Orders.Decoder do
 
   defp parse_contract_data(%{unprocessed: fields} = msg) do
     {contract_data, rest} = Enum.split(fields, 11)
-    contract = Contract.deserialize(contract_data)
-    Map.merge(msg, %{contract: contract, unprocessed: rest})
+
+    case Contract.from_serialized_fields(contract_data) do
+      {:ok, contract} ->
+        Map.merge(msg, %{contract: contract, unprocessed: rest})
+
+      _ ->
+        msg
+    end
   end
 
   defp batch_parse_params(%{unprocessed: fields} = msg, keys) do

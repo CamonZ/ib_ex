@@ -1,5 +1,5 @@
 defmodule IbEx.Client.Types.ContractDescriptionTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
 
   alias IbEx.Client.Types.Contract
   alias IbEx.Client.Types.ContractDescription
@@ -20,10 +20,10 @@ defmodule IbEx.Client.Types.ContractDescriptionTest do
     ""
   ]
 
-  describe "from_fields/1" do
+  describe "from_symbol_samples/1" do
     test "returns the contract description" do
       assert {:ok, %ContractDescription{contract: contract, derivative_security_types: derivatives}} =
-               ContractDescription.from_fields(@valid_fields)
+               ContractDescription.from_symbol_samples(@valid_fields)
 
       assert contract == %Contract{
                conid: "265598",
@@ -39,11 +39,11 @@ defmodule IbEx.Client.Types.ContractDescriptionTest do
     end
 
     test "returns invalid args when called with something other than a list" do
-      assert {:error, :invalid_args} == ContractDescription.from_fields(%{})
+      assert {:error, :invalid_args} == ContractDescription.from_symbol_samples(%{})
     end
 
     test "returns invalid args when called with a list in a different format" do
-      assert {:error, :invalid_args} == ContractDescription.from_fields(["1", "2", "3"])
+      assert {:error, :invalid_args} == ContractDescription.from_symbol_samples(["1", "2", "3"])
     end
   end
 end

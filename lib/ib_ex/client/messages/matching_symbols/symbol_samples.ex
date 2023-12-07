@@ -37,7 +37,7 @@ defmodule IbEx.Client.Messages.MatchingSymbols.SymbolSamples do
 
   defp parse_descriptions(fields, accum) do
     with {contract_fields, rest} <- extract_contract_fields(fields),
-         {:ok, description} <- ContractDescription.from_fields(contract_fields) do
+         {:ok, description} <- ContractDescription.from_symbol_samples(contract_fields) do
       parse_descriptions(rest, [description] ++ accum)
     end
   rescue

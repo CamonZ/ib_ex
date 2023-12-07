@@ -1,5 +1,5 @@
 defmodule IbEx.Client.Messages.Pnl.AllPositionsRequestTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
 
   alias IbEx.Client.Messages.Pnl.AllPositionsRequest
 

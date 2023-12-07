@@ -1,5 +1,5 @@
 defmodule IbEx.Client.Messages.BaseTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
 
   alias IbEx.Client.Messages.Base
 

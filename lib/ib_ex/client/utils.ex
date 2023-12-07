@@ -23,10 +23,60 @@ defmodule IbEx.Client.Utils do
         nil
 
       @unset_double ->
-        Decimal.new("0")
+        nil
+
+      "" ->
+        nil
 
       other when is_binary(other) ->
         Decimal.new(other)
     end
+  end
+
+  def to_float(str) do
+    case str do
+      nil ->
+        nil
+
+      "" ->
+        nil
+
+      other when is_binary(other) ->
+        other
+        |> Float.parse()
+        |> elem(0)
+    end
+  rescue
+    _ ->
+      nil
+  end
+
+  def to_integer(str) do
+    String.to_integer(str)
+  rescue
+    _ ->
+      nil
+  end
+
+  def to_bool(str) when str in ["0", "1"] do
+    String.to_integer(str) != 0
+  end
+
+  def to_bool(_) do
+    nil
+  end
+
+  def parse_timestamp_str(str) when is_binary(str) do
+    case Timex.parse(str, "%Y%m%d %k:%M:%S %Z", :strftime) do
+      {:ok, ts} ->
+        {:ok, Timex.Timezone.convert(ts, "Etc/UTC")}
+
+      _ ->
+        {:error, :invalid_args}
+    end
+  end
+
+  def parse_timestamp_str(_) do
+    {:error, :invalid_args}
   end
 end

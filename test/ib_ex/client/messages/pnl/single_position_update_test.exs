@@ -1,5 +1,5 @@
 defmodule IbEx.Client.Messages.Pnl.SinglePositionUpdateTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
 
   alias IbEx.Client.Messages.Pnl.SinglePositionUpdate
 
@@ -11,7 +11,7 @@ defmodule IbEx.Client.Messages.Pnl.SinglePositionUpdateTest do
       assert msg.request_id == "90004"
       assert msg.position == 0
       assert msg.daily_pnl == Decimal.new("1.665208")
-      assert msg.unrealized_pnl == Decimal.new("0")
+      assert is_nil(msg.unrealized_pnl)
       assert msg.realized_pnl == Decimal.new("1.665208")
       assert msg.value == Decimal.new("0.0")
     end

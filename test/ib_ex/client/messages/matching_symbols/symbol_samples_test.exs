@@ -1,5 +1,5 @@
 defmodule IbEx.Client.Messages.MatchingSymbols.SymbolSamplesTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
 
   alias IbEx.Client.Messages.MatchingSymbols.SymbolSamples
   alias IbEx.Client.Types.Contract
