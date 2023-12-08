@@ -16,8 +16,8 @@ defmodule IbEx.Client.Types.ContractDescription do
 
   @extra_fields_size 2
 
-  @spec from_fields(list()) :: {:ok, t()} | {:error, :invalid_args}
-  def from_fields([con_id, symbol, sec_type, exchange, currency, _ | rest]) do
+  @spec from_symbol_samples(list()) :: {:ok, t()} | {:error, :invalid_args}
+  def from_symbol_samples([con_id, symbol, sec_type, exchange, currency, _ | rest]) do
     derivatives_length = length(rest) - @extra_fields_size
 
     {derivatives, [description, issuer_id]} = Enum.split(rest, derivatives_length)
@@ -38,7 +38,7 @@ defmodule IbEx.Client.Types.ContractDescription do
       {:error, :invalid_args}
   end
 
-  def from_fields(_) do
+  def from_symbol_samples(_) do
     {:error, :invalid_args}
   end
 

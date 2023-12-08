@@ -1,5 +1,5 @@
 defmodule IbEx.Client.Types.MidPointTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
   alias IbEx.Client.Types.MidPoint
 
   describe "from_tick_by_tick/1" do

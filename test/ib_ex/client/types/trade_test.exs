@@ -1,5 +1,5 @@
 defmodule IbEx.Client.Types.TradeTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
 
   alias IbEx.Client.Types.Trade
 

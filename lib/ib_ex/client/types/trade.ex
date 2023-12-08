@@ -1,6 +1,6 @@
 defmodule IbEx.Client.Types.Trade do
   @moduledoc """
-  Represents a trade from the Time & Sales feed.
+  Represents a trade from the public Time & Sales feed.
   """
 
   defstruct timestamp: nil,

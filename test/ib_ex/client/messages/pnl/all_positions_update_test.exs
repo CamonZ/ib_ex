@@ -1,5 +1,5 @@
 defmodule IbEx.Client.Messages.Pnl.AllPositionsUpdateTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
 
   alias IbEx.Client.Messages.Pnl.AllPositionsUpdate
 
