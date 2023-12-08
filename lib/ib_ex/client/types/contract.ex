@@ -48,7 +48,7 @@ defmodule IbEx.Client.Types.Contract do
   @rights ~w(C CALL P PUT ?)
   @security_types ~w(STK OPT FUT IND FOP CASH BAG WAR BOND CMDTY NEWS FUND)
 
-  @serialized_fields_order [
+  @deserialize_fields_order [
     :conid,
     :symbol,
     :security_type,
@@ -73,7 +73,7 @@ defmodule IbEx.Client.Types.Contract do
 
   def from_serialized_fields(fields) when is_list(fields) and length(fields) == 11 do
     contract =
-      @serialized_fields_order
+      @deserialize_fields_order
       |> Enum.zip(fields)
       |> Enum.into(%{})
       |> new()
