@@ -26,7 +26,7 @@ defmodule IbEx.Client.Messages.Ids.Request do
 
   defimpl Inspect, for: __MODULE__ do
     def inspect(msg, _opts) do
-      "--> Ids{number_of_ids: #{msg.number_of_ids}}"
+      "--> Ids.Request{number_of_ids: #{msg.number_of_ids}}"
     end
   end
 end

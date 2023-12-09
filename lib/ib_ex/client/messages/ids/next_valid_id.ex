@@ -1,4 +1,7 @@
 defmodule IbEx.Client.Messages.Ids.NextValidId do
+  @moduledoc """
+  Gets the next valid id to be used for order placement
+  """
   require Logger
 
   defstruct version: nil, next_valid_id: nil

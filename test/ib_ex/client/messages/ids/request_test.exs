@@ -1,5 +1,5 @@
 defmodule IbEx.Client.Messages.Ids.RequestTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
   alias IbEx.Client.Messages.Ids.Request
 
   describe "new/1" do
@@ -15,16 +15,16 @@ defmodule IbEx.Client.Messages.Ids.RequestTest do
   end
 
   describe "String.Chars implementation" do
-    test "converts the Request to a binary correctly" do
+    test "converts the message to a binary correctly" do
       {:ok, request} = Request.new()
       assert to_string(request) == <<56, 0, 49, 0, 49, 0>>
     end
   end
 
-  describe "Inspect implementation" do
-    test "inspect/2 returns a human-readable version of the message" do
+  describe "inspect/2" do
+    test "returns a human-readable version of the message" do
       {:ok, request} = Request.new()
-      assert inspect(request) == "--> Ids{number_of_ids: 1}"
+      assert inspect(request) == "--> Ids.Request{number_of_ids: 1}"
     end
   end
 end
