@@ -21,4 +21,4 @@ erl_crash.dump
 
 # Ignore package tarball (built via "mix hex.build").
 ib_ex-*.tar
-
+.iex.exs
