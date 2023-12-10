@@ -18,7 +18,7 @@ defmodule IbEx.Client.Messages.Responses do
     "11" => Messages.Executions.ExecutionData,
     "12" => Messages.MarketDepth.L2DataSingle,
     "13" => Messages.MarketDepth.L2DataMultiple,
-    "14" => "news_bulletins",
+    "14" => Messages.News.Bulletins,
     "15" => Messages.Misc.ManagedAccounts,
     "16" => "receive_fa",
     "17" => "historical_data",

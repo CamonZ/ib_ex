@@ -1,4 +1,4 @@
-defmodule IbEx.Client.Messages.NewsBulletins.Request do
+defmodule IbEx.Client.Messages.News.RequestBulletins do
   @message_version 1
 
   alias IbEx.Client.Messages.Base
@@ -26,7 +26,7 @@ defmodule IbEx.Client.Messages.NewsBulletins.Request do
 
   defimpl Inspect, for: __MODULE__ do
     def inspect(msg, _opts) do
-      "--> NewsBulletins{all_messages: #{msg.all_messages}}"
+      "--> News.RequestBulletins{all_messages: #{msg.all_messages}}"
     end
   end
 end
