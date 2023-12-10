@@ -13,7 +13,7 @@ defmodule IbEx.Client.Messages.Requests do
     "contract_data" => 9,
     Messages.MarketDepth.RequestData => 10,
     Messages.MarketDepth.CancelData => 11,
-    Messages.NewsBulletins.Request => 12,
+    Messages.News.RequestBulletins => 12,
     "cancel_news_bulletins" => 13,
     "set_server_log_level" => 14,
     "auto_open_orders" => 15,

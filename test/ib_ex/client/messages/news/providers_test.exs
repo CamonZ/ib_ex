@@ -22,8 +22,10 @@ defmodule IbEx.Client.Messages.News.ProvidersTest do
   end
 
   describe "Inspect implementation" do
-    test "inspects Providers struct correctly" do
-      msg = %Providers{items: [{"code1", "name1"}, {"code2", "name2"}]}
+    test "returns a human-readable version of the message" do
+      msg = %Providers{
+        items: [{"code1", "name1"}, {"code2", "name2"}]
+      }
 
       assert inspect(msg) ==
                """
