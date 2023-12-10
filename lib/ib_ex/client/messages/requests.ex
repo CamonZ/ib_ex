@@ -14,7 +14,7 @@ defmodule IbEx.Client.Messages.Requests do
     Messages.MarketDepth.RequestData => 10,
     Messages.MarketDepth.CancelData => 11,
     Messages.News.RequestBulletins => 12,
-    "cancel_news_bulletins" => 13,
+    Messages.News.CancelBulletins => 13,
     "set_server_log_level" => 14,
     "auto_open_orders" => 15,
     "all_open_orders" => 16,
