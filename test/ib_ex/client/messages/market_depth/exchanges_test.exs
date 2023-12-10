@@ -26,9 +26,8 @@ defmodule IbEx.Client.Messages.MarketDepth.ExchangesTest do
       ]
 
       assert {:ok, msg} = Exchanges.from_fields(fields)
-      assert length(msg.descriptions) == 3
 
-      [nyse_stock, nasdaq_opt, cme_fut] = msg.descriptions
+      [nyse_stock, nasdaq_opt, cme_fut] = msg.items
 
       assert %MarketDepthDescription{exchange: "NYSE", security_type: "STK"} = nyse_stock
       assert %MarketDepthDescription{exchange: "NASDAQ", security_type: "OPT"} = nasdaq_opt
@@ -47,9 +46,9 @@ defmodule IbEx.Client.Messages.MarketDepth.ExchangesTest do
         security_type: "STK"
       }
 
-      assert inspect(%Exchanges{descriptions: [description]}) ==
+      assert inspect(%Exchanges{items: [description]}) ==
                """
-               <-- %MarketDepth.Exchanges{descriptions: [%MarketDepthDescription{exchange: NYSE, security_type: STK}]}
+               <-- %MarketDepth.Exchanges{items: [%MarketDepthDescription{exchange: NYSE, security_type: STK}]}
                """
     end
   end

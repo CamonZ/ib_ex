@@ -64,7 +64,7 @@ defmodule IbEx.Client.Messages.Responses do
     "82" => "smart_components",
     "83" => "news_article",
     "84" => "tick_news",
-    "85" => "news_providers",
+    "85" => Messages.News.Providers,
     "86" => "historical_news",
     "87" => "historical_news_end",
     "88" => "head_timestamp",
