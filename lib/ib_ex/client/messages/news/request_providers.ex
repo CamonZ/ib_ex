@@ -27,9 +27,7 @@ defmodule IbEx.Client.Messages.News.RequestProviders do
 
   defimpl Inspect, for: __MODULE__ do
     def inspect(_msg, _opts) do
-      """
-      --> News.RequestProviders{}
-      """
+      "--> News.RequestProviders{}"
     end
   end
 end

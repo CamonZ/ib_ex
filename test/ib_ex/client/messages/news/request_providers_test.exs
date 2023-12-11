@@ -16,14 +16,11 @@ defmodule IbEx.Client.Messages.News.RequestProvidersTest do
   end
 
   describe "Inspect implementation" do
-    test "inspects RequestProviders struct correctly" do
+    test "returns a human-readable version of the message" do
       request_providers = %RequestProviders{message_id: 1}
       inspected = inspect(request_providers)
 
-      assert inspected ==
-               """
-               --> News.RequestProviders{}
-               """
+      assert inspected == "--> News.RequestProviders{}"
     end
   end
 end
