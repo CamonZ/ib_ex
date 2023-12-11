@@ -63,7 +63,7 @@ defmodule IbEx.Client.Messages.Requests do
     "smart_components" => 83,
     "news_article" => 84,
     Messages.News.RequestProviders => 85,
-    "historical_news" => 86,
+    Messages.News.RequestHistoricalNews => 86,
     "head_timestamp" => 87,
     "histogram_data" => 88,
     "cancel_histogram_data" => 89,

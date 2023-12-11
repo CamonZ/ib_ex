@@ -1,6 +1,6 @@
 # IbEx
 
-**TODO: Add description**
+Library to connect to the Interactive Brokers TWS Client in Elixir
 
 ## Installation
 
