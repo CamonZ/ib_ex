@@ -3,7 +3,7 @@ defmodule IbEx.Client.Messages.Requests do
 
   @message_ids %{
     Messages.MarketData.RequestData => 1,
-    "cancel_market_data" => 2,
+    Messages.MarketData.RequestCancelData => 2,
     "place_order" => 3,
     "cancel_order" => 4,
     "open_orders" => 5,
