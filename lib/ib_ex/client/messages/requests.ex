@@ -2,7 +2,7 @@ defmodule IbEx.Client.Messages.Requests do
   alias IbEx.Client.Messages
 
   @message_ids %{
-    "market_data" => 1,
+    Messages.MarketData.RequestData => 1,
     "cancel_market_data" => 2,
     "place_order" => 3,
     "cancel_order" => 4,
