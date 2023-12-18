@@ -10,6 +10,12 @@ defmodule IbEx.Client.Messages.MarketData.TickSize do
             tick_type: nil,
             size: nil
 
+  @type t :: %__MODULE__{
+          request_id: String.t(),
+          tick_type: atom(),
+          size: Decimal.t() | nil
+        }
+
   alias IbEx.Client.Utils
   alias IbEx.Client.Constants.TickTypes
 
