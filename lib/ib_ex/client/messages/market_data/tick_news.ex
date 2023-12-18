@@ -7,6 +7,12 @@ defmodule IbEx.Client.Messages.MarketData.TickNews do
 
   alias IbEx.Client.Types.NewsHeadline
 
+  @type t :: %__MODULE__{
+          request_id: String.t(),
+          headline: NewsHeadline.t()
+        }
+
+  @spec from_fields(list(String.t())) :: {:ok, t()} | {:error, :invalid_args}
   def from_fields([request_id | rest]) do
     case NewsHeadline.from_news_tick(rest) do
       {:ok, headline} ->

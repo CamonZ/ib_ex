@@ -4,9 +4,14 @@ defmodule IbEx.Client.Messages.MarketData.MarketDataType do
   and realtime.
   """
 
-  defstruct request_id: nil,
-            data_type: nil
+  defstruct request_id: nil, data_type: nil
 
+  @type t :: %__MODULE__{
+          request_id: String.t(),
+          data_type: atom()
+        }
+
+  @spec from_fields(list(String.t())) :: {:ok, t()} | {:error, :invalid_args}
   def from_fields([_, request_id, data_type_str]) do
     {
       :ok,

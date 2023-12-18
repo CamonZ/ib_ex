@@ -10,8 +10,14 @@ defmodule IbEx.Client.Messages.MarketData.TickString do
             tick_type: nil,
             value: nil
 
+  @type t :: %__MODULE__{
+          request_id: String.t(),
+          tick_type: atom(),
+          value: String.t()
+        }
   alias IbEx.Client.Constants.TickTypes
 
+  @spec from_fields(list(String.t())) :: {:ok, t()} | {:error, :invalid_args}
   def from_fields([_, request_id, tick_type_str, value]) do
     tick_type = decode_tick_type(tick_type_str)
 

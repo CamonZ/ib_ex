@@ -11,8 +11,16 @@ defmodule IbEx.Client.Messages.MarketData.TickRequestParams do
             bbo_exchange: nil,
             snapshot_permissions: nil
 
+  @type t :: %__MODULE__{
+          request_id: String.t(),
+          min_tick: float() | nil,
+          bbo_exchange: String.t(),
+          snapshot_permissions: non_neg_integer() | nil
+        }
+
   alias IbEx.Client.Utils
 
+  @spec from_fields(list(String.t())) :: {:ok, t()} | {:error, :invalid_args}
   def from_fields([request_id, min_tick_str, bbo_exchange_str, snapshot_perms_str]) do
     msg = %__MODULE__{
       request_id: request_id,

@@ -9,8 +9,19 @@ defmodule IbEx.Client.Types.NewsHeadline do
             title: nil,
             language: nil,
             sentiment: nil,
-            extra_metadata: []
+            extra_metadata: nil
 
+  @type t :: %__MODULE__{
+          timestamp: DateTime.t(),
+          provider: String.t(),
+          provider_id: String.t(),
+          title: String.t(),
+          language: String.t() | nil,
+          sentiment: String.t() | nil,
+          extra_metadata: map()
+        }
+
+  @spec from_news_tick(list(String.t())) :: {:ok, t()} | {:error, :invalid_args}
   def from_news_tick([ts, provider, id, title, extra]) do
     case DateTime.from_unix(String.to_integer(ts), :millisecond) do
       {:ok, timestamp} ->

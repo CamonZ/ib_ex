@@ -19,6 +19,17 @@ defmodule IbEx.Client.Messages.MarketData.TickPrice do
             pre_open?: nil,
             should_tick_for_size?: false
 
+  @type t :: %__MODULE__{
+          request_id: String.t(),
+          tick_type: atom(),
+          price: float() | nil,
+          size: Decimal.t() | nil,
+          can_autoexecute?: boolean() | nil,
+          past_limit?: boolean() | nil,
+          pre_open?: boolean() | nil,
+          should_tick_for_size?: boolean()
+        }
+
   alias IbEx.Client.Utils
   alias IbEx.Client.Constants.TickTypes
 
@@ -26,6 +37,7 @@ defmodule IbEx.Client.Messages.MarketData.TickPrice do
   @past_limit_flag 2
   @pre_open_flag 4
 
+  @spec from_fields(list(String.t())) :: {:ok, t()} | {:error, :invalid_args}
   def from_fields([_, request_id, tick_type_str, price, size, mask]) do
     tick_type = decode_tick_type(tick_type_str)
 
