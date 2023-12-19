@@ -61,7 +61,7 @@ defmodule IbEx.Client.Messages.Requests do
     Messages.MatchingSymbols.Request => 81,
     Messages.MarketDepth.RequestExchanges => 82,
     "smart_components" => 83,
-    "news_article" => 84,
+    Messages.News.RequestArticle => 84,
     Messages.News.RequestProviders => 85,
     Messages.News.RequestHistoricalNews => 86,
     "head_timestamp" => 87,

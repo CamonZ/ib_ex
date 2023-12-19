@@ -24,11 +24,29 @@ defmodule IbEx.Client.Messages.MarketData.TickNewsTest do
     test "inspects TickNews struct correctly" do
       msg = %TickNews{
         request_id: "1",
-        headline: %NewsHeadline{title: "Alien Invasion!", timestamp: ~U[2023-12-17 19:34:39.033Z]}
+        headline: %NewsHeadline{
+          title: "Alien Invasion!",
+          timestamp: ~U[2023-12-17 19:34:39.033Z],
+          provider: "FOO",
+          provider_id: "FOO$12345abc",
+          language: "en",
+          sentiment: "n/a",
+          extra_metadata: %{"A" => "15001", "C" => "0.234"}
+        }
       }
 
       assert inspect(msg) ==
-               "<-- %MarketData.TickNews{request_id: 1, headline: Alien Invasion!}"
+               """
+               <-- %MarketData.TickNews{
+                 request_id: 1,
+                 headline: Alien Invasion!,
+                 provider: FOO,
+                 provider_id: FOO$12345abc,
+                 language: en,
+                 sentiment: n/a,
+                 extra_metadata: %{"A" => "15001", "C" => "0.234"}
+               }
+               """
     end
   end
 end
