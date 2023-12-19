@@ -20,7 +20,7 @@ defmodule IbEx.Client.Messages.Base do
     []
   end
 
-  @spec message_id_from_fields(any()) :: {:ok, integer()} | :error
+  @spec message_id_from_fields(any()) :: {:ok, String.t()} | :error
   def message_id_from_fields(fields) when is_list(fields) and length(fields) > 2 do
     message_id = List.first(fields)
 

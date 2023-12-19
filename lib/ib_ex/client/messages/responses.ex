@@ -62,7 +62,7 @@ defmodule IbEx.Client.Messages.Responses do
     "80" => Messages.MarketDepth.Exchanges,
     "81" => Messages.MarketData.TickRequestParams,
     "82" => "smart_components",
-    "83" => "news_article",
+    "83" => Messages.News.ArticleData,
     "84" => Messages.MarketData.TickNews,
     "85" => Messages.News.Providers,
     "86" => Messages.News.HistoricalNews,
@@ -89,6 +89,7 @@ defmodule IbEx.Client.Messages.Responses do
     "107" => "user_info"
   }
 
+  @spec parse(String.t(), atom()) :: {:ok, any()} | {:error, :unexpected_error} | {:error, :not_implemented}
   def parse(str, :connecting) do
     str
     |> Base.get_fields()
@@ -107,8 +108,8 @@ defmodule IbEx.Client.Messages.Responses do
     else
       {:error, {:not_implemented, _type}} ->
         fields = Base.get_fields(str)
-
         Logger.warning("<-- #{inspect(fields, limit: :infinity)}")
+        {:error, :not_implemented}
 
       err ->
         Logger.warning("Frame: #{inspect(str, printable_limit: :infinity)}")

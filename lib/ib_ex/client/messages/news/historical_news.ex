@@ -5,7 +5,7 @@ defmodule IbEx.Client.Messages.News.HistoricalNews do
 
   defstruct request_id: nil, timestamp: nil, provider_code: nil, article_id: nil, headline: nil
 
-  # TODO: Add test for this msg
+  # TODO: Refactor this message to use the NewsHeadline type
 
   def from_fields([request_id, timestamp, provider_code, article_id, headline]) do
     {

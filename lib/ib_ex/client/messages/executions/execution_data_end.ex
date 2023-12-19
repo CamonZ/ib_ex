@@ -9,7 +9,7 @@ defmodule IbEx.Client.Messages.Executions.ExecutionDataEnd do
 
   alias IbEx.Client.Utils
 
-  @spec from_fields(List.t(binary())) :: {:ok, t()} | {:error, :invalid_args}
+  @spec from_fields(list(String.t())) :: {:ok, t()} | {:error, :invalid_args}
   def from_fields([version_str, request_id]) do
     version = Utils.to_integer(version_str)
     {:ok, %__MODULE__{version: version, request_id: request_id}}

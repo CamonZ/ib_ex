@@ -20,6 +20,9 @@ defmodule IbEx.Client.Messages.MarketDepth.RequestData do
             smart_depth?: true,
             options: ["XYZ"]
 
+  alias IbEx.Client.Messages.Requests
+  alias IbEx.Client.Types.Contract
+
   @type t :: %__MODULE__{
           message_id: non_neg_integer(),
           version: non_neg_integer(),
@@ -29,9 +32,6 @@ defmodule IbEx.Client.Messages.MarketDepth.RequestData do
           smart_depth?: boolean(),
           options: list(binary())
         }
-
-  alias IbEx.Client.Messages.Requests
-  alias IbEx.Client.Types.Contract
 
   @spec new(String.t(), Contract.t(), non_neg_integer(), boolean()) :: {:ok, t()} | {:error, :not_implemented}
   def new(request_id, %Contract{} = contract, num_rows, is_smart_depth \\ true) do

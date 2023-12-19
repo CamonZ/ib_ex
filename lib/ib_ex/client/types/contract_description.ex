@@ -7,12 +7,12 @@ defmodule IbEx.Client.Types.ContractDescription do
   defstruct contract: nil,
             derivative_security_types: []
 
+  alias IbEx.Client.Types.Contract
+
   @type t :: %__MODULE__{
           contract: Contract.t(),
           derivative_security_types: list(binary())
         }
-
-  alias IbEx.Client.Types.Contract
 
   @extra_fields_size 2
 

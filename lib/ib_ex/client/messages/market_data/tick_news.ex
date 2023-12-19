@@ -29,7 +29,17 @@ defmodule IbEx.Client.Messages.MarketData.TickNews do
 
   defimpl Inspect, for: __MODULE__ do
     def inspect(msg, _opts) do
-      "<-- %MarketData.TickNews{request_id: #{msg.request_id}, headline: #{msg.headline.title}}"
+      """
+      <-- %MarketData.TickNews{
+        request_id: #{msg.request_id},
+        headline: #{msg.headline.title},
+        provider: #{msg.headline.provider},
+        provider_id: #{msg.headline.provider_id},
+        language: #{msg.headline.language},
+        sentiment: #{msg.headline.sentiment},
+        extra_metadata: #{inspect(msg.headline.extra_metadata)}
+      }
+      """
     end
   end
 end
