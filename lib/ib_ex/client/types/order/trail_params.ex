@@ -1,5 +1,14 @@
 defmodule IbEx.Client.Types.Order.TrailParams do
+  @moduledoc """
+  Params for a trail stop order
+  """
+
   defstruct stop_price: nil, percent: nil
+
+  @type t :: %__MODULE__{
+          stop_price: float(),
+          percent: Decimal.t()
+        }
 
   def new(args) when is_list(args) do
     args

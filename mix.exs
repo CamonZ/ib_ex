@@ -23,7 +23,8 @@ defmodule IbEx.MixProject do
   defp deps do
     [
       {:timex, "~> 3.7"},
-      {:decimal, "~> 2.1"}
+      {:decimal, "~> 2.1"},
+      {:dialyxir, "~> 1.4", only: [:dev], runtime: false}
     ]
   end
 end

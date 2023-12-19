@@ -16,7 +16,7 @@ defmodule IbEx.Client.Messages.Executions.ExecutionData do
 
   @contract_fields_length 11
 
-  @spec from_fields(List.t(binary())) :: {:ok, t()} | {:error, :invalid_args}
+  @spec from_fields(list(String.t())) :: {:ok, t()} | {:error, :invalid_args}
   def from_fields([request_id, order_id | rest]) do
     {contract_fields, execution_fields} = Enum.split(rest, @contract_fields_length)
 

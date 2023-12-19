@@ -27,7 +27,7 @@ defmodule IbEx.Client.Messages.MarketData.RequestData do
             options: []
 
   alias IbEx.Client.Messages.Requests
-  alias IbEx.Client.Tyeps.Contract
+  alias IbEx.Client.Types.Contract
 
   @type t :: %__MODULE__{
           message_id: non_neg_integer(),
