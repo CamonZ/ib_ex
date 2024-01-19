@@ -1,4 +1,8 @@
 defmodule IbEx.Client.Types.Order.BoxOrderParams do
+  @moduledoc """
+  Represents the params for a box order
+  """
+
   defstruct starting_price: nil, stock_reference_price: nil, delta: nil
 
   @type t :: %__MODULE__{
