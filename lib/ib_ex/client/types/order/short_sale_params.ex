@@ -1,10 +1,20 @@
 defmodule IbEx.Client.Types.Order.ShortSaleParams do
-  defstruct short_sale_slot: nil, designated_location: nil, exempt_code: nil
+  @moduledoc """
+  Represents the short sale params of an order
+
+  the fields in the struct are:
+
+  * slot: Short Sale Slot
+  * location: Designated Location
+  * code: Excempt Code
+  """
+
+  defstruct slot: nil, location: nil, code: nil
 
   @type t :: %__MODULE__{
-          short_sale_slot: binary(),
-          designated_location: binary(),
-          exempt_code: binary()
+          slot: binary(),
+          location: binary(),
+          code: binary()
         }
 
   def new(args) when is_list(args) do
@@ -19,9 +29,17 @@ defmodule IbEx.Client.Types.Order.ShortSaleParams do
 
   def new(slot, location, code) do
     %__MODULE__{
-      short_sale_slot: slot,
-      designated_location: location,
-      exempt_code: code
+      slot: slot,
+      location: location,
+      code: code
     }
+  end
+
+  def serializable_fields(%__MODULE__{} = params) do
+    [
+      params.slot,
+      params.location,
+      params.code
+    ]
   end
 end
