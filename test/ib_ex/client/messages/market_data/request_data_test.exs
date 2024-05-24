@@ -29,10 +29,10 @@ defmodule IbEx.Client.Messages.MarketData.RequestDataTest do
 
   describe "new/5" do
     test "creates the message with valid inputs" do
-      assert {:ok, msg} = RequestData.new("123", @contract, "100,101,104", false, false)
+      assert {:ok, msg} = RequestData.new(123, @contract, "100,101,104", false, false)
 
       assert msg.message_id == 1
-      assert msg.request_id == "123"
+      assert msg.request_id == 123
       assert msg.contract == @contract
       assert msg.tick_list == "100,101,104"
       refute msg.snapshot
@@ -44,7 +44,7 @@ defmodule IbEx.Client.Messages.MarketData.RequestDataTest do
     test "converts the message to a serializable string" do
       msg = %RequestData{
         message_id: 1,
-        request_id: "123",
+        request_id: 123,
         contract: @contract,
         tick_list: "100,101,104",
         snapshot: true,
@@ -61,7 +61,7 @@ defmodule IbEx.Client.Messages.MarketData.RequestDataTest do
   describe "Inspect implementation" do
     test "returns a human-readable version of the struct" do
       msg = %RequestData{
-        request_id: "123",
+        request_id: 123,
         contract: @contract,
         tick_list: "100,101,104",
         snapshot: true,

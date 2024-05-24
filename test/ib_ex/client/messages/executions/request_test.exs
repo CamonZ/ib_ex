@@ -6,10 +6,10 @@ defmodule IbEx.Client.Messages.Executions.RequestTest do
 
   describe "new/2" do
     test "creates a Request with valid inputs" do
-      assert {:ok, msg} = Request.new("90001", %ExecutionsFilter{client_id: 123})
+      assert {:ok, msg} = Request.new(90001, %ExecutionsFilter{client_id: 123})
 
       assert msg.message_id == 7
-      assert msg.request_id == "90001"
+      assert msg.request_id == 90001
       assert msg.filter == %ExecutionsFilter{client_id: 123}
     end
   end
@@ -19,7 +19,7 @@ defmodule IbEx.Client.Messages.Executions.RequestTest do
       msg = %Request{
         message_id: 7,
         version: 3,
-        request_id: "90001",
+        request_id: 90001,
         filter: %ExecutionsFilter{client_id: 123}
       }
 
@@ -31,7 +31,7 @@ defmodule IbEx.Client.Messages.Executions.RequestTest do
     test "returns a human-readable version of the message" do
       msg = %Request{
         message_id: 7,
-        request_id: "90001",
+        request_id: 90001,
         filter: %ExecutionsFilter{client_id: 123}
       }
 

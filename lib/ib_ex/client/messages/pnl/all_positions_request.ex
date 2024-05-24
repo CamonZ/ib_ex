@@ -15,12 +15,12 @@ defmodule IbEx.Client.Messages.Pnl.AllPositionsRequest do
 
   @type t :: %__MODULE__{
           message_id: integer(),
-          request_id: String.t(),
+          request_id: non_neg_integer(),
           account: String.t(),
           model_code: String.t()
         }
 
-  @spec new(String.t(), String.t(), String.t()) :: {:ok, t()} | {:error, :not_implemented}
+  @spec new(non_neg_integer(), String.t(), String.t()) :: {:ok, t()} | {:error, :not_implemented}
   def new(request_id, account, model_code \\ "") do
     case Requests.message_id_for(__MODULE__) do
       {:ok, message_id} ->

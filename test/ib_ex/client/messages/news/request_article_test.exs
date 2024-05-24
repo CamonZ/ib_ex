@@ -5,10 +5,10 @@ defmodule IbEx.Client.Messages.News.RequestArticleTest do
 
   describe "new/3" do
     test "creates a RequestArticle struct with valid inputs" do
-      assert {:ok, request_article} = RequestArticle.new("9001", "BZ", "BZ$12345abc")
+      assert {:ok, request_article} = RequestArticle.new(9001, "BZ", "BZ$12345abc")
 
       assert request_article.message_id == 84
-      assert request_article.request_id == "9001"
+      assert request_article.request_id == 9001
       assert request_article.provider_code == "BZ"
       assert request_article.provider_id == "BZ$12345abc"
     end
@@ -18,7 +18,7 @@ defmodule IbEx.Client.Messages.News.RequestArticleTest do
     test "converts RequestArticle struct to string" do
       request_article = %RequestArticle{
         message_id: "84",
-        request_id: "9001",
+        request_id: 9001,
         provider_code: "BZ",
         provider_id: "BZ$12345abc"
       }
@@ -31,7 +31,7 @@ defmodule IbEx.Client.Messages.News.RequestArticleTest do
   describe "Inspect implementation" do
     test "inspects RequestArticle struct correctly" do
       request_article = %RequestArticle{
-        request_id: "9001",
+        request_id: 9001,
         provider_code: "BZ",
         provider_id: "BZ$12345abc"
       }

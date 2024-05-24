@@ -8,11 +8,11 @@ defmodule IbEx.Client.Messages.MarketDepth.RequestDataTest do
     test "creates a RequestData struct with valid inputs" do
       contract = %Contract{symbol: "AAPL", security_type: "STK", exchange: "NSDQ"}
 
-      assert {:ok, msg} = RequestData.new("90001", contract, 10, false)
+      assert {:ok, msg} = RequestData.new(90001, contract, 10, false)
 
       assert msg.message_id == 10
       assert msg.version == 5
-      assert msg.request_id == "90001"
+      assert msg.request_id == 90001
       assert msg.contract == contract
       assert msg.num_rows == 10
       refute msg.smart_depth?
@@ -43,7 +43,7 @@ defmodule IbEx.Client.Messages.MarketDepth.RequestDataTest do
       contract = %Contract{symbol: "AAPL", security_type: "STK"}
 
       msg = %RequestData{
-        request_id: "90001",
+        request_id: 90001,
         contract: contract,
         num_rows: 10,
         smart_depth?: true

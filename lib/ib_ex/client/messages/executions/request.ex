@@ -20,11 +20,11 @@ defmodule IbEx.Client.Messages.Executions.Request do
 
   @type t :: %__MODULE__{
           message_id: integer(),
-          request_id: String.t(),
+          request_id: non_neg_integer(),
           filter: ExecutionsFilter.t()
         }
 
-  @spec new(String.t(), ExecutionsFilter.t()) :: {:ok, t()} | {:error, :not_implemented}
+  @spec new(non_neg_integer(), ExecutionsFilter.t()) :: {:ok, t()} | {:error, :not_implemented}
   def new(request_id, executions_filter \\ %ExecutionsFilter{}) do
     case Requests.message_id_for(__MODULE__) do
       {:ok, message_id} ->

@@ -5,7 +5,7 @@ defmodule IbEx.Client.Messages.Pnl.SinglePositionRequestTest do
 
   @apple_conid "265598"
   @account_id "GU12345678"
-  @request_id "70001"
+  @request_id 70001
 
   describe "new/4" do
     test "creates a SingleRequest struct with valid inputs" do

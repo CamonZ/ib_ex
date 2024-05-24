@@ -4,7 +4,7 @@ defmodule IbEx.Client.Messages.Pnl.AllPositionsRequestTest do
   alias IbEx.Client.Messages.Pnl.AllPositionsRequest
 
   @account_id "GU12345678"
-  @request_id "70001"
+  @request_id 70001
 
   describe "new/4" do
     test "creates a SingleRequest struct with valid inputs" do

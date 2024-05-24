@@ -26,14 +26,14 @@ defmodule IbEx.Client.Messages.MarketDepth.RequestData do
   @type t :: %__MODULE__{
           message_id: non_neg_integer(),
           version: non_neg_integer(),
-          request_id: String.t(),
+          request_id: non_neg_integer(),
           contract: Contract.t(),
           num_rows: non_neg_integer(),
           smart_depth?: boolean(),
           options: list(binary())
         }
 
-  @spec new(String.t(), Contract.t(), non_neg_integer(), boolean()) :: {:ok, t()} | {:error, :not_implemented}
+  @spec new(non_neg_integer(), Contract.t(), non_neg_integer(), boolean()) :: {:ok, t()} | {:error, :not_implemented}
   def new(request_id, %Contract{} = contract, num_rows, is_smart_depth \\ true) do
     case Requests.message_id_for(__MODULE__) do
       {:ok, id} ->

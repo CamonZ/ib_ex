@@ -17,13 +17,13 @@ defmodule IbEx.Client.Messages.Pnl.SinglePositionRequest do
 
   @type t :: %__MODULE__{
           message_id: integer(),
-          request_id: String.t(),
+          request_id: non_neg_integer(),
           account: String.t(),
           model_code: String.t(),
           conid: String.t()
         }
 
-  @spec new(String.t(), String.t(), String.t(), String.t()) :: {:ok, t()} | {:error, :not_implemented}
+  @spec new(non_neg_integer(), String.t(), String.t(), String.t()) :: {:ok, t()} | {:error, :not_implemented}
   def new(request_id, account, conid, model_code \\ "") do
     with {:ok, base_msg} <- AllPositionsRequest.new(request_id, account, model_code),
          {:ok, message_id} <- Requests.message_id_for(__MODULE__) do
