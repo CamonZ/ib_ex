@@ -15,7 +15,7 @@ defmodule IbEx.Client.Messages.HistoricalTicks.Request do
             ignore_size: nil,
             misc_options: nil
 
-  def new(opts) do
+  def new(opts) when is_list(opts) do
     with {:ok, message_id} <- Requests.message_id_for(__MODULE__),
          request_id <- Keyword.get(opts, :request_id),
          {:ok, %Contract{} = contract} <- Keyword.fetch(opts, :contract),
@@ -45,6 +45,10 @@ defmodule IbEx.Client.Messages.HistoricalTicks.Request do
       _ ->
         {:error, :invalid_args}
     end
+  end
+
+  def new(_) do
+    {:error, :invalid_args}
   end
 
   defp validate_timestamps(start_dt, end_dt) do

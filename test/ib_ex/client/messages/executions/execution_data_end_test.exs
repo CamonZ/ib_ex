@@ -5,10 +5,10 @@ defmodule IbEx.Client.Messages.Executions.ExecutionDataEndTest do
 
   describe "from_fields/1" do
     test "creates an ExecutionDataEnd with valid fields" do
-      assert {:ok, msg} = ExecutionDataEnd.from_fields(["3", "request123"])
+      assert {:ok, msg} = ExecutionDataEnd.from_fields(["3", "123"])
 
       assert msg.version == 3
-      assert msg.request_id == "request123"
+      assert msg.request_id == "123"
     end
 
     test "returns an error with invalid number of fields" do
@@ -22,11 +22,11 @@ defmodule IbEx.Client.Messages.Executions.ExecutionDataEndTest do
 
   describe "inspect/2" do
     test "returns a human-readable version of the message" do
-      msg = %ExecutionDataEnd{version: 3, request_id: "request123"}
+      msg = %ExecutionDataEnd{version: 3, request_id: "123"}
 
       assert inspect(msg) ==
                """
-               <-- ExecutionDataEnd{version: 3, request_id: request123}
+               <-- ExecutionDataEnd{version: 3, request_id: 123}
                """
     end
   end

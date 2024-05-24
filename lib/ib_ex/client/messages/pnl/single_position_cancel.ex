@@ -11,9 +11,9 @@ defmodule IbEx.Client.Messages.Pnl.SinglePositionCancel do
 
   defstruct message_id: nil, request_id: nil
 
-  @type t :: %__MODULE__{message_id: integer(), request_id: String.t()}
+  @type t :: %__MODULE__{message_id: integer(), request_id: non_neg_integer()}
 
-  @spec new(String.t()) :: {:ok, t()} | {:error, :not_implemented}
+  @spec new(non_neg_integer()) :: {:ok, t()} | {:error, :not_implemented}
   def new(request_id) do
     case Requests.message_id_for(__MODULE__) do
       {:ok, message_id} -> {:ok, %__MODULE__{message_id: message_id, request_id: request_id}}

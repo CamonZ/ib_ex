@@ -7,7 +7,7 @@ defmodule IbEx.Client.Messages.News.RequestArticle do
 
   @type t :: %__MODULE__{
           message_id: non_neg_integer(),
-          request_id: String.t(),
+          request_id: non_neg_integer(),
           provider_code: String.t(),
           provider_id: String.t(),
           options: list(none())
@@ -15,7 +15,7 @@ defmodule IbEx.Client.Messages.News.RequestArticle do
 
   alias IbEx.Client.Messages.Requests
 
-  @spec new(String.t(), String.t(), String.t()) :: {:ok, t()}
+  @spec new(non_neg_integer(), String.t(), String.t()) :: {:ok, t()}
   def new(request_id, provider_code, provider_id) do
     {:ok, message_id} = Requests.message_id_for(__MODULE__)
 

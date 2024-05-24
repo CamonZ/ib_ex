@@ -31,7 +31,7 @@ defmodule IbEx.Client.Messages.MarketData.RequestData do
 
   @type t :: %__MODULE__{
           message_id: non_neg_integer(),
-          request_id: String.t(),
+          request_id: non_neg_integer(),
           contract: Contract.t(),
           version: non_neg_integer(),
           tick_list: String.t(),
@@ -40,7 +40,8 @@ defmodule IbEx.Client.Messages.MarketData.RequestData do
           options: list()
         }
 
-  @spec new(String.t(), Contract.t(), String.t(), boolean(), boolean()) :: {:ok, t()} | {:error, :not_implemented}
+  @spec new(non_neg_integer(), Contract.t(), String.t(), boolean(), boolean()) ::
+          {:ok, t()} | {:error, :not_implemented}
   def new(request_id, contract, tick_list, snapshot, regulatory_snapshot) do
     case Requests.message_id_for(__MODULE__) do
       {:ok, message_id} ->

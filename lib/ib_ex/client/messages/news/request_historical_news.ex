@@ -36,7 +36,7 @@ defmodule IbEx.Client.Messages.News.RequestHistoricalNews do
 
   alias IbEx.Client.Messages.Requests
 
-  @spec new(binary(), non_neg_integer(), binary(), DateTime.t(), DateTime.t(), non_neg_integer()) ::
+  @spec new(non_neg_integer(), non_neg_integer(), binary(), DateTime.t(), DateTime.t(), non_neg_integer()) ::
           {:ok, t()} | {:error, :not_implemented}
   def new(request_id, conid, providers, start_ts, end_ts, num_results) do
     case Requests.message_id_for(__MODULE__) do

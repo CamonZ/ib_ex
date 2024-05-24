@@ -4,8 +4,6 @@ defmodule IbEx.Client.Messages.MatchingSymbols.Request do
 
   defstruct pattern: nil, request_id: nil, message_id: nil
 
-  # TODO: Check matching symbols message flow
-
   def new(opts \\ []) do
     with {:ok, id} <- Requests.message_id_for(__MODULE__),
          {:ok, request_id} <- Keyword.fetch(opts, :request_id),

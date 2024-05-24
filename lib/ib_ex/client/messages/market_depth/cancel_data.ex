@@ -12,19 +12,19 @@ defmodule IbEx.Client.Messages.MarketDepth.CancelData do
 
   defstruct message_id: nil,
             version: @version,
-            request_id: "",
+            request_id: nil,
             smart_depth?: true
 
   @type t :: %__MODULE__{
           message_id: non_neg_integer(),
           version: non_neg_integer(),
-          request_id: String.t(),
+          request_id: non_neg_integer(),
           smart_depth?: boolean()
         }
 
   alias IbEx.Client.Messages.Requests
 
-  @spec new(String.t(), boolean()) :: {:ok, t()} | {:error, :not_implemented}
+  @spec new(non_neg_integer(), boolean()) :: {:ok, t()} | {:error, :not_implemented}
   def new(request_id, is_smart_depth \\ true) do
     case Requests.message_id_for(__MODULE__) do
       {:ok, id} ->
