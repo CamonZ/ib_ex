@@ -8,10 +8,8 @@ defmodule IbEx.Client.Messages.InitConnection.Response do
   alias IbEx.Client.Utils
 
   def from_fields([server_version, timestamp_str]) do
-    [date, time | _] = String.split(timestamp_str, " ")
-
     with {version, _} <- Integer.parse(server_version),
-         {:ok, ts} <- Utils.parse_timestamp_str("#{date} #{time} CET") do
+         {:ok, ts} <- Utils.parse_init_connection_timestamp(timestamp_str) do
       {:ok,
        %__MODULE__{
          server_version: version,

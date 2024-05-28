@@ -5,6 +5,12 @@ defmodule IbEx.Client.Utils do
 
   @unset_double "1.7976931348623157E308"
 
+  @timezone_names_to_zone_id %{
+    "Central European Standard Time" => "CET"
+  }
+
+  @timestamp_regex ~r/(\d{6})\s{1}(\d{2}\:\d{2}:\d{2})\s{1}(.*)/
+
   def boolify_mask(mask, flag_bit) when is_integer(mask) and is_integer(flag_bit) do
     Bitwise.band(mask, flag_bit) != 0
   end
@@ -64,6 +70,16 @@ defmodule IbEx.Client.Utils do
 
   def to_bool(_) do
     nil
+  end
+
+  def parse_init_connection_timestamp(str) when is_binary(str) do
+    case Regex.run(@timestamp_regex, str) do
+      [_, date, time, timezone] ->
+        parse_timestamp_str("#{date} #{time} #{@timezone_names_to_zone_id[timezone]}")
+
+      _ ->
+        {:error, :unknown_timezone}
+    end
   end
 
   def parse_timestamp_str(str) when is_binary(str) do
