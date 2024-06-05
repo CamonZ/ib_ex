@@ -4,11 +4,6 @@ defmodule IbEx.Client.Utils do
   """
 
   @unset_double "1.7976931348623157E308"
-
-  @timezone_names_to_zone_id %{
-    "Central European Standard Time" => "CET"
-  }
-
   @timestamp_regex ~r/(\d{6})\s{1}(\d{2}\:\d{2}:\d{2})\s{1}(.*)/
 
   def boolify_mask(mask, flag_bit) when is_integer(mask) and is_integer(flag_bit) do
@@ -74,27 +69,30 @@ defmodule IbEx.Client.Utils do
 
   def parse_init_connection_timestamp(str) when is_binary(str) do
     case Regex.run(@timestamp_regex, str) do
-      [_, date, time, timezone] ->
-        parse_timestamp_str("#{date} #{time} #{@timezone_names_to_zone_id[timezone]}", "%y%m%d %H:%M:%S %Z")
+      [_, date, time, _timezone] ->
+        parse_timestamp_str("#{date} #{time}", "%y%m%d %H:%M:%S", false)
 
       _ ->
         {:error, :unknown_timezone}
     end
   end
 
-  def parse_timestamp_str(str, formatter \\ "%Y%m%d %H:%M:%S %Z")
+  def parse_timestamp_str(str, formatter \\ "%Y%m%d %H:%M:%S %Z", convert_to_utc? \\ true)
 
-  def parse_timestamp_str(str, formatter) when is_binary(str) do
-    case Timex.parse(str, formatter, :strftime) do
-      {:ok, ts} ->
-        {:ok, Timex.Timezone.convert(ts, "Etc/UTC")}
+  def parse_timestamp_str(str, formatter, convert_to_utc?) when is_binary(str) do
+    {:ok, ts} = Timex.parse(str, formatter, :strftime)
 
-      _ ->
-        {:error, :invalid_args}
+    if convert_to_utc? do
+      {:ok, Timex.Timezone.convert(ts, "Etc/UTC")}
+    else
+      {:ok, ts}
     end
+  rescue
+    _ ->
+      {:error, :invalid_args}
   end
 
-  def parse_timestamp_str(_, _) do
+  def parse_timestamp_str(_, _, _) do
     {:error, :invalid_args}
   end
 end

@@ -3,7 +3,7 @@ defmodule IbEx.Client.Messages.InitConnection.Response do
   The response to the InitConnection message, on the original API it's referred to as the ConnectionAck
   """
 
-  defstruct server_version: nil, server_time: nil
+  defstruct server_version: nil, connection_timestamp: nil
 
   alias IbEx.Client.Utils
 
@@ -13,7 +13,7 @@ defmodule IbEx.Client.Messages.InitConnection.Response do
       {:ok,
        %__MODULE__{
          server_version: version,
-         server_time: ts
+         connection_timestamp: ts
        }}
     else
       _ ->
@@ -30,7 +30,7 @@ defmodule IbEx.Client.Messages.InitConnection.Response do
 
   defimpl Inspect, for: __MODULE__ do
     def inspect(msg, _opts) do
-      "<-- %InitConnection{version: #{msg.server_version} timestamp: #{msg.server_time}}"
+      "<-- %InitConnection{version: #{msg.server_version} timestamp: #{msg.connection_timestamp}}"
     end
   end
 end
