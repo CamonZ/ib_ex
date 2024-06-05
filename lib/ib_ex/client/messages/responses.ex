@@ -101,7 +101,7 @@ defmodule IbEx.Client.Messages.Responses do
          {:ok, msg_id} <- Base.message_id_from_fields(fields),
          {:ok, type} <- Map.fetch(@ids_to_message_type, msg_id),
          {:ok, type} <- validate_implemented(type),
-         {:ok, msg} <- type.from_fields(Enum.slice(fields, 1..-1)) do
+         {:ok, msg} <- type.from_fields(Enum.slice(fields, 1..-1//1)) do
       Logger.info("#{inspect(msg)}")
 
       {:ok, msg}

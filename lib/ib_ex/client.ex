@@ -30,7 +30,7 @@ defmodule IbEx.Client do
             optional_capabilities: "",
             status: :disconnected,
             server_version: nil,
-            server_time: nil,
+            connection_timestamp: nil,
             managed_accounts: nil,
             next_valid_id: nil
 
@@ -146,7 +146,7 @@ defmodule IbEx.Client do
 
         update = %{
           server_version: msg.server_version,
-          server_time: msg.server_time,
+          connection_timestamp: msg.connection_timestamp,
           status: :connected
         }
 
