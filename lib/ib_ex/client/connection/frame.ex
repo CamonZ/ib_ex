@@ -7,7 +7,7 @@ defmodule IbEx.Client.Connection.Frame do
   @spec pack(binary()) :: binary()
   def pack(str, include_length \\ true) do
     case include_length do
-      true -> String.slice(:erlang.term_to_binary(str), 2..-1)
+      true -> String.slice(:erlang.term_to_binary(str), 2..-1//1)
       false -> str
     end
   end
