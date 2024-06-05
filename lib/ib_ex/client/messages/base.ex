@@ -13,7 +13,7 @@ defmodule IbEx.Client.Messages.Base do
   def get_fields(str) when is_binary(str) do
     str
     |> String.split("\x00")
-    |> Enum.slice(0..-2)
+    |> Enum.slice(0..-2//1)
   end
 
   def get_fields(_) do
