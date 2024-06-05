@@ -83,7 +83,7 @@ defmodule IbEx.Client.Utils do
   end
 
   def parse_timestamp_str(str) when is_binary(str) do
-    case Timex.parse(str, "%Y%m%d %k:%M:%S %Z", :strftime) do
+    case Timex.parse(str, "%y%m%d %H:%M:%S %Z", :strftime) do
       {:ok, ts} ->
         {:ok, Timex.Timezone.convert(ts, "Etc/UTC")}
 
