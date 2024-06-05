@@ -75,15 +75,17 @@ defmodule IbEx.Client.Utils do
   def parse_init_connection_timestamp(str) when is_binary(str) do
     case Regex.run(@timestamp_regex, str) do
       [_, date, time, timezone] ->
-        parse_timestamp_str("#{date} #{time} #{@timezone_names_to_zone_id[timezone]}")
+        parse_timestamp_str("#{date} #{time} #{@timezone_names_to_zone_id[timezone]}", "%y%m%d %H:%M:%S %Z")
 
       _ ->
         {:error, :unknown_timezone}
     end
   end
 
-  def parse_timestamp_str(str) when is_binary(str) do
-    case Timex.parse(str, "%y%m%d %H:%M:%S %Z", :strftime) do
+  def parse_timestamp_str(str, formatter \\ "%Y%m%d %H:%M:%S %Z")
+
+  def parse_timestamp_str(str, formatter) when is_binary(str) do
+    case Timex.parse(str, formatter, :strftime) do
       {:ok, ts} ->
         {:ok, Timex.Timezone.convert(ts, "Etc/UTC")}
 
@@ -92,7 +94,7 @@ defmodule IbEx.Client.Utils do
     end
   end
 
-  def parse_timestamp_str(_) do
+  def parse_timestamp_str(_, _) do
     {:error, :invalid_args}
   end
 end
