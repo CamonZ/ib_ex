@@ -47,4 +47,14 @@ defmodule IbEx.Client.Messages.Base do
   def make_field(thing) when is_tuple(thing) or is_map(thing), do: make_field("")
 
   def make_field(field), do: to_string(field) <> "\x00"
+
+  defimpl IbEx.Client.Protocols.Subscribable, for: Any do
+    def subscribe(_, _, _) do
+      {:error, :not_implemented}
+    end
+
+    def lookup(_, _) do
+      {:error, :not_implemented}
+    end
+  end
 end

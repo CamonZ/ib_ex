@@ -1,6 +1,9 @@
 defmodule IbEx.Client.Messages.AccountData.AccountUpdateTimeTest do
   use ExUnit.Case, async: true
+
   alias IbEx.Client.Messages.AccountData.AccountUpdateTime
+  alias IbEx.Client.Protocols.Subscribable
+  alias IbEx.Client.Subscriptions
 
   describe "from_fields/1" do
     test "parses valid inputs into an AccountUpdateTime struct" do
@@ -30,6 +33,19 @@ defmodule IbEx.Client.Messages.AccountData.AccountUpdateTimeTest do
 
       expected_output = "<-- AccountUpdateTime{timestamp: #{ts}}"
       assert inspect(msg) == expected_output
+    end
+  end
+
+  describe "Subscribable" do
+    test "looks up the message in the subscriptions mapping" do
+      table_ref = Subscriptions.initialize()
+      Subscriptions.subscribe_by_modules(table_ref, [AccountUpdateTime], self())
+
+      {:ok, msg} = AccountUpdateTime.from_fields(["1", "10:47"])
+
+      assert {:ok, pid} = Subscribable.lookup(msg, table_ref)
+
+      assert pid == self()
     end
   end
 end

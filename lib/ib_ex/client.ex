@@ -26,18 +26,21 @@ defmodule IbEx.Client do
   # @connection_statuses [:disconnected, :connecting, :connected]
 
   defstruct connection: nil,
-            client_id: 0,
             optional_capabilities: "",
+            client_id: 0,
             status: :disconnected,
             server_version: nil,
             connection_timestamp: nil,
             managed_accounts: nil,
-            next_valid_id: nil
+            next_valid_id: nil,
+            subscriptions_table_ref: nil
 
   alias IbEx.Client.Connection
   alias IbEx.Client.Constants
   alias IbEx.Client.Messages
   alias IbEx.Client.Messages.Responses
+  alias IbEx.Client.Protocols.Subscribable
+  alias IbEx.Client.Subscriptions
 
   require Logger
 
@@ -50,7 +53,7 @@ defmodule IbEx.Client do
   end
 
   def send_request(pid, request) do
-    GenServer.cast(pid, {:send_request, request})
+    GenServer.cast(pid, {:send_request, self(), request})
   end
 
   def request_historical_ticks(pid, opts) do
@@ -83,9 +86,13 @@ defmodule IbEx.Client do
       |> Keyword.take([:host, :port])
       |> Keyword.put(:client, self())
 
-    case Connection.start_link(connection_opts) do
+    connection_handler = Keyword.get(opts, :connection_handler, Connection)
+
+    case connection_handler.start_link(connection_opts) do
       {:ok, pid} ->
-        {:ok, %__MODULE__{connection: pid}}
+        table_ref = Subscriptions.initialize()
+
+        {:ok, %__MODULE__{connection: pid, subscriptions_table_ref: table_ref}}
 
       err ->
         {:stop, {:connection_error, err}}
@@ -158,7 +165,8 @@ defmodule IbEx.Client do
       {:ok, %Messages.Ids.NextValidId{} = msg} ->
         {:noreply, Map.put(state, :next_valid_id, msg.next_valid_id)}
 
-      {:ok, _} ->
+      {:ok, msg} ->
+        relay_message(msg, state.subscriptions_table_ref)
         {:noreply, state}
 
       _ ->
@@ -166,8 +174,15 @@ defmodule IbEx.Client do
     end
   end
 
-  def handle_cast({:send_request, request}, state) do
-    Connection.send_message(state.connection, request)
+  def handle_cast({:send_request, subscriber_pid, request}, state) do
+    case Subscribable.subscribe(request, subscriber_pid, state.subscriptions_table_ref) do
+      {:ok, msg} ->
+        Connection.send_message(state.connection, msg)
+
+      _ ->
+        Logger.error("Error sending out message: #{request}")
+        :ok
+    end
 
     {:noreply, state}
   end
@@ -189,6 +204,16 @@ defmodule IbEx.Client do
     else
       _ ->
         {:error, {:required_version_unmet, message_type, state.server_version}}
+    end
+  end
+
+  defp relay_message(msg, table_ref) do
+    case Subscribable.lookup(msg, table_ref) do
+      {:ok, pid} when is_pid(pid) ->
+        GenServer.cast(pid, {:message_received, msg})
+
+      _ ->
+        :ok
     end
   end
 end

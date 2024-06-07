@@ -9,6 +9,7 @@ defmodule IbEx.Client.Messages.MatchingSymbols.SymbolSamples do
   defstruct request_id: nil, contracts: []
 
   alias IbEx.Client.Types.ContractDescription
+  alias IbEx.Client.Protocols.Subscribable
 
   require Logger
 
@@ -51,5 +52,17 @@ defmodule IbEx.Client.Messages.MatchingSymbols.SymbolSamples do
   defp extract_contract_fields(fields) do
     derivatives_length = String.to_integer(Enum.at(fields, @derivatives_length_position))
     Enum.split(fields, @base_fields_length + derivatives_length)
+  end
+
+  defimpl Subscribable, for: __MODULE__ do
+    alias IbEx.Client.Subscriptions
+
+    def subscribe(_, _, _) do
+      {:error, :response_messages_cannot_create_subscription}
+    end
+
+    def lookup(msg, table_ref) do
+      Subscriptions.lookup(table_ref, msg.request_id)
+    end
   end
 end

@@ -5,6 +5,8 @@ defmodule IbEx.Client.Messages.AccountData.AccountDownloadEnd do
 
   defstruct version: nil, account: nil
 
+  alias IbEx.Client.Protocols.Subscribable
+
   def from_fields([version_str, account]) do
     case Integer.parse(version_str) do
       {version, _} ->
@@ -28,6 +30,19 @@ defmodule IbEx.Client.Messages.AccountData.AccountDownloadEnd do
   defimpl Inspect, for: __MODULE__ do
     def inspect(msg, _opts) do
       "<-- AccountDownloadEnd{account: #{msg.account}}"
+    end
+  end
+
+  defimpl Subscribable, for: __MODULE__ do
+    alias IbEx.Client.Messages.AccountData.AccountDownloadEnd
+    alias IbEx.Client.Subscriptions
+
+    def subscribe(_, _, _) do
+      {:error, :response_messages_cannot_create_subscription}
+    end
+
+    def lookup(_msg, table_ref) do
+      Subscriptions.lookup(table_ref, AccountDownloadEnd)
     end
   end
 end

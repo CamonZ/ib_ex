@@ -2,8 +2,10 @@ defmodule IbEx.Client.Messages.MatchingSymbols.SymbolSamplesTest do
   use ExUnit.Case, async: true
 
   alias IbEx.Client.Messages.MatchingSymbols.SymbolSamples
+  alias IbEx.Client.Protocols.Subscribable
   alias IbEx.Client.Types.Contract
   alias IbEx.Client.Types.ContractDescription
+  alias IbEx.Client.Subscriptions
 
   @valid_fields [
     "1",
@@ -72,6 +74,19 @@ defmodule IbEx.Client.Messages.MatchingSymbols.SymbolSamplesTest do
     @tag capture_log: true
     test "returns invalid args when called with a list in a different format" do
       assert {:error, :invalid_args} == SymbolSamples.from_fields(["1", "2", "3"])
+    end
+  end
+
+  describe "Subscribable" do
+    test "looks up the message in the subscriptions mapping" do
+      table_ref = Subscriptions.initialize()
+      Subscriptions.subscribe_by_request_id(table_ref, self())
+
+      {:ok, msg} = SymbolSamples.from_fields(@valid_fields)
+
+      assert {:ok, pid} = Subscribable.lookup(msg, table_ref)
+
+      assert pid == self()
     end
   end
 end

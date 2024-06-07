@@ -6,6 +6,8 @@ defmodule IbEx.Client.Messages.AccountData.AccountUpdateTime do
 
   defstruct version: nil, timestamp: nil
 
+  alias IbEx.Client.Protocols.Subscribable
+
   @spec from_fields([String.t()]) :: {:ok, %__MODULE__{}} | {:error, :invalid_args}
   def from_fields([version_str, hour_minute]) do
     with {version, ""} <- Integer.parse(version_str),
@@ -33,6 +35,19 @@ defmodule IbEx.Client.Messages.AccountData.AccountUpdateTime do
   defimpl Inspect, for: __MODULE__ do
     def inspect(msg, _opts) do
       "<-- AccountUpdateTime{timestamp: #{msg.timestamp}}"
+    end
+  end
+
+  defimpl Subscribable, for: __MODULE__ do
+    alias IbEx.Client.Messages.AccountData.AccountUpdateTime
+    alias IbEx.Client.Subscriptions
+
+    def subscribe(_, _, _) do
+      {:error, :response_messages_cannot_create_subscription}
+    end
+
+    def lookup(_msg, table_ref) do
+      Subscriptions.lookup(table_ref, AccountUpdateTime)
     end
   end
 end
