@@ -1,8 +1,84 @@
 defmodule IbEx.Client.Messages.AccountData.Request do
+  @moduledoc """
+  Request to receive updates related to the account data
+
+  For the account used in tests the following data fields are received through the AccountDetail message:
+
+  * AccountCode
+  * AccountOrGroup with variations for each currency held in the account
+  * AccountReady
+  * AccountType
+  * AccruedCash (currency variants)
+  * AvailableFunds
+  * Billable
+  * BuyingPower
+  * CashBalance (currency variants)
+  * ColumnPrio-S ???
+  * CorporateBondValue (currency variants)
+  * Currency (currencies in the account)
+  * Cushion ???
+  * EquityWithLoanValue
+  * ExcessLiquidity
+  * ExchangeRate between currencies held in account
+  * FullAvailableFunds
+  * FullExcessLiquidity
+  * FullInitMarginReq
+  * FullMaintMarginReq
+  * FundValue (currency variations)
+  * FutureOptionValue (currency variations)
+  * FuturesPNL (currency variations)
+  * FxCashBalance (currency varaitions)
+  * GrossPositionValue
+  * Guarantee
+  * IndianSockHaircut ???
+  * InitMarginReq
+  * IssuerOptionValue (currency variants)
+  * Leverage-S ???
+  * LookAheadAvailableFunds
+  * LookAheadExcessLiquidity
+  * LookAheadInitMarginReq
+  * LookAheadMaintMarginReq
+  * LookAheadNextChange
+  * MaintMarginReq
+  * MoneyMarketFundValue (currency variants)
+  * MutualFundValue (currency variants)
+  * NLVAndMarginInReview
+  * NetDividend (currency variants)
+  * NetLIquidation
+  * NetLiquidationByCurrency (currency variants)
+  * NetLiquidationUncertainty
+  * OptionMarketValue (currency variants)
+  * PASharesValue
+  * PhysicalCertificatesValue
+  * PostExpirationExcess
+  * PostExpirationMargin
+  * RealCurrency (currency variants)
+  * RealizedPnL (currency variants)
+  * SegmentTitle-S
+  * StockMarketValue (currency variants)
+  * TBillValue (currency variants)
+  * TBondValue (currency variants)
+  * TotalCashBalance (currency variants)
+  * TotalCashValue
+  * TotalDebitCardPendingCharges
+  * TradingType-S
+  * UnrealizedPnL (currency variants)
+  * WarrantValue (currency variants)
+
+  As secondary messages we receive the AccountUpdateTime and AccountDownloadEnd
+
+  The subscribe param allows for continuous updates to be received, though even with subscribed
+  set to true, the AccountDownloadEnd message is received at least once and the AccountUpdateTime
+  is received twice per update
+
+  In order to unsubscribe from the account updates feed we need to send this message with the subscribe param set to false,
+  to confirm this we receive an Info message saying the API client is unsubscribed from account data
+  """
   @message_version 1
 
   alias IbEx.Client.Messages.Base
   alias IbEx.Client.Messages.Requests
+  alias IbEx.Client.Protocols.Subscribable
 
   defstruct message_id: nil, version: @message_version, subscribe: nil, account_code: nil
 
@@ -42,6 +118,31 @@ defmodule IbEx.Client.Messages.AccountData.Request do
   defimpl Inspect, for: __MODULE__ do
     def inspect(msg, _opts) do
       "--> AccountUpdates{message_id: #{msg.message_id}, subscribe: #{msg.subscribe}, account_code: #{inspect(msg.account_code)}}"
+    end
+  end
+
+  defimpl Subscribable, for: __MODULE__ do
+    alias IbEx.Client.Messages.AccountData.AccountDetail
+    alias IbEx.Client.Messages.AccountData.AccountUpdateTime
+    alias IbEx.Client.Messages.AccountData.AccountDownloadEnd
+    alias IbEx.Client.Subscriptions
+
+    # Subscription based on message structs, can handle only 1 subscriber
+    def subscribe(msg, pid, table_ref) do
+      :ok =
+        Subscriptions.subscribe_by_modules(
+          table_ref,
+          [AccountDetail, AccountUpdateTime, AccountDownloadEnd],
+          pid
+        )
+
+      {:ok, msg}
+    end
+
+    def lookup(_, _) do
+      # Return an error when trying to lookup the subscriber of a message request,
+      # only the response messages of a request need to be relayed back
+      {:error, :lookup_not_necessary}
     end
   end
 end

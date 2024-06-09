@@ -2,6 +2,12 @@ defmodule IbEx.Client.Messages.AccountData.RequestTest do
   use ExUnit.Case
 
   alias IbEx.Client.Messages.AccountData.Request
+  alias IbEx.Client.Messages.AccountData.AccountDetail
+  alias IbEx.Client.Messages.AccountData.AccountDownloadEnd
+  alias IbEx.Client.Messages.AccountData.AccountUpdateTime
+
+  alias IbEx.Client.Protocols.Subscribable
+  alias IbEx.Client.Subscriptions
 
   describe "new/2" do
     test "returns an AccountData Request struct" do
@@ -26,6 +32,25 @@ defmodule IbEx.Client.Messages.AccountData.RequestTest do
 
       # Adjust this expected string to the format that your Inspect implementation produces.
       assert inspect(msg) == "--> AccountUpdates{message_id: 6, subscribe: true, account_code: nil}"
+    end
+  end
+
+  describe "Subscribable" do
+    test "subscribe/2 subscribes the response message modules to the given pid" do
+      table_ref = Subscriptions.initialize()
+
+      {:ok, msg} = Request.new(true)
+
+      assert {:ok, _msg} = Subscribable.subscribe(msg, self(), table_ref)
+
+      assert {:ok, pid} = Subscriptions.lookup(table_ref, AccountDetail)
+      assert pid == self()
+
+      assert {:ok, pid} = Subscriptions.lookup(table_ref, AccountDownloadEnd)
+      assert pid == self()
+
+      assert {:ok, pid} = Subscriptions.lookup(table_ref, AccountUpdateTime)
+      assert pid == self()
     end
   end
 end

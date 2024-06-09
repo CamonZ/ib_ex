@@ -12,7 +12,7 @@ defmodule IbEx.Client.Messages.Responses do
     "5" => Messages.Orders.OpenOrder,
     "6" => Messages.AccountData.AccountDetail,
     "7" => "portfolio_value",
-    "8" => Messages.AccountData.AccountDetail,
+    "8" => Messages.AccountData.AccountUpdateTime,
     "9" => Messages.Ids.NextValidId,
     "10" => "contract_data",
     "11" => Messages.Executions.ExecutionData,
