@@ -37,7 +37,7 @@ defmodule IbEx.Client.Messages.Requests do
     "cancel_calculated_implied_volatility" => 56,
     "cancel_calculated_option_price" => 57,
     "global_cancel" => 58,
-    "market_data_type" => 59,
+    Messages.MarketData.RequestMarketDataType => 59,
     "positions" => 61,
     "account_summary" => 62,
     "cancel_account_summary" => 63,
