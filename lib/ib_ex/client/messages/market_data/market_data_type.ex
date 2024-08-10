@@ -35,6 +35,24 @@ defmodule IbEx.Client.Messages.MarketData.MarketDataType do
     end
   end
 
+  def atom_to_integer(data_type_atom) do
+    case data_type_atom do
+      :live -> 1
+      :frozen -> 2
+      :delayed -> 3
+      :delayed_frozen -> 4
+    end
+  end
+
+  def integer_to_atom(data_type_integer) do
+    case data_type_integer do
+      1 -> :live
+      2 -> :frozen
+      3 -> :delayed
+      4 -> :delayed_frozen
+    end
+  end
+
   defimpl Inspect, for: __MODULE__ do
     def inspect(msg, _opts) do
       "<-- %MarketData.MarketDataType{request_id: #{msg.request_id}, data_type: #{msg.data_type}}"
