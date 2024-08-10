@@ -30,16 +30,15 @@ defmodule IbEx.Client.Messages.MarketData.RequestMarketDataType do
           market_data_type: 1..4
         }
 
-  @spec new(non_neg_integer(), :live | :frozen | :delayed | :delayed_frozen) ::
+  @spec new(:live | :frozen | :delayed | :delayed_frozen) ::
           {:ok, t()} | {:error, :not_implemented}
-  def new(request_id, market_data_type) do
+  def new(market_data_type) do
     case Requests.message_id_for(__MODULE__) do
       {:ok, message_id} ->
         {
           :ok,
           %__MODULE__{
             message_id: message_id,
-            request_id: request_id,
             market_data_type: MarketDataType.atom_to_integer(market_data_type)
           }
         }
@@ -68,7 +67,6 @@ defmodule IbEx.Client.Messages.MarketData.RequestMarketDataType do
     def inspect(msg, _opts) do
       """
       --> MarketData.RequestMarketDataType{
-        request_id: #{msg.request_id},
         market_data_type: :#{MarketDataType.integer_to_atom(msg.market_data_type)}
       }
       """
@@ -84,8 +82,8 @@ defmodule IbEx.Client.Messages.MarketData.RequestMarketDataType do
       {:ok, %{msg | request_id: request_id}}
     end
 
-    def lookup(_, _) do
-      {:error, :lookup_not_necessary}
+    def lookup(msg, table_ref) do
+      Subscriptions.lookup(table_ref, to_string(msg.request_id))
     end
   end
 end
