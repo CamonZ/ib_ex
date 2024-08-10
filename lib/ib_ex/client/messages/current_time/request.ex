@@ -8,6 +8,7 @@ defmodule IbEx.Client.Messages.CurrentTime.Request do
 
   alias IbEx.Client.Messages.Base
   alias IbEx.Client.Messages.Requests
+  alias IbEx.Client.Protocols.Subscribable
 
   @message_version 1
 
@@ -38,9 +39,24 @@ defmodule IbEx.Client.Messages.CurrentTime.Request do
 
   defimpl Inspect, for: __MODULE__ do
     def inspect(msg, _opts) do
-      """
-      --> %CurrentTime{message_id: #{msg.id} message_version: #{msg.version}}
-      """
+      "--> %CurrentTime{id: #{msg.id}, version: #{msg.version}}"
+    end
+  end
+
+  defimpl Subscribable, for: __MODULE__ do
+    alias IbEx.Client.Messages.CurrentTime.Response
+    alias IbEx.Client.Subscriptions
+
+    # Subscription based on message structs, can handle only 1 subscriber
+    def subscribe(msg, pid, table_ref) do
+      :ok = Subscriptions.subscribe_by_modules(table_ref, [Response], pid)
+      {:ok, msg}
+    end
+
+    def lookup(_, _) do
+      # Return an error when trying to lookup the subscriber of a message request,
+      # only the response messages of a request need to be relayed back
+      {:error, :lookup_not_necessary}
     end
   end
 end

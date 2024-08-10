@@ -4,6 +4,8 @@ defmodule IbEx.Client.Messages.CurrentTime.Response do
   """
   defstruct version: nil, timestamp: nil
 
+  alias IbEx.Client.Protocols.Subscribable
+
   def from_fields([version_str, epoch_str]) do
     with {version, _} <- Integer.parse(version_str),
          {epoch, _} <- Integer.parse(epoch_str),
@@ -24,6 +26,19 @@ defmodule IbEx.Client.Messages.CurrentTime.Response do
       """
       <-- %CurrentTime{version: #{msg.version}, timestamp: #{msg.timestamp}}
       """
+    end
+  end
+
+  defimpl Subscribable, for: __MODULE__ do
+    alias IbEx.Client.Messages.CurrentTime.Response
+    alias IbEx.Client.Subscriptions
+
+    def subscribe(_, _, _) do
+      {:error, :response_messages_cannot_create_subscription}
+    end
+
+    def lookup(_msg, table_ref) do
+      Subscriptions.lookup(table_ref, Response)
     end
   end
 end
