@@ -2,6 +2,8 @@ defmodule IbEx.Client.Messages.MarketData.TickPriceTest do
   use ExUnit.Case, async: true
 
   alias IbEx.Client.Messages.MarketData.TickPrice
+  alias IbEx.Client.Protocols.Subscribable
+  alias IbEx.Client.Subscriptions
 
   describe "from_fields/1" do
     test "creates the message valid fields" do
@@ -48,6 +50,17 @@ defmodule IbEx.Client.Messages.MarketData.TickPriceTest do
                  should_tick_for_size?: false
                }
                """
+    end
+  end
+
+  describe "Subscribable" do
+    test "looks up the message in the subscriptions mapping" do
+      table_ref = Subscriptions.initialize()
+      Subscriptions.subscribe_by_request_id(table_ref, self())
+      {:ok, msg} = TickPrice.from_fields(["1", "1", "1", "100.5", "200", "7"])
+
+      assert {:ok, pid} = Subscribable.lookup(msg, table_ref)
+      assert pid == self()
     end
   end
 end

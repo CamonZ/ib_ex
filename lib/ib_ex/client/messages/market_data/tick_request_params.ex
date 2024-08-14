@@ -41,4 +41,16 @@ defmodule IbEx.Client.Messages.MarketData.TickRequestParams do
       "<-- %MarketData.TickRequestParams{request_id: #{msg.request_id}, min_tick: #{msg.min_tick}, bbo_exchange: #{msg.bbo_exchange}, snapshot_permissions: #{msg.snapshot_permissions}}"
     end
   end
+
+  defimpl IbEx.Client.Protocols.Subscribable, for: __MODULE__ do
+    alias IbEx.Client.Subscriptions
+
+    def subscribe(_, _, _) do
+      {:error, :response_messages_cannot_create_subscription}
+    end
+
+    def lookup(msg, table_ref) do
+      Subscriptions.lookup(table_ref, msg.request_id)
+    end
+  end
 end
