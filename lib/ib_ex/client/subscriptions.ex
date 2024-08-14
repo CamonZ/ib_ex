@@ -6,7 +6,7 @@ defmodule IbEx.Client.Subscriptions do
   """
 
   def initialize do
-    table_ref = :ets.new(:message_subscriptions, [:set, :private])
+    table_ref = :ets.new(:message_subscriptions, [:set, :public])
     :ets.insert(table_ref, {:message_request_ids, 1})
     table_ref
   end
@@ -29,6 +29,20 @@ defmodule IbEx.Client.Subscriptions do
     case :ets.lookup(table_ref, key) do
       [{_, pid}] ->
         {:ok, pid}
+
+      _ ->
+        {:error, :missing_subscription}
+    end
+  end
+
+  def reverse_lookup(table_ref, pid) do
+    spec = {List.to_atom(~c"$1"), pid}
+
+    # NOTE: this could match to multiple entries if the same pid is
+    # tied to multiple requests, we return the first element returned by match/2
+    case :ets.match(table_ref, spec) do
+      [[key] | _] ->
+        {:ok, key}
 
       _ ->
         {:error, :missing_subscription}

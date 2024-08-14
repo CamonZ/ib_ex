@@ -2,6 +2,8 @@ defmodule IbEx.Client.Messages.MarketData.MarketDataTypeTest do
   use ExUnit.Case, async: true
 
   alias IbEx.Client.Messages.MarketData.MarketDataType
+  alias IbEx.Client.Protocols.Subscribable
+  alias IbEx.Client.Subscriptions
 
   describe "from_fields/1" do
     test "creates the message with valid fields for live data" do
@@ -57,6 +59,17 @@ defmodule IbEx.Client.Messages.MarketData.MarketDataTypeTest do
     test "inspects MarketDataType struct correctly" do
       msg = %MarketDataType{request_id: 9001, data_type: :live}
       assert inspect(msg) == "<-- %MarketData.MarketDataType{request_id: 9001, data_type: live}"
+    end
+  end
+
+  describe "Subscribable" do
+    test "looks up the message in the subscriptions mapping" do
+      table_ref = Subscriptions.initialize()
+      request_id = Subscriptions.subscribe_by_request_id(table_ref, self())
+      {:ok, msg} = MarketDataType.from_fields(["", to_string(request_id), "1"])
+
+      assert {:ok, pid} = Subscribable.lookup(msg, table_ref)
+      assert pid == self()
     end
   end
 end
