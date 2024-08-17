@@ -5,7 +5,7 @@ defmodule IbEx.Client.Messages.MarketData.RequestHistoricalData.UtilsTest do
 
   describe "format_end_date_time" do
     test "creates valid end_date_time format" do
-      {:ok, datetime} = DateTime.new(Date.new!(2024,08,17), Time.new!(17,10,00)) 
+      {:ok, datetime} = DateTime.new(Date.new!(2024, 08, 17), Time.new!(17, 10, 00))
       assert Utils.format_end_date_time(datetime) == "20240817 17:10:00Z"
       assert Utils.format_end_date_time(nil) == ""
     end
@@ -14,7 +14,7 @@ defmodule IbEx.Client.Messages.MarketData.RequestHistoricalData.UtilsTest do
       assert Utils.format_end_date_time(:bad_arg) == :bad_arguments
     end
   end
-  
+
   describe "get_valid_duration_units" do
     test "returs a list of valid duration_unit values" do
       assert Utils.get_valid_duration_units() == ~w|second day week month year|a
@@ -35,13 +35,13 @@ defmodule IbEx.Client.Messages.MarketData.RequestHistoricalData.UtilsTest do
       assert Utils.format_duration(:bad_arg) == :bad_arguments
     end
   end
-  
+
   describe "get_valid_bar_size_units" do
     test "returs a list of valid bar_size_unit values" do
       assert Utils.get_valid_bar_size_units() == ~w|second minute hour day week month|a
     end
   end
-    
+
   describe "get_valid_bar_sizes" do
     test "returs a list of valid bar_size values per bar_size_unit" do
       assert Utils.get_valid_bar_sizes(:second) == [1, 5, 10, 15, 30]
@@ -51,6 +51,7 @@ defmodule IbEx.Client.Messages.MarketData.RequestHistoricalData.UtilsTest do
       assert Utils.get_valid_bar_sizes(:week) == [1]
       assert Utils.get_valid_bar_sizes(:month) == [1]
     end
+
     test "returns :bad_arguments for bad arguments" do
       assert Utils.get_valid_bar_sizes(:bad_arg) == :bad_arguments
     end
@@ -100,12 +101,13 @@ defmodule IbEx.Client.Messages.MarketData.RequestHistoricalData.UtilsTest do
       assert Utils.format_what_to_show("bad_arg") == :bad_arguments
     end
   end
-  
+
   describe "bool_to_int" do
     test "returns 0 for false and 1 for true" do
       assert Utils.bool_to_int(false) == 0
       assert Utils.bool_to_int(true) == 1
     end
+
     test "returns :bad_arguments for bad arguments" do
       assert Utils.bool_to_int(:not_a_bool) == :bad_arguments
     end

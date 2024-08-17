@@ -1,5 +1,5 @@
 defmodule IbEx.Client.Messages.MarketData.RequestHistoricalData.Utils do
-  @moduledoc"""
+  @moduledoc """
   Utils for constructing a valid HistoricalData Request
   """
   alias IbEx.Client.Messages.MarketData.RequestHistoricalData, as: Types
@@ -10,10 +10,11 @@ defmodule IbEx.Client.Messages.MarketData.RequestHistoricalData.Utils do
     |> DateTime.to_string()
     |> String.replace("-", "")
   end
+
   def format_end_date_time(nil), do: ""
   def format_end_date_time(_), do: :bad_arguments
 
-  @duration_units ~w|second day week month year|a 
+  @duration_units ~w|second day week month year|a
   def get_valid_duration_units(), do: @duration_units
 
   @spec duration_unit_to_string(Types.duration_unit()) :: String.t() | :bad_arguments
@@ -27,13 +28,15 @@ defmodule IbEx.Client.Messages.MarketData.RequestHistoricalData.Utils do
   @spec format_duration(Types.duration_type()) :: String.t()
   def format_duration({step, _unit}) when step < 1, do: :bad_arguments
   def format_duration({_step, unit}) when unit not in @duration_units, do: :bad_arguments
+
   def format_duration({step, unit}) do
     unit = duration_unit_to_string(unit)
     "#{to_string(step)} #{unit}"
   end
+
   def format_duration(_), do: :bad_arguments
 
-  @bar_size_units ~w|second minute hour day week month|a 
+  @bar_size_units ~w|second minute hour day week month|a
   def get_valid_bar_size_units(), do: @bar_size_units
 
   def get_valid_bar_sizes(unit) when unit not in @bar_size_units, do: :bad_arguments
@@ -52,15 +55,17 @@ defmodule IbEx.Client.Messages.MarketData.RequestHistoricalData.Utils do
   defp bar_size_unit_to_string(:week), do: "week"
   defp bar_size_unit_to_string(:month), do: "month"
   defp bar_size_unit_to_string(_), do: :bad_arguments
- 
+
   @spec format_bar_size(Types.bar_size_type()) :: String.t()
-  def format_bar_size({step, _unit}) when step <1, do: :bad_arguments
+  def format_bar_size({step, _unit}) when step < 1, do: :bad_arguments
   def format_bar_size({_step, unit}) when unit not in @bar_size_units, do: :bad_arguments
-  def format_bar_size({step, unit}) do 
+
+  def format_bar_size({step, unit}) do
     unit = bar_size_unit_to_string(unit)
     unit = if step == 1, do: unit, else: unit <> "s"
     "#{to_string(step)} #{unit}"
   end
+
   def format_bar_size(_), do: :bad_arguments
 
   @spec format_what_to_show(Types.historical_bar_type()) :: String.t()
