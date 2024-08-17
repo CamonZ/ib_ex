@@ -47,4 +47,16 @@ defmodule IbEx.Client.Messages.MarketData.TickSize do
       "<-- %MarketData.TickSize{request_id: #{msg.request_id}, tick_type: #{msg.tick_type}, size: #{msg.size}}"
     end
   end
+
+  defimpl IbEx.Client.Protocols.Subscribable, for: __MODULE__ do
+    alias IbEx.Client.Subscriptions
+
+    def subscribe(_, _, _) do
+      {:error, :response_messages_cannot_create_subscription}
+    end
+
+    def lookup(msg, table_ref) do
+      Subscriptions.lookup(table_ref, msg.request_id)
+    end
+  end
 end

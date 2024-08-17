@@ -3,6 +3,8 @@ defmodule IbEx.Client.Messages.MarketData.RequestDataTest do
 
   alias IbEx.Client.Messages.MarketData.RequestData
   alias IbEx.Client.Types.Contract
+  alias IbEx.Client.Protocols.Subscribable
+  alias IbEx.Client.Subscriptions
 
   @contract %Contract{
     conid: "344809106",
@@ -29,10 +31,9 @@ defmodule IbEx.Client.Messages.MarketData.RequestDataTest do
 
   describe "new/5" do
     test "creates the message with valid inputs" do
-      assert {:ok, msg} = RequestData.new(123, @contract, "100,101,104", false, false)
+      assert {:ok, msg} = RequestData.new(@contract, "100,101,104", false, false)
 
       assert msg.message_id == 1
-      assert msg.request_id == 123
       assert msg.contract == @contract
       assert msg.tick_list == "100,101,104"
       refute msg.snapshot
@@ -80,6 +81,22 @@ defmodule IbEx.Client.Messages.MarketData.RequestDataTest do
                  regulatory_snapshot: false
                }
                """
+    end
+  end
+
+  describe "Subscribable" do
+    test "subscribe/2 subscribes incoming messages with the msg's request id to the given pid" do
+      table_ref = Subscriptions.initialize()
+      contract = Contract.new(%{conid: "265598", symbol: "AAPL", security_type: "STK"})
+
+      {:ok, msg} = RequestData.new(contract, "100,101,104", false, false)
+
+      assert {:ok, msg} = Subscribable.subscribe(msg, self(), table_ref)
+      assert msg.request_id == 1
+
+      assert {:ok, pid} = Subscriptions.lookup(table_ref, to_string(msg.request_id))
+
+      assert pid == self()
     end
   end
 end

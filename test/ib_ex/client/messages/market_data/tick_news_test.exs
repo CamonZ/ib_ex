@@ -3,12 +3,21 @@ defmodule IbEx.Client.Messages.MarketData.TickNewsTest do
 
   alias IbEx.Client.Messages.MarketData.TickNews
   alias IbEx.Client.Types.NewsHeadline
+  alias IbEx.Client.Protocols.Subscribable
+  alias IbEx.Client.Subscriptions
+
+  @valid_fields [
+    "1",
+    "1702847371145",
+    "BZ",
+    "BZ$123abcde",
+    "Alien Invasion",
+    "A:800015:L:en:K:n/a:C:0.6716986894607544"
+  ]
 
   describe "from_fields/1" do
     test "creates TickNews struct with valid fields" do
-      fields = ["1", "1702847371145", "BZ", "BZ$123abcde", "Alien Invasion", "A:800015:L:en:K:n/a:C:0.6716986894607544"]
-
-      assert {:ok, msg} = TickNews.from_fields(fields)
+      assert {:ok, msg} = TickNews.from_fields(@valid_fields)
       headline = msg.headline
 
       assert msg.request_id == "1"
@@ -47,6 +56,17 @@ defmodule IbEx.Client.Messages.MarketData.TickNewsTest do
                  extra_metadata: %{"A" => "15001", "C" => "0.234"}
                }
                """
+    end
+  end
+
+  describe "Subscribable" do
+    test "looks up the message in the subscriptions mapping" do
+      table_ref = Subscriptions.initialize()
+      Subscriptions.subscribe_by_request_id(table_ref, self())
+      {:ok, msg} = TickNews.from_fields(@valid_fields)
+
+      assert {:ok, pid} = Subscribable.lookup(msg, table_ref)
+      assert pid == self()
     end
   end
 end

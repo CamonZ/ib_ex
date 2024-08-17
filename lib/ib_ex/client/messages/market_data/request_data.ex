@@ -28,6 +28,7 @@ defmodule IbEx.Client.Messages.MarketData.RequestData do
 
   alias IbEx.Client.Messages.Requests
   alias IbEx.Client.Types.Contract
+  alias IbEx.Client.Protocols.Subscribable
 
   @type t :: %__MODULE__{
           message_id: non_neg_integer(),
@@ -40,16 +41,15 @@ defmodule IbEx.Client.Messages.MarketData.RequestData do
           options: list()
         }
 
-  @spec new(non_neg_integer(), Contract.t(), String.t(), boolean(), boolean()) ::
+  @spec new(Contract.t(), String.t(), boolean(), boolean()) ::
           {:ok, t()} | {:error, :not_implemented}
-  def new(request_id, contract, tick_list, snapshot, regulatory_snapshot) do
+  def new(contract, tick_list, snapshot, regulatory_snapshot) do
     case Requests.message_id_for(__MODULE__) do
       {:ok, message_id} ->
         {
           :ok,
           %__MODULE__{
             message_id: message_id,
-            request_id: request_id,
             contract: contract,
             tick_list: tick_list,
             snapshot: snapshot,
@@ -97,6 +97,20 @@ defmodule IbEx.Client.Messages.MarketData.RequestData do
         regulatory_snapshot: #{msg.regulatory_snapshot}
       }
       """
+    end
+  end
+
+  defimpl Subscribable, for: __MODULE__ do
+    alias IbEx.Client.Subscriptions
+
+    # Subscription based on request_id, can handle multiple requests
+    def subscribe(msg, pid, table_ref) do
+      request_id = Subscriptions.subscribe_by_request_id(table_ref, pid)
+      {:ok, %{msg | request_id: request_id}}
+    end
+
+    def lookup(_, _) do
+      {:error, :lookup_not_necessary}
     end
   end
 end
