@@ -9,14 +9,6 @@ defmodule IbEx.Client.Messages.MarketData.RequestHistoricalData do
   * end_date_time: %DateTime{} | nil. The request’s end date and time. nil indicates current present moment
   * duration: {non_neg_integer(), duration_unit()}. The amount of time go back from the request’s given end date and time. A tuple consisting of any non negative integer followed by any `duration_unit()`.
   * bar_size: {ValidBarSizes[bar_size_unit()], bar_size_unit()}. Bar sizes dictate the data returned by historical bar requests. The bar size will dictate the scale over which the OHLC/V is returned to the API.
-  %ValidBarSizes{
-   second: [1, 5, 10, 15, 30],
-   minute: [1, 2, 3, 5, 10, 15, 20, 30]
-   hour: [1, 2, 3, 4, 8],
-   day: [1],
-   week: [1],
-   month: [1]
-  }
   * what_to_show: historical_bar_type(). The type of data to retrieve. 
   * use_rth: boolean(). Determines whether to return all data available during the requested time span, or only data that falls within regular trading hours. Possible values: 
       `true` - only return data within the regular trading hours, even if the requested time span falls partially or completely outside of the RTH. 
