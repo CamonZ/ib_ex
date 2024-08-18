@@ -9,7 +9,7 @@ defmodule IbEx.Client.Messages.MarketData.RequestHistoricalData do
   * end_date_time: %DateTime{} | nil. The request’s end date and time. nil indicates current present moment
   * duration: {non_neg_integer(), duration_unit()}. The amount of time go back from the request’s given end date and time. A tuple consisting of any non negative integer followed by any `duration_unit()`.
   * bar_size: {ValidBarSizes[bar_size_unit()], bar_size_unit()}. Bar sizes dictate the data returned by historical bar requests. The bar size will dictate the scale over which the OHLC/V is returned to the API.
-  * what_to_show: historical_bar_type(). The type of data to retrieve. 
+  * what_to_show: WhatToShow.t(). The type of data to retrieve. 
   * use_rth: boolean(). Determines whether to return all data available during the requested time span, or only data that falls within regular trading hours. Possible values: 
       `true` - only return data within the regular trading hours, even if the requested time span falls partially or completely outside of the RTH. 
       `false` - return all data even where the market in question was outside of its regular trading hours.     
@@ -33,43 +33,21 @@ defmodule IbEx.Client.Messages.MarketData.RequestHistoricalData do
             format_date: false,
             keep_up_to_date: false
 
+  alias IbEx.Client.Constants.{WhatToShow, BarSizes, Durations}
   alias IbEx.Client.Messages.Requests
   alias IbEx.Client.Types.Contract
-
-  @typedoc "Specifies unit of time to describe the overall length of time that data can be collected"
-  @type duration_unit :: :second | :day | :week | :month | :year
-
-  @typedoc "Possible values to vreate a valid_bar_size"
-  @type bar_size_unit :: :second | :minute | :hour | :day | :week | :month
-
-  @typedoc "These values are used to request different data. Some bar types support more products than others"
-  @type historical_bar_type ::
-          :aggtrades
-          | :ask
-          | :bid
-          | :bid_ask
-          | :fee_rate
-          | :historical_volatility
-          | :midpoint
-          | :option_implied_volatility
-          | :schedule
-          | :trades
-          | :yield_ask
-          | :yield_bid_ask
-          | :yield_last
+  alias IbEx.Client.Utils
 
   @type end_date_time_type :: DateTime.t() | nil
-  @type duration_type :: {non_neg_integer(), duration_unit()}
-  @type bar_size_type :: {non_neg_integer(), bar_size_unit()}
   @type t :: %__MODULE__{
           version: non_neg_integer(),
           message_id: non_neg_integer(),
           request_id: non_neg_integer(),
           contract: Contract.t(),
           end_date_time: end_date_time_type(),
-          duration: duration_type(),
-          bar_size: bar_size_type(),
-          what_to_show: historical_bar_type(),
+          duration: Durations.t(),
+          bar_size: BarSizes.t(),
+          what_to_show: WhatToShow.t(),
           use_rth: boolean(),
           format_date: boolean(),
           keep_up_to_date: boolean()
@@ -78,15 +56,24 @@ defmodule IbEx.Client.Messages.MarketData.RequestHistoricalData do
   @spec new(
           Contract.t(),
           end_date_time_type(),
-          duration_type(),
-          bar_size_type(),
-          historical_bar_type(),
+          Durations.t(),
+          BarSizes.t(),
+          WhatToShow.t(),
           boolean(),
           boolean(),
           boolean()
         ) ::
           {:ok, t()} | {:error, :not_implemented}
-  def new(contract, end_date_time, duration, bar_size, what_to_show, use_rth, format_date, keep_up_to_date) do
+  def new(
+        %Contract{} = contract,
+        end_date_time,
+        duration,
+        bar_size,
+        what_to_show,
+        use_rth,
+        format_date,
+        keep_up_to_date
+      ) do
     case Requests.message_id_for(__MODULE__) do
       {:ok, message_id} ->
         {
@@ -94,13 +81,13 @@ defmodule IbEx.Client.Messages.MarketData.RequestHistoricalData do
           %__MODULE__{
             message_id: message_id,
             contract: contract,
-            end_date_time: end_date_time,
-            duration: duration,
-            bar_size: bar_size,
-            what_to_show: what_to_show,
-            use_rth: use_rth,
-            format_date: format_date,
-            keep_up_to_date: keep_up_to_date
+            end_date_time: format_end_date_time(end_date_time),
+            duration: Durations.format(duration),
+            bar_size: BarSizes.format(bar_size),
+            what_to_show: WhatToShow.format(what_to_show),
+            use_rth: Utils.bool_to_int(use_rth),
+            format_date: Utils.bool_to_int(format_date),
+            keep_up_to_date: Utils.bool_to_int(keep_up_to_date)
           }
         }
 
@@ -109,10 +96,19 @@ defmodule IbEx.Client.Messages.MarketData.RequestHistoricalData do
     end
   end
 
+  @spec format_end_date_time(end_date_time_type()) :: String.t() | :invalid_args
+  def format_end_date_time(%DateTime{} = unit) do
+    unit
+    |> DateTime.to_string()
+    |> String.replace("-", "")
+  end
+
+  def format_end_date_time(nil), do: ""
+  def format_end_date_time(_), do: :invalid_args
+
   defimpl String.Chars, for: __MODULE__ do
     alias IbEx.Client.Messages.Base
     alias IbEx.Client.Types.Contract
-    alias IbEx.Client.Messages.MarketData.RequestHistoricalData.Utils
 
     def to_string(msg) do
       fields = [
@@ -120,13 +116,13 @@ defmodule IbEx.Client.Messages.MarketData.RequestHistoricalData do
         msg.version,
         msg.request_id,
         Contract.serialize(msg.contract, false),
-        Utils.format_end_date_time(msg.end_date_time),
-        Utils.format_duration(msg.duration),
-        Utils.format_bar_size(msg.bar_size),
-        Utils.format_what_to_show(msg.what_to_show),
-        Utils.bool_to_int(msg.use_rth),
-        Utils.bool_to_int(msg.format_date),
-        Utils.bool_to_int(msg.keep_up_to_date)
+        msg.end_date_time,
+        msg.duration,
+        msg.bar_size,
+        msg.what_to_show,
+        msg.use_rth,
+        msg.format_date,
+        msg.keep_up_to_date
       ]
 
       # TODO: implement BAG / Combo request fields 
@@ -137,7 +133,7 @@ defmodule IbEx.Client.Messages.MarketData.RequestHistoricalData do
 
   defimpl Inspect, for: __MODULE__ do
     alias IbEx.Client.Types.Contract
-    alias IbEx.Client.Messages.MarketData.RequestHistoricalData.Utils
+    alias IbEx.Client.Messages.MarketData.RequestHistoricalData, as: RHD
 
     def inspect(msg, _opts) do
       contract = Enum.join(Contract.serialize(msg.contract, false), ", ")
@@ -146,10 +142,10 @@ defmodule IbEx.Client.Messages.MarketData.RequestHistoricalData do
       --> MarketData.RequestHistoricalData{
         request_id: #{msg.request_id},
         contract: #{contract},
-        end_date_time: #{Utils.format_end_date_time(msg.end_date_time)},
-        duration: #{Utils.format_duration(msg.duration)}, 
-        bar_size: #{Utils.format_bar_size(msg.bar_size)},
-        what_to_show: #{Utils.format_what_to_show(msg.what_to_show)},
+        end_date_time: #{RHD.format_end_date_time(msg.end_date_time)},
+        duration: #{Durations.format(msg.duration)}, 
+        bar_size: #{BarSizes.format(msg.bar_size)},
+        what_to_show: #{WhatToShow.format(msg.what_to_show)},
         use_rth: #{Utils.bool_to_int(msg.use_rth)},
         format_date: #{Utils.bool_to_int(msg.format_date)},
         keep_up_to_date: #{Utils.bool_to_int(msg.keep_up_to_date)}

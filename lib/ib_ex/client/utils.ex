@@ -95,4 +95,8 @@ defmodule IbEx.Client.Utils do
   def parse_timestamp_str(_, _, _) do
     {:error, :invalid_args}
   end
+
+  @spec bool_to_int(boolean()) :: 0..1 | :invalid_args
+  def bool_to_int(value) when not is_boolean(value), do: :invalid_args
+  def bool_to_int(value), do: (value && 1) || 0
 end

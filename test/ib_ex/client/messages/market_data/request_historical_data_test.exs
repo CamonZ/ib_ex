@@ -34,13 +34,13 @@ defmodule IbEx.Client.Messages.MarketData.RequestHistoricalDataTest do
 
       assert msg.message_id == 20
       assert msg.contract == @contract
-      assert msg.end_date_time == nil
-      assert msg.duration == {1, :week}
-      assert msg.bar_size == {1, :hour}
-      assert msg.what_to_show == :trades
-      refute msg.use_rth
-      refute msg.format_date
-      refute msg.keep_up_to_date
+      assert msg.end_date_time == ""
+      assert msg.duration == "1 W"
+      assert msg.bar_size == "1 hour"
+      assert msg.what_to_show == "TRADES"
+      assert msg.use_rth == 0
+      assert msg.format_date == 0
+      assert msg.keep_up_to_date == 0
     end
   end
 
@@ -60,8 +60,8 @@ defmodule IbEx.Client.Messages.MarketData.RequestHistoricalDataTest do
 
       assert Kernel.to_string(msg) ==
                <<0, 54, 0, 49, 50, 51, 0, 51, 52, 52, 56, 48, 57, 49, 48, 54, 77, 82, 78, 65, 83, 84, 75, 48, 46, 48,
-                 83, 77, 65, 82, 84, 73, 83, 76, 65, 78, 68, 85, 83, 68, 0, 0, 49, 32, 87, 0, 49, 32, 104, 111, 117,
-                 114, 0, 84, 82, 65, 68, 69, 83, 0, 48, 0, 48, 0, 48, 0>>
+                 83, 77, 65, 82, 84, 73, 83, 76, 65, 78, 68, 85, 83, 68, 0, 0, 0, 0, 116, 114, 97, 100, 101, 115, 0, 48,
+                 0, 48, 0, 48, 0>>
     end
   end
 
