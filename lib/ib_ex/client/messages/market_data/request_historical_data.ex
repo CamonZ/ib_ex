@@ -76,7 +76,6 @@ defmodule IbEx.Client.Messages.MarketData.RequestHistoricalData do
         }
 
   @spec new(
-          non_neg_integer(),
           Contract.t(),
           end_date_time_type(),
           duration_type(),
@@ -87,14 +86,13 @@ defmodule IbEx.Client.Messages.MarketData.RequestHistoricalData do
           boolean()
         ) ::
           {:ok, t()} | {:error, :not_implemented}
-  def new(request_id, contract, end_date_time, duration, bar_size, what_to_show, use_rth, format_date, keep_up_to_date) do
+  def new(contract, end_date_time, duration, bar_size, what_to_show, use_rth, format_date, keep_up_to_date) do
     case Requests.message_id_for(__MODULE__) do
       {:ok, message_id} ->
         {
           :ok,
           %__MODULE__{
             message_id: message_id,
-            request_id: request_id,
             contract: contract,
             end_date_time: end_date_time,
             duration: duration,

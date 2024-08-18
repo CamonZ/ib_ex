@@ -21,7 +21,7 @@ defmodule IbEx.Client.Messages.Requests do
     "managed_accounts" => 17,
     "financial_advisors" => 18,
     "replace_financial_advisors" => 19,
-    "historical_data" => 20,
+    Messages.MarketData.RequestHistoricalData => 20,
     "exercise_option" => 21,
     "scanner_subscription" => 22,
     "cancel_scanner_subscription" => 23,
