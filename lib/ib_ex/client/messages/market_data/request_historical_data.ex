@@ -74,37 +74,50 @@ defmodule IbEx.Client.Messages.MarketData.RequestHistoricalData do
         format_date,
         keep_up_to_date
       ) do
-    case Requests.message_id_for(__MODULE__) do
-      {:ok, message_id} ->
-        {
-          :ok,
-          %__MODULE__{
-            message_id: message_id,
-            contract: contract,
-            end_date_time: format_end_date_time(end_date_time),
-            duration: Durations.format(duration),
-            bar_size: BarSizes.format(bar_size),
-            what_to_show: WhatToShow.format(what_to_show),
-            use_rth: Utils.bool_to_int(use_rth),
-            format_date: Utils.bool_to_int(format_date),
-            keep_up_to_date: Utils.bool_to_int(keep_up_to_date)
-          }
+    with {:ok, message_id} <- Requests.message_id_for(__MODULE__),
+         {:ok, end_date_time} <- format_end_date_time(end_date_time),
+         {:ok, duration} <- Durations.format(duration),
+         {:ok, bar_size} <- BarSizes.format(bar_size),
+         {:ok, what_to_show} <- WhatToShow.format(what_to_show),
+         {:ok, use_rth} <- Utils.bool_to_int(use_rth),
+         {:ok, format_date} <- Utils.bool_to_int(format_date),
+         {:ok, keep_up_to_date} <- Utils.bool_to_int(keep_up_to_date) do
+      {
+        :ok,
+        %__MODULE__{
+          message_id: message_id,
+          contract: contract,
+          end_date_time: end_date_time,
+          duration: duration,
+          bar_size: bar_size,
+          what_to_show: what_to_show,
+          use_rth: use_rth,
+          format_date: format_date,
+          keep_up_to_date: keep_up_to_date
         }
+      }
+    else
+      {:error, :invalid_args} = error ->
+        error
 
-      :error ->
+      _ ->
         {:error, :not_implemented}
     end
   end
 
-  @spec format_end_date_time(end_date_time_type()) :: String.t() | :invalid_args
+  @spec format_end_date_time(end_date_time_type()) :: {:ok, String.t()} | {:error, :invalid_args}
   def format_end_date_time(%DateTime{} = unit) do
-    unit
-    |> DateTime.to_string()
-    |> String.replace("-", "")
+    {:ok,
+     unit
+     |> DateTime.to_string()
+     |> String.replace("-", "")}
   end
 
-  def format_end_date_time(nil), do: ""
-  def format_end_date_time(_), do: :invalid_args
+  def format_end_date_time(nil), do: {:ok, ""}
+
+  def format_end_date_time(_) do
+    {:error, :invalid_args}
+  end
 
   defimpl String.Chars, for: __MODULE__ do
     alias IbEx.Client.Messages.Base
@@ -142,13 +155,13 @@ defmodule IbEx.Client.Messages.MarketData.RequestHistoricalData do
       --> MarketData.RequestHistoricalData{
         request_id: #{msg.request_id},
         contract: #{contract},
-        end_date_time: #{RHD.format_end_date_time(msg.end_date_time)},
-        duration: #{Durations.format(msg.duration)}, 
-        bar_size: #{BarSizes.format(msg.bar_size)},
-        what_to_show: #{WhatToShow.format(msg.what_to_show)},
-        use_rth: #{Utils.bool_to_int(msg.use_rth)},
-        format_date: #{Utils.bool_to_int(msg.format_date)},
-        keep_up_to_date: #{Utils.bool_to_int(msg.keep_up_to_date)}
+        end_date_time: #{msg.end_date_time},
+        duration: #{msg.duration}, 
+        bar_size: #{msg.bar_size},
+        what_to_show: #{msg.what_to_show},
+        use_rth: #{msg.use_rth},
+        format_date: #{msg.format_date},
+        keep_up_to_date: #{msg.keep_up_to_date}
       }
       """
     end

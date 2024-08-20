@@ -122,7 +122,7 @@ defmodule IbEx.Client.Constants.ServerVersions do
   ]
 
   @min_client_ver 100
-  @max_client_ver :bond_issuer_id
+  @max_client_ver :pending_price_revision
 
   def version_for(key) do
     Keyword.fetch(@versions, key)

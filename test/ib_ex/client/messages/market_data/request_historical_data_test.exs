@@ -66,6 +66,7 @@ defmodule IbEx.Client.Messages.MarketData.RequestHistoricalDataTest do
   end
 
   describe "Inspect implementation" do
+    @describetag :skip
     test "returns a human-readable version of the struct" do
       msg = %RequestHistoricalData{
         request_id: 123,

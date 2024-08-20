@@ -29,30 +29,30 @@ defmodule IbEx.Client.Constants.BarSizes do
     month: [1]
   }
 
-  @spec get_valid_historical_bar_sizes(unit_type()) :: String.t() | :invalid_args
+  @spec get_valid_historical_bar_sizes(unit_type()) :: {:ok, String.t()} | {:error, :invalid_args}
   def get_valid_historical_bar_sizes(value) do
     case Map.fetch(@valid_historical_bar_sizes, value) do
-      {:ok, result} ->
+      {:ok, _} = result ->
         result
 
       _ ->
-        :invalid_args
+        {:error, :invalid_args}
     end
   end
 
-  @spec format(__MODULE__.t()) :: String.t()
-  def format({step, _unit}) when step < 1, do: :invalid_args
+  @spec format(__MODULE__.t()) :: {:ok, String.t()} | {:error, :invalid_args}
+  def format({step, _unit}) when step < 1, do: {:error, :invalid_args}
 
   def format({step, unit}) do
     case Map.fetch(@bar_size_units, unit) do
       {:ok, unit} ->
         unit = if step == 1, do: unit, else: unit <> "s"
-        "#{to_string(step)} #{unit}"
+        {:ok, "#{to_string(step)} #{unit}"}
 
       _ ->
-        :invalid_args
+        {:error, :invalid_args}
     end
   end
 
-  def format(_), do: :invalid_args
+  def format(_), do: {:error, :invalid_args}
 end

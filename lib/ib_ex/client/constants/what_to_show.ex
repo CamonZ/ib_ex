@@ -21,9 +21,8 @@ defmodule IbEx.Client.Constants.WhatToShow do
           | :yield_bid_ask
           | :yield_last
 
-  @spec to_upcase_string(__MODULE__.t()) :: String.t() | :invalid_args
-  def to_upcase_string(atom) when is_atom(atom), do: String.upcase(Kernel.to_string(atom))
-  def to_upcase_string(_), do: :invalid_args
+  @spec to_upcase_string(__MODULE__.t()) :: String.t()
+  def to_upcase_string(atom), do: String.upcase(Kernel.to_string(atom))
 
   @what_to_show ~w(aggtrades ask bid bid_ask fee_rate
           historical_volatility
@@ -41,14 +40,14 @@ defmodule IbEx.Client.Constants.WhatToShow do
     |> Enum.into(%{})
   end
 
-  @spec format(__MODULE__.t()) :: String.t() | :invalid_args
+  @spec format(__MODULE__.t()) :: {:ok, String.t()} | {:error, :invalid_args}
   def format(atom) do
     case Map.fetch(what_to_show(), atom) do
-      {:ok, result} ->
+      {:ok, _} = result ->
         result
 
       _ ->
-        :invalid_args
+        {:error, :invalid_args}
     end
   end
 end

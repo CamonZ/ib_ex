@@ -17,16 +17,16 @@ defmodule IbEx.Client.Constants.DurationsTest do
 
   describe "format/1" do
     test "creates valid duration format" do
-      assert Durations.format({1, :second}) == "1 S"
-      assert Durations.format({2, :day}) == "2 D"
-      assert Durations.format({3, :week}) == "3 W"
+      assert Durations.format({1, :second}) == {:ok, "1 S"}
+      assert Durations.format({2, :day}) == {:ok, "2 D"}
+      assert Durations.format({3, :week}) == {:ok, "3 W"}
     end
 
     test "returns :invalid_args for bad arguments" do
-      assert Durations.format({0, :second}) == :invalid_args
-      assert Durations.format({-1, :second}) == :invalid_args
-      assert Durations.format({1, :bad_arg}) == :invalid_args
-      assert Durations.format(:bad_arg) == :invalid_args
+      assert Durations.format({0, :second}) == {:error, :invalid_args}
+      assert Durations.format({-1, :second}) == {:error, :invalid_args}
+      assert Durations.format({1, :bad_arg}) == {:error, :invalid_args}
+      assert Durations.format(:bad_arg) == {:error, :invalid_args}
     end
   end
 end

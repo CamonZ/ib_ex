@@ -96,7 +96,7 @@ defmodule IbEx.Client.Utils do
     {:error, :invalid_args}
   end
 
-  @spec bool_to_int(boolean()) :: 0..1 | :invalid_args
-  def bool_to_int(value) when not is_boolean(value), do: :invalid_args
-  def bool_to_int(value), do: (value && 1) || 0
+  @spec bool_to_int(boolean()) :: {:ok, 0..1} | {:error, :invalid_args}
+  def bool_to_int(value) when not is_boolean(value), do: {:error, :invalid_args}
+  def bool_to_int(value), do: {:ok, (value && 1) || 0}
 end

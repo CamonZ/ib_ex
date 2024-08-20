@@ -18,18 +18,18 @@ defmodule IbEx.Client.Constants.Durations do
   }
   def durations, do: @durations
 
-  @spec format(__MODULE__.t()) :: String.t()
-  def format({step, _unit}) when step < 1, do: :invalid_args
+  @spec format(__MODULE__.t()) :: {:ok, String.t()} | {:error, :invalid_args}
+  def format({step, _unit}) when step < 1, do: {:error, :invalid_args}
 
   def format({step, unit}) do
     case Map.fetch(@durations, unit) do
       {:ok, unit} ->
-        "#{to_string(step)} #{unit}"
+        {:ok, "#{to_string(step)} #{unit}"}
 
       _ ->
-        :invalid_args
+        {:error, :invalid_args}
     end
   end
 
-  def format(_), do: :invalid_args
+  def format(_), do: {:error, :invalid_args}
 end
