@@ -146,7 +146,6 @@ defmodule IbEx.Client.Messages.MarketData.RequestHistoricalData do
 
   defimpl Inspect, for: __MODULE__ do
     alias IbEx.Client.Types.Contract
-    alias IbEx.Client.Messages.MarketData.RequestHistoricalData, as: RHD
 
     def inspect(msg, _opts) do
       contract = Enum.join(Contract.serialize(msg.contract, false), ", ")
