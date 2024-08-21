@@ -28,13 +28,32 @@ defmodule IbEx.Client.Messages.MarketData.RequestHistoricalDataTest do
   }
 
   describe "new/8" do
-    test "creates the message with valid inputs" do
+    test "creates the message with valid inputs without date and time" do
       assert {:ok, msg} =
                RequestHistoricalData.new(@contract, nil, {1, :week}, {1, :hour}, :trades, false, false)
 
       assert msg.message_id == 20
       assert msg.contract == @contract
       assert msg.end_date_time == ""
+      assert msg.duration == "1 W"
+      assert msg.bar_size == "1 hour"
+      assert msg.what_to_show == "TRADES"
+      assert msg.use_rth == 0
+      assert msg.format_date == 2
+      assert msg.keep_up_to_date == 0
+    end
+
+    test "creates the message with valid date and time" do
+      {:ok, date} = Date.new(2024, 08, 21)
+      {:ok, time} = Time.new(13, 14, 15)
+      {:ok, dt} = DateTime.new(date, time)
+
+      assert {:ok, msg} =
+               RequestHistoricalData.new(@contract, dt, {1, :week}, {1, :hour}, :trades, false, false)
+
+      assert msg.message_id == 20
+      assert msg.contract == @contract
+      assert msg.end_date_time == "20240821-13:14:15"
       assert msg.duration == "1 W"
       assert msg.bar_size == "1 hour"
       assert msg.what_to_show == "TRADES"
