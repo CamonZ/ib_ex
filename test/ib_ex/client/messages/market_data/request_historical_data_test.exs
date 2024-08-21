@@ -27,7 +27,7 @@ defmodule IbEx.Client.Messages.MarketData.RequestHistoricalDataTest do
     issuer_id: ""
   }
 
-  describe "new/8" do
+  describe "new/7" do
     test "creates the message with valid inputs without date and time" do
       assert {:ok, msg} =
                RequestHistoricalData.new(@contract, nil, {1, :week}, {1, :hour}, :trades, false, false)
