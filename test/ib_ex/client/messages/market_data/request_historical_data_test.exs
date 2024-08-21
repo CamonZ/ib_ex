@@ -30,7 +30,7 @@ defmodule IbEx.Client.Messages.MarketData.RequestHistoricalDataTest do
   describe "new/8" do
     test "creates the message with valid inputs" do
       assert {:ok, msg} =
-               RequestHistoricalData.new(@contract, nil, {1, :week}, {1, :hour}, :trades, false, false, false)
+               RequestHistoricalData.new(@contract, nil, {1, :week}, {1, :hour}, :trades, false, false)
 
       assert msg.message_id == 20
       assert msg.contract == @contract
@@ -39,7 +39,7 @@ defmodule IbEx.Client.Messages.MarketData.RequestHistoricalDataTest do
       assert msg.bar_size == "1 hour"
       assert msg.what_to_show == "TRADES"
       assert msg.use_rth == 0
-      assert msg.format_date == 0
+      assert msg.format_date == 2
       assert msg.keep_up_to_date == 0
     end
   end
@@ -54,14 +54,13 @@ defmodule IbEx.Client.Messages.MarketData.RequestHistoricalDataTest do
         bar_size: {1, :hour},
         what_to_show: :trades,
         use_rth: false,
-        format_date: false,
         keep_up_to_date: false
       }
 
       assert Kernel.to_string(msg) ==
-               <<0, 54, 0, 49, 50, 51, 0, 51, 52, 52, 56, 48, 57, 49, 48, 54, 77, 82, 78, 65, 83, 84, 75, 48, 46, 48,
-                 83, 77, 65, 82, 84, 73, 83, 76, 65, 78, 68, 85, 83, 68, 0, 0, 0, 0, 116, 114, 97, 100, 101, 115, 0, 48,
-                 0, 48, 0, 48, 0>>
+               <<0, 49, 50, 51, 0, 51, 52, 52, 56, 48, 57, 49, 48, 54, 0, 77, 82, 78, 65, 0, 83, 84, 75, 0, 0, 48, 46,
+                 48, 0, 0, 0, 83, 77, 65, 82, 84, 0, 73, 83, 76, 65, 78, 68, 0, 85, 83, 68, 0, 0, 0, 48, 0, 0, 0, 0, 48,
+                 0, 116, 114, 97, 100, 101, 115, 0, 48, 0, 48, 0, 0>>
     end
   end
 
@@ -76,7 +75,6 @@ defmodule IbEx.Client.Messages.MarketData.RequestHistoricalDataTest do
         bar_size: {1, :hour},
         what_to_show: :trades,
         use_rth: false,
-        format_date: false,
         keep_up_to_date: false
       }
 
@@ -92,7 +90,7 @@ defmodule IbEx.Client.Messages.MarketData.RequestHistoricalDataTest do
                  bar_size: 1 hour,
                  what_to_show: TRADES,
                  use_rth: 0,
-                 format_date: 0,
+                 format_date: 2,
                  keep_up_to_date: 0
                }
                """

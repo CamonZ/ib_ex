@@ -49,7 +49,6 @@ defmodule IbEx.Client.Messages.MarketData.RequestHistoricalData do
           bar_size: BarSizes.t(),
           what_to_show: WhatToShow.t(),
           use_rth: boolean(),
-          format_date: boolean(),
           keep_up_to_date: boolean()
         }
 
@@ -59,7 +58,6 @@ defmodule IbEx.Client.Messages.MarketData.RequestHistoricalData do
           Durations.t(),
           BarSizes.t(),
           WhatToShow.t(),
-          boolean(),
           boolean(),
           boolean()
         ) ::
@@ -71,7 +69,6 @@ defmodule IbEx.Client.Messages.MarketData.RequestHistoricalData do
         bar_size,
         what_to_show,
         use_rth,
-        format_date,
         keep_up_to_date
       ) do
     with {:ok, message_id} <- Requests.message_id_for(__MODULE__),
@@ -80,7 +77,6 @@ defmodule IbEx.Client.Messages.MarketData.RequestHistoricalData do
          {:ok, bar_size} <- BarSizes.format(bar_size),
          {:ok, what_to_show} <- WhatToShow.format(what_to_show),
          {:ok, use_rth} <- Utils.bool_to_int(use_rth),
-         {:ok, format_date} <- Utils.bool_to_int(format_date),
          {:ok, keep_up_to_date} <- Utils.bool_to_int(keep_up_to_date) do
       {
         :ok,
@@ -92,7 +88,7 @@ defmodule IbEx.Client.Messages.MarketData.RequestHistoricalData do
           bar_size: bar_size,
           what_to_show: what_to_show,
           use_rth: use_rth,
-          format_date: format_date,
+          format_date: 2,
           keep_up_to_date: keep_up_to_date
         }
       }
@@ -124,19 +120,22 @@ defmodule IbEx.Client.Messages.MarketData.RequestHistoricalData do
     alias IbEx.Client.Types.Contract
 
     def to_string(msg) do
-      fields = [
-        msg.message_id,
-        msg.version,
-        msg.request_id,
-        Contract.serialize(msg.contract, false),
-        msg.end_date_time,
-        msg.duration,
-        msg.bar_size,
-        msg.what_to_show,
-        msg.use_rth,
-        msg.format_date,
-        msg.keep_up_to_date
-      ]
+      fields =
+        [
+          msg.message_id,
+          msg.request_id
+        ] ++
+          Contract.serialize(msg.contract, true) ++
+          [
+            msg.end_date_time,
+            msg.bar_size,
+            msg.duration,
+            msg.use_rth,
+            msg.what_to_show,
+            msg.format_date,
+            msg.keep_up_to_date,
+            []
+          ]
 
       # TODO: implement BAG / Combo request fields 
 
@@ -159,7 +158,7 @@ defmodule IbEx.Client.Messages.MarketData.RequestHistoricalData do
         bar_size: #{msg.bar_size},
         what_to_show: #{msg.what_to_show},
         use_rth: #{msg.use_rth},
-        format_date: #{msg.format_date},
+        format_date: 2,
         keep_up_to_date: #{msg.keep_up_to_date}
       }
       """
