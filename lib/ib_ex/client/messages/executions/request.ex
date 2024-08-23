@@ -13,6 +13,7 @@ defmodule IbEx.Client.Messages.Executions.Request do
 
   alias IbEx.Client.Messages.Requests
   alias IbEx.Client.Types.ExecutionsFilter
+  alias IbEx.Client.Protocols.Subscribable
 
   @version 3
 
@@ -24,15 +25,14 @@ defmodule IbEx.Client.Messages.Executions.Request do
           filter: ExecutionsFilter.t()
         }
 
-  @spec new(non_neg_integer(), ExecutionsFilter.t()) :: {:ok, t()} | {:error, :not_implemented}
-  def new(request_id, executions_filter \\ %ExecutionsFilter{}) do
+  @spec new(ExecutionsFilter.t()) :: {:ok, t()} | {:error, :not_implemented}
+  def new(executions_filter \\ %ExecutionsFilter{}) do
     case Requests.message_id_for(__MODULE__) do
       {:ok, message_id} ->
         {
           :ok,
           %__MODULE__{
             message_id: message_id,
-            request_id: request_id,
             filter: executions_filter
           }
         }
@@ -72,6 +72,20 @@ defmodule IbEx.Client.Messages.Executions.Request do
         filter: #{inspect(msg.filter)}
       }
       """
+    end
+  end
+
+  defimpl Subscribable, for: __MODULE__ do
+    alias IbEx.Client.Subscriptions
+
+    # Subscription based on request_id, can handle multiple requests
+    def subscribe(msg, pid, table_ref) do
+      request_id = Subscriptions.subscribe_by_request_id(table_ref, pid)
+      {:ok, %{msg | request_id: request_id}}
+    end
+
+    def lookup(_, _) do
+      {:error, :lookup_not_necessary}
     end
   end
 end

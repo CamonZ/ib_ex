@@ -5,6 +5,7 @@ defmodule IbEx.Client.Messages.Executions.ExecutionData do
 
   alias IbEx.Client.Types.Contract
   alias IbEx.Client.Types.Execution
+  alias IbEx.Client.Protocols.Subscribable
 
   defstruct request_id: nil, contract: nil, execution: nil
 
@@ -49,6 +50,18 @@ defmodule IbEx.Client.Messages.Executions.ExecutionData do
         execution: #{inspect(msg.execution)}
       }
       """
+    end
+  end
+
+  defimpl Subscribable, for: __MODULE__ do
+    alias IbEx.Client.Subscriptions
+
+    def subscribe(_, _, _) do
+      {:error, :response_messages_cannot_create_subscription}
+    end
+
+    def lookup(msg, table_ref) do
+      Subscriptions.lookup(table_ref, msg.request_id)
     end
   end
 end

@@ -8,6 +8,7 @@ defmodule IbEx.Client.Messages.Executions.ExecutionDataEnd do
   @type t :: %__MODULE__{version: non_neg_integer(), request_id: binary()}
 
   alias IbEx.Client.Utils
+  alias IbEx.Client.Protocols.Subscribable
 
   @spec from_fields(list(String.t())) :: {:ok, t()} | {:error, :invalid_args}
   def from_fields([version_str, request_id]) do
@@ -24,6 +25,18 @@ defmodule IbEx.Client.Messages.Executions.ExecutionDataEnd do
       """
       <-- ExecutionDataEnd{version: #{msg.version}, request_id: #{msg.request_id}}
       """
+    end
+  end
+
+  defimpl Subscribable, for: __MODULE__ do
+    alias IbEx.Client.Subscriptions
+
+    def subscribe(_, _, _) do
+      {:error, :response_messages_cannot_create_subscription}
+    end
+
+    def lookup(msg, table_ref) do
+      Subscriptions.lookup(table_ref, msg.request_id)
     end
   end
 end
