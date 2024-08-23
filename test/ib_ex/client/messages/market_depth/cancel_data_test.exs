@@ -2,13 +2,14 @@ defmodule IbEx.Client.Messages.MarketDepth.CancelDataTest do
   use ExUnit.Case, async: true
 
   alias IbEx.Client.Messages.MarketDepth.CancelData
+  alias IbEx.Client.Protocols.Subscribable
+  alias IbEx.Client.Subscriptions
 
   describe "new/0" do
     test "creates the message" do
-      assert {:ok, msg} = CancelData.new(90001, true)
+      assert {:ok, msg} = CancelData.new(true)
 
       assert msg.message_id == 11
-      assert msg.request_id == 90001
       assert msg.smart_depth?
     end
   end
@@ -29,6 +30,20 @@ defmodule IbEx.Client.Messages.MarketDepth.CancelDataTest do
                  smart_depth?: true
                }
                """
+    end
+  end
+
+  describe "Subscribable" do
+    test "subscribe/2 unsubscribes incoming messages with the given request id to the given pid" do
+      table_ref = Subscriptions.initialize()
+      :ets.insert(table_ref, {"1", self()})
+
+      {:ok, msg} = CancelData.new(true)
+
+      assert {:ok, msg} = Subscribable.subscribe(msg, self(), table_ref)
+      assert msg.request_id == "1"
+
+      assert {:error, :missing_subscription} == Subscriptions.reverse_lookup(table_ref, self())
     end
   end
 end
