@@ -84,17 +84,16 @@ defmodule IbEx.Client.Messages.MarketData.RequestHistoricalDataTest do
   end
 
   describe "Inspect implementation" do
-    @describetag :skip
     test "returns a human-readable version of the struct" do
       msg = %RequestHistoricalData{
         request_id: 123,
         contract: @contract,
-        end_date_time: nil,
-        duration: {1, :week},
-        bar_size: {1, :hour},
-        what_to_show: :trades,
-        use_rth: false,
-        keep_up_to_date: false
+        end_date_time: "",
+        duration: "1 W",
+        bar_size: "1 hour",
+        what_to_show: "TRADES",
+        use_rth: 0,
+        keep_up_to_date: 0
       }
 
       contract_str = Enum.join(Contract.serialize(@contract, false), ", ")
