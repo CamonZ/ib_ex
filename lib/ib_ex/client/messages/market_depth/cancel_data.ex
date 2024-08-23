@@ -4,7 +4,6 @@ defmodule IbEx.Client.Messages.MarketDepth.CancelData do
 
   The input parameters are:
 
-  * Request id
   * Is Smart Depth
   """
 
@@ -23,16 +22,16 @@ defmodule IbEx.Client.Messages.MarketDepth.CancelData do
         }
 
   alias IbEx.Client.Messages.Requests
+  alias IbEx.Client.Protocols.Subscribable
 
-  @spec new(non_neg_integer(), boolean()) :: {:ok, t()} | {:error, :not_implemented}
-  def new(request_id, is_smart_depth \\ true) do
+  @spec new(boolean()) :: {:ok, t()} | {:error, :not_implemented}
+  def new(is_smart_depth \\ true) do
     case Requests.message_id_for(__MODULE__) do
       {:ok, id} ->
         {
           :ok,
           %__MODULE__{
             message_id: id,
-            request_id: request_id,
             smart_depth?: is_smart_depth
           }
         }
@@ -65,6 +64,22 @@ defmodule IbEx.Client.Messages.MarketDepth.CancelData do
         smart_depth?: #{msg.smart_depth?}
       }
       """
+    end
+  end
+
+  defimpl Subscribable, for: __MODULE__ do
+    alias IbEx.Client.Subscriptions
+
+    # Subscription based on request_id, can handle multiple requests
+    def subscribe(msg, pid, table_ref) do
+      {:ok, request_id} = Subscriptions.reverse_lookup(table_ref, pid)
+      :ets.delete(table_ref, request_id)
+
+      {:ok, %{msg | request_id: request_id}}
+    end
+
+    def lookup(_, _) do
+      {:error, :lookup_not_necessary}
     end
   end
 end

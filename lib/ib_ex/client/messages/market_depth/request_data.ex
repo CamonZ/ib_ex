@@ -10,6 +10,10 @@ defmodule IbEx.Client.Messages.MarketDepth.RequestData do
   * Is Smart Depth (SMART depth request, i.e. aggregated across multiple depth exchanges)
   """
 
+  alias IbEx.Client.Messages.Requests
+  alias IbEx.Client.Types.Contract
+  alias IbEx.Client.Protocols.Subscribable
+
   @version 5
 
   defstruct message_id: nil,
@@ -19,9 +23,6 @@ defmodule IbEx.Client.Messages.MarketDepth.RequestData do
             num_rows: nil,
             smart_depth?: true,
             options: ["XYZ"]
-
-  alias IbEx.Client.Messages.Requests
-  alias IbEx.Client.Types.Contract
 
   @type t :: %__MODULE__{
           message_id: non_neg_integer(),
@@ -33,15 +34,14 @@ defmodule IbEx.Client.Messages.MarketDepth.RequestData do
           options: list(binary())
         }
 
-  @spec new(non_neg_integer(), Contract.t(), non_neg_integer(), boolean()) :: {:ok, t()} | {:error, :not_implemented}
-  def new(request_id, %Contract{} = contract, num_rows, is_smart_depth \\ true) do
+  @spec new(Contract.t(), non_neg_integer(), boolean()) :: {:ok, t()} | {:error, :not_implemented}
+  def new(%Contract{} = contract, num_rows, is_smart_depth \\ true) do
     case Requests.message_id_for(__MODULE__) do
       {:ok, id} ->
         {
           :ok,
           %__MODULE__{
             message_id: id,
-            request_id: request_id,
             contract: contract,
             num_rows: num_rows,
             smart_depth?: is_smart_depth
@@ -79,6 +79,20 @@ defmodule IbEx.Client.Messages.MarketDepth.RequestData do
         smart_depth?: #{msg.smart_depth?}
       }
       """
+    end
+  end
+
+  defimpl Subscribable, for: __MODULE__ do
+    alias IbEx.Client.Subscriptions
+
+    # Subscription based on request_id, can handle multiple requests
+    def subscribe(msg, pid, table_ref) do
+      request_id = Subscriptions.subscribe_by_request_id(table_ref, pid)
+      {:ok, %{msg | request_id: request_id}}
+    end
+
+    def lookup(_, _) do
+      {:error, :lookup_not_necessary}
     end
   end
 end

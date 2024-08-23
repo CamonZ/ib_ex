@@ -5,6 +5,9 @@ defmodule IbEx.Client.Messages.MarketDepth.L2DataMultiple do
   Receives a single update to the bids or the asks in the orderbook
   """
 
+  alias IbEx.Client.Utils
+  alias IbEx.Client.Protocols.Subscribable
+
   defstruct request_id: nil,
             position: nil,
             market_maker: nil,
@@ -26,8 +29,6 @@ defmodule IbEx.Client.Messages.MarketDepth.L2DataMultiple do
           smart_depth?: boolean(),
           timestamp: DateTime.t()
         }
-
-  alias IbEx.Client.Utils
 
   def from_fields([_, req_id, pos, market_maker, op_str, side_str, price, size, smart_depth]) do
     with {:ok, operation} <- Utils.MarketDepth.parse_operation(op_str),
@@ -67,6 +68,18 @@ defmodule IbEx.Client.Messages.MarketDepth.L2DataMultiple do
         smart_depth?: #{msg.smart_depth?},
         timestamp: #{msg.timestamp}
       """
+    end
+  end
+
+  defimpl Subscribable, for: __MODULE__ do
+    alias IbEx.Client.Subscriptions
+
+    def subscribe(_, _, _) do
+      {:error, :response_messages_cannot_create_subscription}
+    end
+
+    def lookup(msg, table_ref) do
+      Subscriptions.lookup(table_ref, msg.request_id)
     end
   end
 end
