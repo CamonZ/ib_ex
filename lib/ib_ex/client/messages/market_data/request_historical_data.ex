@@ -45,9 +45,9 @@ defmodule IbEx.Client.Messages.MarketData.RequestHistoricalData do
           request_id: non_neg_integer(),
           contract: Contract.t(),
           end_date_time: end_date_time_type(),
-          duration: Durations.t(),
-          bar_size: BarSizes.t(),
-          what_to_show: WhatToShow.t(),
+          duration: String.t(),
+          bar_size: String.t(),
+          what_to_show: String.t(),
           use_rth: boolean(),
           keep_up_to_date: boolean()
         }
