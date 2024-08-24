@@ -36,7 +36,6 @@ defmodule IbEx.Client.Messages.MarketData.RequestHistoricalData do
   alias IbEx.Client.Constants.{WhatToShow, BarSizes, Durations}
   alias IbEx.Client.Messages.Requests
   alias IbEx.Client.Types.Contract
-  alias IbEx.Client.Utils
 
   @type end_date_time_type :: DateTime.t() | nil
   @type t :: %__MODULE__{
