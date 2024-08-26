@@ -83,15 +83,4 @@ defmodule IbEx.Client.UtilsTest do
       assert is_nil(Utils.to_bool("-1"))
     end
   end
-
-  describe "bool_to_int/1" do
-    test "converts false to 0 and true to 1" do
-      assert Utils.bool_to_int(false) == {:ok, 0}
-      assert Utils.bool_to_int(true) == {:ok, 1}
-    end
-
-    test "returns :invalid_args for bad arguments" do
-      assert Utils.bool_to_int(:not_a_bool) == {:error, :invalid_args}
-    end
-  end
 end

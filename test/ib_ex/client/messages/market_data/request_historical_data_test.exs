@@ -38,9 +38,9 @@ defmodule IbEx.Client.Messages.MarketData.RequestHistoricalDataTest do
       assert msg.duration == "1 W"
       assert msg.bar_size == "1 hour"
       assert msg.what_to_show == "TRADES"
-      assert msg.use_rth == 0
+      assert msg.use_rth == false
       assert msg.format_date == 2
-      assert msg.keep_up_to_date == 0
+      assert msg.keep_up_to_date == false
     end
 
     test "creates the message with valid date and time" do
@@ -57,9 +57,9 @@ defmodule IbEx.Client.Messages.MarketData.RequestHistoricalDataTest do
       assert msg.duration == "1 W"
       assert msg.bar_size == "1 hour"
       assert msg.what_to_show == "TRADES"
-      assert msg.use_rth == 0
+      assert msg.use_rth == false
       assert msg.format_date == 2
-      assert msg.keep_up_to_date == 0
+      assert msg.keep_up_to_date == false
     end
   end
 
@@ -92,8 +92,8 @@ defmodule IbEx.Client.Messages.MarketData.RequestHistoricalDataTest do
         duration: "1 W",
         bar_size: "1 hour",
         what_to_show: "TRADES",
-        use_rth: 0,
-        keep_up_to_date: 0
+        use_rth: false,
+        keep_up_to_date: false
       }
 
       contract_str = Enum.join(Contract.serialize(@contract, false), ", ")
@@ -107,9 +107,9 @@ defmodule IbEx.Client.Messages.MarketData.RequestHistoricalDataTest do
                  duration: 1 W, 
                  bar_size: 1 hour,
                  what_to_show: TRADES,
-                 use_rth: 0,
+                 use_rth: false,
                  format_date: 2,
-                 keep_up_to_date: 0
+                 keep_up_to_date: false
                }
                """
     end

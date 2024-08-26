@@ -36,7 +36,6 @@ defmodule IbEx.Client.Messages.MarketData.RequestHistoricalData do
   alias IbEx.Client.Constants.{WhatToShow, BarSizes, Durations}
   alias IbEx.Client.Messages.Requests
   alias IbEx.Client.Types.Contract
-  alias IbEx.Client.Utils
 
   @type end_date_time_type :: DateTime.t() | nil
   @type t :: %__MODULE__{
@@ -45,9 +44,9 @@ defmodule IbEx.Client.Messages.MarketData.RequestHistoricalData do
           request_id: non_neg_integer(),
           contract: Contract.t(),
           end_date_time: end_date_time_type(),
-          duration: Durations.t(),
-          bar_size: BarSizes.t(),
-          what_to_show: WhatToShow.t(),
+          duration: String.t(),
+          bar_size: String.t(),
+          what_to_show: String.t(),
           use_rth: boolean(),
           keep_up_to_date: boolean()
         }
@@ -75,9 +74,7 @@ defmodule IbEx.Client.Messages.MarketData.RequestHistoricalData do
          {:ok, end_date_time} <- format_end_date_time(end_date_time),
          {:ok, duration} <- Durations.format(duration),
          {:ok, bar_size} <- BarSizes.format(bar_size),
-         {:ok, what_to_show} <- WhatToShow.format(what_to_show),
-         {:ok, use_rth} <- Utils.bool_to_int(use_rth),
-         {:ok, keep_up_to_date} <- Utils.bool_to_int(keep_up_to_date) do
+         {:ok, what_to_show} <- WhatToShow.format(what_to_show) do
       {
         :ok,
         %__MODULE__{
