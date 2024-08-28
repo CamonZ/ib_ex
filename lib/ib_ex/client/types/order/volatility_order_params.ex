@@ -16,7 +16,8 @@ defmodule IbEx.Client.Types.Order.VolatilityOrderParams do
 
   @type t :: %__MODULE__{
           volatility: Decimal.t(),
-          volatility_type: non_neg_integer(),
+          # 1=daily, 2=annual
+          volatility_type: 1..2,
           delta_neutral_order_type: binary(),
           delta_neutral_aux_price: Decimal.t(),
           delta_neutral_conid: non_neg_integer(),
@@ -40,4 +41,6 @@ defmodule IbEx.Client.Types.Order.VolatilityOrderParams do
   def new(args) when is_map(args) do
     struct(__MODULE__, args)
   end
+
+  def new(), do: new(%{})
 end

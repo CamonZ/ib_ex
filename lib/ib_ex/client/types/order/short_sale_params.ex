@@ -6,7 +6,7 @@ defmodule IbEx.Client.Types.Order.ShortSaleParams do
 
   * slot: Short Sale Slot
   * location: Designated Location
-  * code: Excempt Code
+  * code: Exempt Code
   """
 
   defstruct slot: nil, location: nil, code: nil
@@ -27,6 +27,8 @@ defmodule IbEx.Client.Types.Order.ShortSaleParams do
     struct(__MODULE__, args)
   end
 
+  def new(), do: new(%{})
+
   def new(slot, location, code) do
     %__MODULE__{
       slot: slot,
@@ -35,7 +37,7 @@ defmodule IbEx.Client.Types.Order.ShortSaleParams do
     }
   end
 
-  def serializable_fields(%__MODULE__{} = params) do
+  def serialize(%__MODULE__{} = params) do
     [
       params.slot,
       params.location,

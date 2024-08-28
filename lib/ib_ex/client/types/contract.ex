@@ -47,6 +47,7 @@ defmodule IbEx.Client.Types.Contract do
 
   @rights ~w(C CALL P PUT ?)
   @security_types ~w(STK OPT FUT IND FOP CASH BAG WAR BOND CMDTY NEWS FUND)
+  @security_id_types ~w(CUSIP SEDOL ISIN RIC)
 
   @deserialize_fields_order [
     :conid,

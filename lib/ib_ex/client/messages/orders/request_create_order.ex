@@ -12,7 +12,7 @@ defmodule IbEx.Client.Messages.Orders.RequestCreateOrder do
 
   @version 45
 
-  defstruct message_id: nil, order_id: nil, order: nil, contract: nil
+  defstruct message_id: nil, order_id: nil, order: nil, contract: nil, version: @version
 
   alias IbEx.Client.Messages.Requests
   alias IbEx.Client.Types.Contract
@@ -60,13 +60,29 @@ defmodule IbEx.Client.Messages.Orders.RequestCreateOrder do
             msg.contract.security_id_type,
             msg.contract.security_id
           ] ++
-          Base.build(fields)
+          Order.serialize(msg.order)
+
+      Base.build(fields)
     end
   end
 
   defimpl Inspect, for: __MODULE__ do
     def inspect(msg, _opts) do
-      "--> RequestCreateOrder{version: #{msg.version}}"
+      contract = Contract.serialize(msg.contract, false)
+
+      """
+      --> RequestCreateOrder{
+        order_id: #{msg.order_id},
+        order: %Order{
+          action: #{msg.order.action}, 
+          total_quantity: #{msg.order.total_quantity}, 
+          order_type: #{msg.order.order_type},
+          limit_price: #{msg.order.limit_price},
+          aux_price: #{msg.order.aux_price},
+        },
+        contract: #{contract}
+      }
+      """
     end
   end
 end
