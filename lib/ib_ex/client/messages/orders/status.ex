@@ -41,6 +41,7 @@ defmodule IbEx.Client.Messages.Orders.Status do
       market_cap_price: Decimal.new(mkt_cap_price)
     }
 
+    Logger.info("Parsed OrderStatus: #{inspect(fields)}")
     {:ok, msg}
   end
 

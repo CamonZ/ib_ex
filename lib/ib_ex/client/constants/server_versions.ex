@@ -118,11 +118,20 @@ defmodule IbEx.Client.Constants.ServerVersions do
     hmds_market_data_in_shares: 175,
     bond_issuer_id: 176,
     fa_profile_desupport: 177,
-    pending_price_revision: 178
+    pending_price_revision: 178,
+    fund_data_fields: 179,
+    manual_order_time_exercise_options: 180,
+    open_order_ad_strategy: 181,
+    last_trade_date: 182,
+    customer_account: 183,
+    professional_customer: 184,
+    bond_accrued_interest: 185,
+    ineligibility_reasons: 186,
+    rfq_fields: 187
   ]
 
   @min_client_ver 100
-  @max_client_ver :pending_price_revision
+  @max_client_ver :rfq_fields
 
   def version_for(key) do
     Keyword.fetch(@versions, key)

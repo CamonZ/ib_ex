@@ -1,6 +1,7 @@
 defmodule IbEx.Client.Messages.Executions.ExecutionDataTest do
   use ExUnit.Case, async: true
 
+  alias IbEx.Client.Types.Contract.DeltaNeutral
   alias IbEx.Client.Messages.Executions.ExecutionData
   alias IbEx.Client.Types.Contract
   alias IbEx.Client.Types.Execution

@@ -1,6 +1,7 @@
 defmodule IbEx.Client.Messages.MatchingSymbols.SymbolSamplesTest do
   use ExUnit.Case, async: true
 
+  alias IbEx.Client.Types.Contract.DeltaNeutral
   alias IbEx.Client.Messages.MatchingSymbols.SymbolSamples
   alias IbEx.Client.Protocols.Subscribable
   alias IbEx.Client.Types.Contract
@@ -48,7 +49,8 @@ defmodule IbEx.Client.Messages.MatchingSymbols.SymbolSamplesTest do
                    currency: "USD",
                    primary_exchange: "NASDAQ",
                    description: "APPLE INC",
-                   issuer_id: ""
+                   issuer_id: "",
+                   delta_neutral_contract: nil
                  },
                  derivative_security_types: ["CFD", "OPT", "IOPT", "WAR", "BAG"]
                },
@@ -60,7 +62,8 @@ defmodule IbEx.Client.Messages.MatchingSymbols.SymbolSamplesTest do
                    currency: "GBP",
                    primary_exchange: "LSEETF",
                    description: "LS 1X AAPL",
-                   issuer_id: ""
+                   issuer_id: "",
+                   delta_neutral_contract: nil
                  },
                  derivative_security_types: []
                }
