@@ -16,7 +16,7 @@ defmodule IbEx.Client.Types.Order.VolatilityOrderParams do
 
   @type t :: %__MODULE__{
           volatility: Decimal.t(),
-          # 1=daily, 2=annual
+          # 1 = :daily, 2 = :annual
           volatility_type: 1..2,
           delta_neutral_order_type: binary(),
           delta_neutral_aux_price: Decimal.t(),
@@ -29,6 +29,7 @@ defmodule IbEx.Client.Types.Order.VolatilityOrderParams do
           delta_neutral_short_sale_slot: non_neg_integer(),
           delta_neutral_designated_location: binary() | none(),
           continuous_update: non_neg_integer() | none(),
+          # 1 = :average, 2 = :bid_or_ask
           reference_price_type: non_neg_integer()
         }
 
@@ -43,4 +44,29 @@ defmodule IbEx.Client.Types.Order.VolatilityOrderParams do
   end
 
   def new(), do: new(%{})
+
+  def serialize(%__MODULE__{} = params) do
+    [
+      params.volatility,
+      params.volatility_type,
+      params.delta_neutral_order_type,
+      params.delta_neutral_aux_price
+    ]
+    |> handle_extra_fields()
+  end
+
+  def handle_extra_fields(%__MODULE__{volatility_type: type} = params) when type not in ["", nil] do
+    [
+      params.delta_neutral_conid,
+      params.delta_neutral_settling_firm,
+      params.delta_neutral_clearing_account,
+      params.delta_neutral_clearing_intent,
+      params.delta_neutral_open_close,
+      params.delta_neutral_short_sale,
+      params.delta_neutral_short_sale_slot,
+      params.delta_neutral_designated_location
+    ]
+  end
+
+  def handle_extra_fields(_), do: []
 end

@@ -1,4 +1,6 @@
 defmodule IbEx.Client.Types.Contract do
+  alias IbEx.Client.Types.DeltaNeutralContract
+
   defstruct conid: "0",
             symbol: "",
             security_type: "",
@@ -40,7 +42,7 @@ defmodule IbEx.Client.Types.Contract do
           security_id: binary(),
           combo_legs_description: binary(),
           combo_legs: list(),
-          delta_neutral_contract: binary(),
+          delta_neutral_contract: DeltaNeutralContract.t(),
           description: binary(),
           issuer_id: binary()
         }
@@ -65,6 +67,7 @@ defmodule IbEx.Client.Types.Contract do
 
   def rights, do: @rights
   def security_types, do: @security_types
+  def security_id_types, do: @security_id_types
 
   @spec from_serialized_fields(list(binary())) :: {:ok, t()} | {:error, :invalid_args}
   @doc """
@@ -91,6 +94,7 @@ defmodule IbEx.Client.Types.Contract do
     struct(__MODULE__, attrs)
   end
 
+  @spec serialize(__MODULE__.t(), boolean()) :: list()
   def serialize(%__MODULE__{} = contract, include_expired \\ true) do
     fields = [
       contract.conid,

@@ -26,4 +26,11 @@ defmodule IbEx.Client.Types.Order.TrailParams do
       percent: percent
     }
   end
+
+  def serialize(%__MODULE__{} = params) do
+    [
+      params.stop_price,
+      params.percent
+    ]
+  end
 end

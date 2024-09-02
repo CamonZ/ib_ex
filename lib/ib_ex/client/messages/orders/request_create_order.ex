@@ -15,8 +15,7 @@ defmodule IbEx.Client.Messages.Orders.RequestCreateOrder do
   defstruct message_id: nil, order_id: nil, order: nil, contract: nil, version: @version
 
   alias IbEx.Client.Messages.Requests
-  alias IbEx.Client.Types.Contract
-  alias IbEx.Client.Types.Order
+  alias IbEx.Client.Types.{Order, Contract}
 
   @type t :: %__MODULE__{
           message_id: non_neg_integer(),
@@ -46,7 +45,7 @@ defmodule IbEx.Client.Messages.Orders.RequestCreateOrder do
 
   defimpl String.Chars, for: __MODULE__ do
     alias IbEx.Client.Messages.Base
-    alias IbEx.Client.Types.Contract
+    alias IbEx.Client.Types.{Order, Contract, DeltaNeutralContract}
 
     def to_string(msg) do
       fields =
@@ -54,16 +53,40 @@ defmodule IbEx.Client.Messages.Orders.RequestCreateOrder do
           msg.message_id,
           # old server versions put here the message version
           msg.order_id
+          # ] 
         ] ++
           Contract.serialize(msg.contract, false) ++
           [
             msg.contract.security_id_type,
             msg.contract.security_id
           ] ++
-          Order.serialize(msg.order)
+          Order.serialize(msg.order, :first_batch) ++
+          serialize_delta_neutral_params(msg.contract.delta_neutral_contract) ++
+          Order.serialize(msg.order, :second_batch) ++
+          serialize_order_min_trade_quantity(msg.contract, msg.order) ++
+          Order.serialize(msg.order, :third_batch)
 
       Base.build(fields)
     end
+
+    @spec serialize_delta_neutral_params(DeltaNeutralContract.t()) :: list()
+    defp serialize_delta_neutral_params(%DeltaNeutralContract{} = params) do
+      [
+        true,
+        params.conid,
+        params.delta,
+        params.price
+      ]
+    end
+
+    defp serialize_delta_neutral_params(_), do: [false]
+
+    @spec serialize_order_min_trade_quantity(Contract.t(), Order.t()) :: list()
+    defp serialize_order_min_trade_quantity(%Contract{exchange: "IBKRATS"}, %Order{} = order) do
+      [order.min_trade_quantity]
+    end
+
+    defp serialize_order_min_trade_quantity(_, _), do: []
   end
 
   defimpl Inspect, for: __MODULE__ do

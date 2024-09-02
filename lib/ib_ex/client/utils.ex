@@ -80,8 +80,8 @@ defmodule IbEx.Client.Utils do
     {:error, :invalid_args}
   end
 
-  @spec list_to_type(list(atom)) :: String.t()
-  def list_to_type(value) when is_list(value) do
+  @spec list_to_union_type(list(atom)) :: String.t()
+  def list_to_union_type(value) when is_list(value) do
     Enum.reduce(value, &{:|, [], [&1, &2]})
   end
 end

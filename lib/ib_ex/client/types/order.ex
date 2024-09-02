@@ -3,107 +3,148 @@ defmodule IbEx.Client.Types.Order do
   Represents an Order.  
   """
 
-  alias IbEx.Client.Types.Order.VolatilityOrderParams
-  alias IbEx.Client.Messages.Orders.Decoder.FinancialAdvisorParams
-  alias IbEx.Client.Types.Order.{ShortSaleParams, FinancialAdvisorParams}
-  import IbEx.Client.Utils, only: [list_to_type: 1]
+  alias IbEx.Client.Types.Order.{
+    ShortSaleParams,
+    FinancialAdvisorParams,
+    VolatilityOrderParams,
+    TrailParams,
+    HedgeOrderParams,
+    ScaleOrderParams,
+    ClearingInfoParams,
+    AlgoOrderParams,
+    MiscOptionsParams,
+    PegToBenchmarkOrderParams,
+    OrderConditionsParams,
+    SoftDollarTierParams,
+    MidOffsets
+  }
 
-  # ORDER IDENTIFIER 
+  import IbEx.Client.Utils, only: [list_to_union_type: 1]
+
   defstruct api_client_order_id: nil,
             api_client_id: nil,
             host_order_id: nil,
-            # contract: nil,
-
-            # MAIN ORDER FIELDS
             action: nil,
             total_quantity: nil,
             order_type: nil,
             limit_price: nil,
             aux_price: nil,
-
-            # EXTENDED ORDER FIELDS 
             time_in_force: nil,
-            active_start_time: nil,
-            active_stop_time: nil,
             oca_group_identifier: nil,
-            oca_type: 0,
+            account: nil,
+            open_close: nil,
+            origin: nil,
             order_ref: nil,
             transmit: true,
             parent_id: 0,
             block_order: false,
             sweep_to_fill: false,
             display_size: 0,
-            # 0=Default, 1=Double_Bid_Ask, 2=Last, 3=Double_Last, 4=Bid_Ask, 7=Last_or_Bid_Ask, 8=Mid-point
             trigger_method: 0,
             outside_rth: nil,
             hidden: nil,
+            # BAG order
+            bag_order_params: nil,
+            discretionary_amount: nil,
             good_after_time: nil,
             good_till_date: nil,
-            # Individual = 'I', Agency = 'A', AgentOtherMember = 'W', IndividualPTIA = 'J', AgencyPTIA = 'U', AgentOtherMemberPTIA = 'M', IndividualPT = 'K', AgencyPT = 'Y', AgentOtherMemberPT = 'N'
+            fa_params: nil,
+            model_code: nil,
+            short_sale_params: nil,
+            oca_type: 0,
             rule_80a: nil,
+            settling_firm: nil,
             all_or_none: false,
             min_quantity: nil,
             percent_offset: nil,
-            override_percentage_constraints: false,
-            trail_stop_price: nil,
-            trailing_percent: nil,
-
-            # FINANCIAL ADVISORS ONLY
-            account: nil,
-            open_close: nil,
-            origin: nil,
-            discretionary_amount: nil,
-            skip_shares_allocation: nil,
-            fa_params: nil,
-            model_code: nil,
-            settling_firm: nil,
-            short_sale_params: nil,
-            auction_strategy: nil,
-            box_order_params: nil,
-            peg_to_stock_or_volume_params: nil,
-            etrade_only: nil,
-            firm_quote_only: nil,
-            nbbo_price_cap: nil,
-            volatility_params: nil,
-            trail_params: nil,
-            basis_points: nil,
-            basis_points_type: nil,
-            combo_legs: nil,
-            smart_combo_routing_params: nil,
-            scale_order_params: nil,
-            hedge_params: nil,
-            opt_out_smart_routing: nil,
-            clearing_params: nil,
-            not_held: nil,
-            delta_neutral: nil,
-            algo_params: nil,
-            solicited: nil,
-            what_if_info_and_commission: nil,
-            vol_randomized_flags: nil,
-            peg_to_bench_params: nil,
-            conditions: nil,
-            adjusted_order_params: nil,
-            soft_dollar_tier: nil,
-            cash_quantity: nil,
-            dont_use_autoprice_for_hedge: nil,
-            is_oms_container: nil,
-            discretionary_up_to_limit_price: nil,
-            use_price_management_algo: nil,
+            auction_strategy: 0,
             starting_price: nil,
+            stock_reference_price: nil,
+            delta: nil,
             stock_range_lower: nil,
             stock_range_upper: nil,
-            stock_reference_price: nil,
-            delta: nil
+            override_percentage_constraints: false,
+            volatility_order_params: nil,
+            trail_order_params: nil,
+            scale_order_params: nil,
+            hedge_order_params: nil,
+            opt_out_smart_routing: nil,
+            clearing_params: nil,
+            not_held: false,
+            algo_params: nil,
+            what_if_info_and_commission: false,
+            misc_options_params: nil,
+            solicited: false,
+            randomize_size: false,
+            randomize_price: false,
+            peg_to_bench_params: nil,
+            order_conditions_params: [],
+            adjusted_order_type: nil,
+            trigger_price: nil,
+            limit_price_offset: nil,
+            adjusted_stop_price: nil,
+            adjusted_stop_limit_price: nil,
+            adjusted_trailing_amount: nil,
+            adjustable_trailing_unit: nil,
+            ext_operator: nil,
+            soft_dollar_tier_params: nil,
+            cash_quantity: nil,
+            mifid2_decision_maker: nil,
+            mifid2_decision_algo: nil,
+            mifid2_execution_trader: nil,
+            mifid2_execution_algo: nil,
+            dont_use_autoprice_for_hedge: false,
+            is_oms_container: false,
+            discretionary_up_to_limit_price: false,
+            use_price_management_algo: nil,
+            duration: nil,
+            post_to_ats: nil,
+            auto_cancel_parent: nil,
+            advanced_error_override: nil,
+            manual_order_time: nil,
+            min_trade_quantity: nil,
+            min_compete_size: nil,
+            compete_against_best_offset: nil,
+            mid_offset_at_whole: nil,
+            mid_offset_at_half: nil
 
-  # CLEARING INFO
+  # skip_shares_allocation: nil,
+  # box_order_params: nil,
+  # peg_to_stock_or_volume_params: nil,
+  # etrade_only: nil,
+  # firm_quote_only: nil,
+  # nbbo_price_cap: nil,
+
+  # basis_points: nil,
+  # basis_points_type: nil,
+  # combo_legs: nil,
+  # smart_combo_routing_params: nil,
+  # delta_neutral: nil,
+  # vol_randomized_flags: nil,
+  # adjusted_order_params: nil,
 
   @times_in_force ~w(
    DAY GTC IOC GTD OPG FOK DTC
   )a
 
-  @type times_in_force :: unquote(list_to_type(@times_in_force))
+  # Individual = 'I', Agency = 'A', AgentOtherMember = 'W', IndividualPTIA = 'J', AgencyPTIA = 'U', AgentOtherMemberPTIA = 'M', IndividualPT = 'K', AgencyPT = 'Y', AgentOtherMemberPT = 'N'
+  @rules_80a ~w(I A W J U M K Y N)a
 
-  # @rules_80a ~w(I A W J U M K Y N)a
+  @type times_in_force :: unquote(list_to_union_type(@times_in_force))
+
+  # 0 = Client, 1 = Firm, 2 = unknown
+  @type origin :: 0..2
+
+  # 0=Default, 1=Double_Bid_Ask, 2=Last, 3=Double_Last, 4=Bid_Ask, 7=Last_or_Bid_Ask, 8=Mid-point
+  @type trigger_method :: 0..8
+
+  # 1 = CANCEL_WITH_BLOCK, 2 = REDUCE_WITH_BLOCK, 3 = REDUCE_NON_BLOCK
+  @type oca_type :: 1..3
+  @type rules_80a :: unquote(list_to_union_type(@rules_80a))
+
+  # 0 = AUCTION_UNSET, 1 = AUCTION_MATCH, 2 = AUCTION_IMPROVEMENT, 3 = AUCTION_TRANSPARENT
+  @type auction_strategy :: 0..3
+  @type open_close :: :O | :C
 
   # https://www.interactivebrokers.com/campus/ibkr-api-page/twsapi-ref/#order-ref
   @type t :: %__MODULE__{
@@ -111,42 +152,92 @@ defmodule IbEx.Client.Types.Order do
           api_client_order_id: non_neg_integer(),
           api_client_id: non_neg_integer(),
           host_order_id: non_neg_integer(),
-          # TODO: do we need Contract here?
-          # contract: Contract.t(),
 
           # MAIN ORDER FIELDS 
           action: binary(),
           total_quantity: Decimal.t(),
           order_type: binary(),
-          limit_price: float(),
-          # TODO: check type ???
-          aux_price: float(),
+          limit_price: Decimal.t(),
+          aux_price: Decimal.t(),
 
           # EXTENDED ORDER FIELDS
-          time_in_force: binary(),
+          time_in_force: times_in_force(),
           oca_group_identifier: binary(),
-          oca_type: 1..3,
+          account: binary(),
+          open_close: open_close(),
+          origin: origin(),
           order_ref: binary(),
           transmit: boolean(),
           parent_id: non_neg_integer(),
           block_order: boolean(),
           sweep_to_fill: boolean(),
           display_size: non_neg_integer(),
-          trigger_method: non_neg_integer(),
+          trigger_method: trigger_method(),
           outside_rth: boolean(),
           hidden: boolean(),
+          bag_order_params: nil,
+          discretionary_amount: Decimal.t(),
           good_after_time: binary(),
           good_till_date: binary(),
-          rule_80a: binary(),
+          fa_params: FinancialAdvisorParams.t(),
+          model_code: binary(),
+          short_sale_params: ShortSaleParams.t(),
+          oca_type: oca_type(),
+          rule_80a: rules_80a(),
+          settling_firm: binary(),
           all_or_none: boolean(),
           min_quantity: non_neg_integer(),
-          percent_offset: float(),
+          percent_offset: Decimal.t(),
+          auction_strategy: auction_strategy(),
+          starting_price: Decimal.t(),
+          stock_reference_price: Decimal.t(),
+          delta: Decimal.t(),
+          stock_range_lower: Decimal.t(),
+          stock_range_upper: Decimal.t(),
           override_percentage_constraints: boolean(),
-          trail_stop_price: float(),
-          trailing_percent: float(),
-
-          # FINANCIAL ADVISORS ONLY
-          fa_params: FinancialAdvisorParams.t()
+          volatility_order_params: VolatilityOrderParams.t(),
+          trail_order_params: TrailParams.t(),
+          scale_order_params: ScaleOrderParams.t(),
+          hedge_order_params: HedgeOrderParams.t(),
+          opt_out_smart_routing: boolean(),
+          clearing_params: ClearingInfoParams.t(),
+          not_held: boolean(),
+          algo_params: AlgoOrderParams.t(),
+          what_if_info_and_commission: boolean(),
+          misc_options_params: MiscOptionsParams.t(),
+          solicited: boolean(),
+          randomize_size: boolean(),
+          randomize_price: boolean(),
+          peg_to_bench_params: PegToBenchmarkOrderParams.t(),
+          order_conditions_params: OrderConditionsParams.t(),
+          adjusted_order_type: binary(),
+          trigger_price: Decimal.t(),
+          limit_price_offset: Decimal.t(),
+          adjusted_stop_price: Decimal.t(),
+          adjusted_stop_limit_price: Decimal.t(),
+          adjusted_trailing_amount: Decimal.t(),
+          adjustable_trailing_unit: non_neg_integer(),
+          ext_operator: binary(),
+          soft_dollar_tier_params: SoftDollarTierParams.t(),
+          cash_quantity: Decimal.t(),
+          mifid2_decision_maker: binary(),
+          mifid2_decision_algo: binary(),
+          mifid2_execution_trader: binary(),
+          mifid2_execution_algo: binary(),
+          dont_use_autoprice_for_hedge: boolean(),
+          is_oms_container: boolean(),
+          discretionary_up_to_limit_price: boolean(),
+          use_price_management_algo: boolean() | nil,
+          duration: non_neg_integer(),
+          post_to_ats: non_neg_integer(),
+          auto_cancel_parent: binary(),
+          advanced_error_override: binary(),
+          manual_order_time: non_neg_integer(),
+          min_trade_quantity: non_neg_integer(),
+          min_compete_size: non_neg_integer(),
+          compete_against_best_offset: Decimal.t() | :infinity,
+          mid_offset_at_whole: Decimal.t(),
+          mid_offset_at_half: Decimal.t()
         }
 
   def new(attrs) when is_list(attrs) do
@@ -158,14 +249,28 @@ defmodule IbEx.Client.Types.Order do
   def new(attrs) when is_map(attrs) do
     attrs =
       attrs
-      |> Map.put(:fa_params, FinancialAdvisorParams.new(Map.get(attrs, :fa_params, %{})))
-      |> Map.put(:short_sale_params, ShortSaleParams.new(Map.get(attrs, :short_sale_params, %{})))
-      |> Map.put(:volatility_params, VolatilityOrderParams.new(Map.get(attrs, :volatility_params, %{})))
+      |> assign_params(:fa_params, FinancialAdvisorParams)
+      |> assign_params(:short_sale_params, ShortSaleParams)
+      |> assign_params(:volatility_order_params, VolatilityOrderParams)
+      |> assign_params(:trail_order_params, TrailParams)
+      |> assign_params(:scale_order_params, ScaleOrderParams)
+      |> assign_params(:hedge_order_params, HedgeOrderParams)
+      |> assign_params(:clearing_params, ClearingInfoParams)
+      |> assign_params(:algo_params, AlgoOrderParams)
+      |> assign_params(:misc_options_params, MiscOptionsParams)
+      |> assign_params(:peg_to_bench_params, PegToBenchmarkOrderParams)
+      |> assign_params(:order_conditions_params, OrderConditionsParams)
+      |> assign_params(:soft_dollar_tier_params, SoftDollarTierParams)
 
     struct(__MODULE__, attrs)
   end
 
-  def serialize(%__MODULE__{} = order) do
+  def assign_params(attrs, key, module) do
+    Map.put(attrs, key, module.new(Map.get(attrs, key, %{})))
+  end
+
+  @spec serialize(__MODULE__.t(), :first_batch | :second_batch | :third_batch) :: list() | :invalid_args
+  def serialize(%__MODULE__{} = order, :first_batch) do
     [
       # beginning of order related fields
       order.action,
@@ -175,59 +280,111 @@ defmodule IbEx.Client.Types.Order do
       # handle empty
       order.limit_price,
       # handle empty
-      order.aux_price
+      order.aux_price,
 
       # extended order fields 
-      #   order.time_in_force,
-      #   order.oca_group_identifier,
-      #   order.account,
-      #   order.open_close,
-      #   order.origin,
-      #   order.order_ref,
-      #   order.transmit,
-      #   order.parent_id,
-      #   order.block_order,
-      #   order.sweep_to_fill,
-      #   order.display_size,
-      #   order.trigger_method,
-      #   order.outside_rth,
-      #   order.hidden
-      # ] ++
-      #   [
-      #     # BAG order params
-      #   ] ++
-      #   [
-      #     nil,
-      #     order.discretionary_amount,
-      #     order.good_after_time,
-      #     order.good_till_date
-      #   ] ++
-      #   FinancialAdvisorParams.serialize(order.fa_params) ++
-      #   [order.model_code] ++
-      #   ShortSaleParams.serialize(order.short_sale_params) ++
-      #   [
-      #     order.oca_type,
-      #     order.rule_80a,
-      #     order.settling_firm,
-      #     order.all_or_none,
-      #     order.min_quantity,
-      #     order.percent_offset,
-      #     false,
-      #     false,
-      #     nil,
-      #     order.auction_strategy,
-      #     order.starting_price,
-      #     order.stock_reference_price,
-      #     order.delta,
-      #     order.stock_range_lower,
-      #     order.stock_range_upper,
-      #     order.override_percentage_constraints,
-      #     order.volatility_params.volatility,
-      #     order.volatility_params.volatility_type,
-      #     order.volatility_params.delta_neutral_order_type,
-      #     order.volatility_params.delta_neutral_aux_price
-    ]
-
-    # TODO: add delta_neutral params
+      order.time_in_force,
+      order.oca_group_identifier,
+      order.account,
+      order.open_close,
+      order.origin,
+      order.order_ref,
+      order.transmit,
+      order.parent_id,
+      order.block_order,
+      order.sweep_to_fill,
+      order.display_size,
+      order.trigger_method,
+      order.outside_rth,
+      order.hidden
+    ] ++
+      [
+        # BAG order params
+      ] ++
+      [
+        # send deprecated shares_allocation field
+        nil,
+        order.discretionary_amount,
+        order.good_after_time,
+        order.good_till_date
+      ] ++
+      FinancialAdvisorParams.serialize(order.fa_params) ++
+      [order.model_code] ++
+      ShortSaleParams.serialize(order.short_sale_params) ++
+      [
+        order.oca_type,
+        order.rule_80a,
+        order.settling_firm,
+        order.all_or_none,
+        order.min_quantity,
+        order.percent_offset,
+        false,
+        false,
+        nil,
+        order.auction_strategy,
+        order.starting_price,
+        order.stock_reference_price,
+        order.delta,
+        order.stock_range_lower,
+        order.stock_range_upper,
+        order.override_percentage_constraints
+      ] ++
+      VolatilityOrderParams.serialize(order.volatility_order_params) ++
+      TrailParams.serialize(order.trail_order_params) ++
+      ScaleOrderParams.serialize(order.scale_order_params) ++
+      HedgeOrderParams.serialize(order.hedge_order_params) ++
+      [
+        order.opt_out_smart_routing
+      ] ++
+      ClearingInfoParams.serialize(order.clearing_params) ++
+      [
+        order.not_held
+      ]
   end
+
+  def serialize(%__MODULE__{} = order, :second_batch) do
+    AlgoOrderParams.serialize(order.algo_params) ++
+      [
+        order.what_if_info_and_commission,
+        MiscOptionsParams.serialize(order.misc_options_params),
+        order.solicited,
+        order.randomize_size,
+        order.randomize_price
+      ] ++
+      PegToBenchmarkOrderParams.serialize(order.peg_to_bench_params) ++
+      OrderConditionsParams.serialize(order.order_conditions_params) ++
+      [
+        order.adjusted_order_type,
+        order.trigger_price,
+        order.limit_price_offset,
+        order.adjusted_stop_price,
+        order.adjusted_stop_limit_price,
+        order.adjusted_trailing_amount,
+        order.adjustable_trailing_unit,
+        order.ext_operator
+      ] ++
+      SoftDollarTierParams.serialize(order.soft_dollar_tier_params) ++
+      [
+        order.cash_quantity,
+        order.mifid2_decision_maker,
+        order.mifid2_decision_algo,
+        order.mifid2_execution_trader,
+        order.mifid2_execution_algo,
+        order.dont_use_autoprice_for_hedge,
+        order.is_oms_container,
+        order.discretionary_up_to_limit_price,
+        order.use_price_management_algo,
+        order.duration,
+        order.post_to_ats,
+        order.auto_cancel_parent,
+        order.advanced_error_override,
+        order.manual_order_time
+      ]
+  end
+
+  def serialize(%__MODULE__{} = order, :third_batch) do
+    MidOffsets.serialize(order)
+  end
+
+  def serialize(%__MODULE__{}, _), do: :invalid_args
 end

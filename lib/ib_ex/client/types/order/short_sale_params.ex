@@ -4,8 +4,8 @@ defmodule IbEx.Client.Types.Order.ShortSaleParams do
 
   the fields in the struct are:
 
-  * slot: Short Sale Slot
-  * location: Designated Location
+  * slot: Short Sale Slot. 0 for retail, 1 or 2 for institutions
+  * location: Designated Location. populated when slot = 2
   * code: Exempt Code
   """
 
