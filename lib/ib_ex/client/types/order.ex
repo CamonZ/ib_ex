@@ -3,6 +3,8 @@ defmodule IbEx.Client.Types.Order do
   Represents an Order.  
   """
 
+  alias IbEx.Client.Types.Order.ComboLeg
+
   alias IbEx.Client.Types.Order.{
     ShortSaleParams,
     FinancialAdvisorParams,
@@ -43,8 +45,7 @@ defmodule IbEx.Client.Types.Order do
             trigger_method: 0,
             outside_rth: nil,
             hidden: nil,
-            # BAG order
-            bag_order_params: nil,
+            combo_legs: [],
             discretionary_amount: nil,
             good_after_time: nil,
             good_till_date: nil,
@@ -108,21 +109,6 @@ defmodule IbEx.Client.Types.Order do
             mid_offset_at_whole: nil,
             mid_offset_at_half: nil
 
-  # skip_shares_allocation: nil,
-  # box_order_params: nil,
-  # peg_to_stock_or_volume_params: nil,
-  # etrade_only: nil,
-  # firm_quote_only: nil,
-  # nbbo_price_cap: nil,
-
-  # basis_points: nil,
-  # basis_points_type: nil,
-  # combo_legs: nil,
-  # smart_combo_routing_params: nil,
-  # delta_neutral: nil,
-  # vol_randomized_flags: nil,
-  # adjusted_order_params: nil,
-
   @times_in_force ~w(
    DAY GTC IOC GTD OPG FOK DTC
   )a
@@ -175,7 +161,7 @@ defmodule IbEx.Client.Types.Order do
           trigger_method: trigger_method(),
           outside_rth: boolean(),
           hidden: boolean(),
-          bag_order_params: nil,
+          combo_legs: list(ComboLeg.t()),
           discretionary_amount: Decimal.t(),
           good_after_time: binary(),
           good_till_date: binary(),
@@ -269,7 +255,7 @@ defmodule IbEx.Client.Types.Order do
     Map.put(attrs, key, module.new(Map.get(attrs, key, %{})))
   end
 
-  @spec serialize(__MODULE__.t(), :first_batch | :second_batch | :third_batch) :: list() | :invalid_args
+  @spec serialize(__MODULE__.t(), :first_batch | :second_batch | :third_batch | :fourth_batch) :: list() | :invalid_args
   def serialize(%__MODULE__{} = order, :first_batch) do
     [
       # beginning of order related fields
@@ -297,10 +283,10 @@ defmodule IbEx.Client.Types.Order do
       order.trigger_method,
       order.outside_rth,
       order.hidden
-    ] ++
-      [
-        # BAG order params
-      ] ++
+    ]
+  end
+
+  def serialize(%__MODULE__{} = order, :second_batch) do
       [
         # send deprecated shares_allocation field
         nil,
@@ -342,7 +328,7 @@ defmodule IbEx.Client.Types.Order do
       ]
   end
 
-  def serialize(%__MODULE__{} = order, :second_batch) do
+  def serialize(%__MODULE__{} = order, :third_batch) do
     AlgoOrderParams.serialize(order.algo_params) ++
       [
         order.what_if_info_and_commission,
@@ -382,9 +368,28 @@ defmodule IbEx.Client.Types.Order do
       ]
   end
 
-  def serialize(%__MODULE__{} = order, :third_batch) do
+  def serialize(%__MODULE__{} = order, :fourth_batch) do
     MidOffsets.serialize(order)
   end
 
   def serialize(%__MODULE__{}, _), do: :invalid_args
+
+  @spec maybe_serialize_combo_legs(__MODULE__.t(), boolean()) :: list()
+  def maybe_serialize_combo_legs(%__MODULE__{} = order, true) do
+    [length(order.combo_legs)] ++
+      (Enum.reduce(order.combo_legs, [], fn %ComboLeg{} = leg, acc ->
+         [leg.price | acc]
+       end)
+       |> Enum.reverse()
+       |> List.flatten())
+  end
+
+  def maybe_serialize_combo_legs(_,_), do: []
+    
+  @spec maybe_serialize_min_trade_quantity(__MODULE__.t(), boolean()) :: list()
+    def maybe_serialize_min_trade_quantity(%__MODULE__{} = order, true) do
+      [order.min_trade_quantity]
+    end
+
+    def maybe_serialize_min_trade_quantity(_, _), do: []
 end

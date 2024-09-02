@@ -62,6 +62,7 @@ defmodule IbEx.Client.Types.Order.ScaleOrderParams do
   end
 
   @spec serialize_scale_price_increment_params(__MODULE__.t()) :: list()
+  defp serialize_scale_price_increment_params(%__MODULE__{price_increment: nil}), do: []
   defp serialize_scale_price_increment_params(%__MODULE__{price_increment: incr} = params) do
     case Decimal.gt?(incr, 0) do
       true ->

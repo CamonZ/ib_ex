@@ -3,10 +3,10 @@ defmodule IbEx.Client.Types.Order.MiscOptionsParams do
   Miscellaneous params
   """
 
-  defstruct misc_options: []
+  defstruct misc_options: ""
 
   @type t :: %__MODULE__{
-          misc_options: list()
+          misc_options: binary()
         }
 
   def new(args) when is_list(args) do

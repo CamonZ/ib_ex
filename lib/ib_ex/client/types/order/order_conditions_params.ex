@@ -38,8 +38,8 @@ defmodule IbEx.Client.Types.Order.OrderConditionsParams do
   defp serialize_conditions(params) when is_list(params) do
     params
     |> Enum.reduce([], fn cond, acc -> [OrderCondition.serialize(cond) | acc] end)
-    |> List.flatten()
     |> Enum.reverse()
+    |> List.flatten()
   end
 
   defp serialize_conditions(_), do: []

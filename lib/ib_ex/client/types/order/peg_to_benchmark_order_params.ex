@@ -37,7 +37,7 @@ defmodule IbEx.Client.Types.Order.PegToBenchmarkOrderParams do
       params.is_pegged_change_amount_decrease,
       params.pegged_change_amount,
       params.reference_change_amoung,
-      params.reference_exchange_id,
+      params.reference_exchange_id
     ]
   end
 

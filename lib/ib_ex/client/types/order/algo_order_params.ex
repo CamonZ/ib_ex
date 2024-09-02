@@ -4,8 +4,8 @@ defmodule IbEx.Client.Types.Order.AlgoOrderParams do
   """
   alias IbEx.Client.Types.Order.AlgoOrderParam
 
-  defstruct algo_id: nil,
-            algo_strategy: nil,
+  defstruct algo_id: "",
+            algo_strategy: "",
             algo_params: []
 
   @type t :: %__MODULE__{
@@ -27,21 +27,23 @@ defmodule IbEx.Client.Types.Order.AlgoOrderParams do
   def new(), do: new(%{})
 
   @spec serialize(__MODULE__.t()) :: list()
-  def serialize(%__MODULE__{algo_strategy: strategy} = params) when strategy not in ["", nil] do
+  def serialize(%__MODULE__{} = params) do
     [
       params.algo_strategy,
-      length(params.algo_params)
     ] ++
-      serialize_algo_params(params.algo_params)
+      serialize_algo_params(params) ++ 
+    [params.algo_id]
   end
 
   def serialize(%__MODULE__{}), do: []
 
-  @spec serialize_algo_params(list(AlgoOrderParam.t())) :: list()
-  defp serialize_algo_params(params) when is_list(params) do
-    params
-    |> Enum.reduce([], fn %{tag: tag, value: value}, acc -> [tag, value | acc] end)
+  @spec serialize_algo_params(__MODULE__.t()) :: list()
+  defp serialize_algo_params(%__MODULE__{ algo_strategy: strategy } = params) when strategy not in ["", nil] do
+    [length(params.algo_params)]++
+    (params.algo_params
+    |> Enum.reduce([], fn %{tag: tag, value: value}, acc -> [[tag, value] | acc] end)
     |> Enum.reverse()
+    |> List.flatten())
   end
 
   defp serialize_algo_params(_), do: []

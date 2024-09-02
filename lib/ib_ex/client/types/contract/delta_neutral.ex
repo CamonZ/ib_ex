@@ -1,4 +1,4 @@
-defmodule IbEx.Client.Types.DeltaNeutralContract do
+defmodule IbEx.Client.Types.Contract.DeltaNeutral do
   defstruct conid: nil, delta: nil, price: nil
 
   @type t :: %__MODULE__{
@@ -16,9 +16,11 @@ defmodule IbEx.Client.Types.DeltaNeutralContract do
 
   def serialize(%__MODULE__{} = contract) do
     [
+      true,
       contract.conid,
       contract.delta,
       contract.price
     ]
   end
+  def serialize(_), do: [false]
 end
