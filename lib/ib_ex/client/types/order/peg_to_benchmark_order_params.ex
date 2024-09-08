@@ -2,16 +2,14 @@ defmodule IbEx.Client.Types.Order.PegToBenchmarkOrderParams do
   @moduledoc """
   Represents Pegged To Benchmark order parameters
   """
-  defstruct reference_contract_id: nil,
+  defstruct reference_contract_id: 0,
             is_pegged_change_amount_decrease: false,
-            # 0. 
-            pegged_change_amount: nil,
-            # 0.
-            reference_change_amoung: nil,
+            pegged_change_amount: Decimal.new("0.0"),
+            reference_change_amoung: Decimal.new("0.0"),
             reference_exchange_id: nil
 
   @type t :: %__MODULE__{
-          reference_contract_id: binary(),
+          reference_contract_id: integer(),
           is_pegged_change_amount_decrease: boolean(),
           pegged_change_amount: Decimal.t(),
           reference_change_amoung: Decimal.t(),
@@ -30,8 +28,8 @@ defmodule IbEx.Client.Types.Order.PegToBenchmarkOrderParams do
 
   def new(), do: new(%{})
 
-  @spec serialize(__MODULE__.t()) :: list()
-  def serialize(%__MODULE__{} = params) do
+  @spec serialize(__MODULE__.t(), boolean()) :: list()
+  def serialize(%__MODULE__{} = params, true) do
     [
       params.reference_contract_id,
       params.is_pegged_change_amount_decrease,
@@ -41,5 +39,5 @@ defmodule IbEx.Client.Types.Order.PegToBenchmarkOrderParams do
     ]
   end
 
-  def serialize(_), do: []
+  def serialize(_, _), do: []
 end

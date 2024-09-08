@@ -1,15 +1,16 @@
 defmodule IbEx.Client.Types.Order do
   @moduledoc """
-  Represents an Order.  
-  """
+  Represents an Order.
 
-  alias IbEx.Client.Types.Order.ComboLeg
+  TODO: 
+  1. tighten __MODULE__ param types
+  2. add tests
+  """
 
   alias IbEx.Client.Types.Order.{
     ShortSaleParams,
     FinancialAdvisorParams,
     VolatilityOrderParams,
-    TrailParams,
     HedgeOrderParams,
     ScaleOrderParams,
     ClearingInfoParams,
@@ -18,9 +19,13 @@ defmodule IbEx.Client.Types.Order do
     PegToBenchmarkOrderParams,
     OrderConditionsParams,
     SoftDollarTierParams,
-    MidOffsets
+    MidOffsets,
+    ComboLeg,
+    SmartComboRoutingParams
   }
 
+  @unset_integer 2 ** 31 - 1
+  @unset_double Float.max_finite()
   import IbEx.Client.Utils, only: [list_to_union_type: 1]
 
   defstruct api_client_order_id: nil,
@@ -35,7 +40,7 @@ defmodule IbEx.Client.Types.Order do
             oca_group_identifier: nil,
             account: nil,
             open_close: nil,
-            origin: nil,
+            origin: 0,
             order_ref: nil,
             transmit: true,
             parent_id: 0,
@@ -43,10 +48,11 @@ defmodule IbEx.Client.Types.Order do
             sweep_to_fill: false,
             display_size: 0,
             trigger_method: 0,
-            outside_rth: nil,
-            hidden: nil,
+            outside_rth: false,
+            hidden: false,
             combo_legs: [],
-            discretionary_amount: nil,
+            smart_combo_routing_params: [],
+            discretionary_amount: 0,
             good_after_time: nil,
             good_till_date: nil,
             fa_params: nil,
@@ -66,10 +72,13 @@ defmodule IbEx.Client.Types.Order do
             stock_range_upper: nil,
             override_percentage_constraints: false,
             volatility_order_params: nil,
-            trail_order_params: nil,
+            continuous_update: nil,
+            reference_price_type: nil,
+            trail_stop_price: nil,
+            trailing_percent: nil,
             scale_order_params: nil,
             hedge_order_params: nil,
-            opt_out_smart_routing: nil,
+            opt_out_smart_routing: false,
             clearing_params: nil,
             not_held: false,
             algo_params: nil,
@@ -81,15 +90,15 @@ defmodule IbEx.Client.Types.Order do
             peg_to_bench_params: nil,
             order_conditions_params: [],
             adjusted_order_type: nil,
-            trigger_price: nil,
-            limit_price_offset: nil,
-            adjusted_stop_price: nil,
-            adjusted_stop_limit_price: nil,
-            adjusted_trailing_amount: nil,
-            adjustable_trailing_unit: nil,
+            trigger_price: @unset_double,
+            limit_price_offset: @unset_double,
+            adjusted_stop_price: @unset_double,
+            adjusted_stop_limit_price: @unset_double,
+            adjusted_trailing_amount: @unset_double,
+            adjustable_trailing_unit: 0,
             ext_operator: nil,
             soft_dollar_tier_params: nil,
-            cash_quantity: nil,
+            cash_quantity: @unset_double,
             mifid2_decision_maker: nil,
             mifid2_decision_algo: nil,
             mifid2_execution_trader: nil,
@@ -98,9 +107,9 @@ defmodule IbEx.Client.Types.Order do
             is_oms_container: false,
             discretionary_up_to_limit_price: false,
             use_price_management_algo: nil,
-            duration: nil,
-            post_to_ats: nil,
-            auto_cancel_parent: nil,
+            duration: @unset_integer,
+            post_to_ats: @unset_integer,
+            auto_cancel_parent: false,
             advanced_error_override: nil,
             manual_order_time: nil,
             min_trade_quantity: nil,
@@ -118,7 +127,7 @@ defmodule IbEx.Client.Types.Order do
 
   @type times_in_force :: unquote(list_to_union_type(@times_in_force))
 
-  # 0 = Client, 1 = Firm, 2 = unknown
+  # 0 = Customer, 1 = Firm, 2 = unknown
   @type origin :: 0..2
 
   # 0=Default, 1=Double_Bid_Ask, 2=Last, 3=Double_Last, 4=Bid_Ask, 7=Last_or_Bid_Ask, 8=Mid-point
@@ -132,6 +141,8 @@ defmodule IbEx.Client.Types.Order do
   @type auction_strategy :: 0..3
   @type open_close :: :O | :C
 
+  # 1 = :average, 2 = :bid_or_ask
+  @type reference_price_type :: 1..2
   # https://www.interactivebrokers.com/campus/ibkr-api-page/twsapi-ref/#order-ref
   @type t :: %__MODULE__{
           # ORDER IDENTIFIER 
@@ -162,6 +173,7 @@ defmodule IbEx.Client.Types.Order do
           outside_rth: boolean(),
           hidden: boolean(),
           combo_legs: list(ComboLeg.t()),
+          smart_combo_routing_params: SmartComboRoutingParams.t(),
           discretionary_amount: Decimal.t(),
           good_after_time: binary(),
           good_till_date: binary(),
@@ -182,7 +194,10 @@ defmodule IbEx.Client.Types.Order do
           stock_range_upper: Decimal.t(),
           override_percentage_constraints: boolean(),
           volatility_order_params: VolatilityOrderParams.t(),
-          trail_order_params: TrailParams.t(),
+          continuous_update: non_neg_integer() | none(),
+          reference_price_type: reference_price_type(),
+          trail_stop_price: Decimal.t(),
+          trailing_percent: Decimal.t(),
           scale_order_params: ScaleOrderParams.t(),
           hedge_order_params: HedgeOrderParams.t(),
           opt_out_smart_routing: boolean(),
@@ -197,12 +212,12 @@ defmodule IbEx.Client.Types.Order do
           peg_to_bench_params: PegToBenchmarkOrderParams.t(),
           order_conditions_params: OrderConditionsParams.t(),
           adjusted_order_type: binary(),
-          trigger_price: Decimal.t(),
-          limit_price_offset: Decimal.t(),
-          adjusted_stop_price: Decimal.t(),
-          adjusted_stop_limit_price: Decimal.t(),
-          adjusted_trailing_amount: Decimal.t(),
-          adjustable_trailing_unit: non_neg_integer(),
+          trigger_price: Decimal.t() | float(),
+          limit_price_offset: Decimal.t() | float(),
+          adjusted_stop_price: Decimal.t() | float(),
+          adjusted_stop_limit_price: Decimal.t() | float(),
+          adjusted_trailing_amount: Decimal.t() | float(),
+          adjustable_trailing_unit: integer(),
           ext_operator: binary(),
           soft_dollar_tier_params: SoftDollarTierParams.t(),
           cash_quantity: Decimal.t(),
@@ -214,8 +229,8 @@ defmodule IbEx.Client.Types.Order do
           is_oms_container: boolean(),
           discretionary_up_to_limit_price: boolean(),
           use_price_management_algo: boolean() | nil,
-          duration: non_neg_integer(),
-          post_to_ats: non_neg_integer(),
+          duration: integer(),
+          post_to_ats: integer(),
           auto_cancel_parent: binary(),
           advanced_error_override: binary(),
           manual_order_time: non_neg_integer(),
@@ -225,6 +240,9 @@ defmodule IbEx.Client.Types.Order do
           mid_offset_at_whole: Decimal.t(),
           mid_offset_at_half: Decimal.t()
         }
+
+  def unset_integer, do: @unset_integer
+  def unset_double, do: @unset_double
 
   def new(attrs) when is_list(attrs) do
     attrs
@@ -238,7 +256,6 @@ defmodule IbEx.Client.Types.Order do
       |> assign_params(:fa_params, FinancialAdvisorParams)
       |> assign_params(:short_sale_params, ShortSaleParams)
       |> assign_params(:volatility_order_params, VolatilityOrderParams)
-      |> assign_params(:trail_order_params, TrailParams)
       |> assign_params(:scale_order_params, ScaleOrderParams)
       |> assign_params(:hedge_order_params, HedgeOrderParams)
       |> assign_params(:clearing_params, ClearingInfoParams)
@@ -247,6 +264,7 @@ defmodule IbEx.Client.Types.Order do
       |> assign_params(:peg_to_bench_params, PegToBenchmarkOrderParams)
       |> assign_params(:order_conditions_params, OrderConditionsParams)
       |> assign_params(:soft_dollar_tier_params, SoftDollarTierParams)
+      |> assign_params(:smart_combo_routing_params, SmartComboRoutingParams)
 
     struct(__MODULE__, attrs)
   end
@@ -260,12 +278,9 @@ defmodule IbEx.Client.Types.Order do
     [
       # beginning of order related fields
       order.action,
-      # total quantity here is a decimal or float for fractional positions
       order.total_quantity,
       order.order_type,
-      # handle empty
       order.limit_price,
-      # handle empty
       order.aux_price,
 
       # extended order fields 
@@ -287,15 +302,16 @@ defmodule IbEx.Client.Types.Order do
   end
 
   def serialize(%__MODULE__{} = order, :second_batch) do
-      [
-        # send deprecated shares_allocation field
-        nil,
-        order.discretionary_amount,
-        order.good_after_time,
-        order.good_till_date
-      ] ++
+    [
+      nil,
+      order.discretionary_amount,
+      order.good_after_time,
+      order.good_till_date
+    ] ++
       FinancialAdvisorParams.serialize(order.fa_params) ++
-      [order.model_code] ++
+      [
+        order.model_code
+      ] ++
       ShortSaleParams.serialize(order.short_sale_params) ++
       [
         order.oca_type,
@@ -316,7 +332,12 @@ defmodule IbEx.Client.Types.Order do
         order.override_percentage_constraints
       ] ++
       VolatilityOrderParams.serialize(order.volatility_order_params) ++
-      TrailParams.serialize(order.trail_order_params) ++
+      [
+        order.continuous_update,
+        order.reference_price_type,
+        order.trail_stop_price,
+        order.trailing_percent
+      ] ++
       ScaleOrderParams.serialize(order.scale_order_params) ++
       HedgeOrderParams.serialize(order.hedge_order_params) ++
       [
@@ -329,6 +350,8 @@ defmodule IbEx.Client.Types.Order do
   end
 
   def serialize(%__MODULE__{} = order, :third_batch) do
+    is_pegbench_order? = order.order_type == "PEG BENCH"
+
     AlgoOrderParams.serialize(order.algo_params) ++
       [
         order.what_if_info_and_commission,
@@ -337,7 +360,7 @@ defmodule IbEx.Client.Types.Order do
         order.randomize_size,
         order.randomize_price
       ] ++
-      PegToBenchmarkOrderParams.serialize(order.peg_to_bench_params) ++
+      PegToBenchmarkOrderParams.serialize(order.peg_to_bench_params, is_pegbench_order?) ++
       OrderConditionsParams.serialize(order.order_conditions_params) ++
       [
         order.adjusted_order_type,
@@ -384,12 +407,19 @@ defmodule IbEx.Client.Types.Order do
        |> List.flatten())
   end
 
-  def maybe_serialize_combo_legs(_,_), do: []
-    
-  @spec maybe_serialize_min_trade_quantity(__MODULE__.t(), boolean()) :: list()
-    def maybe_serialize_min_trade_quantity(%__MODULE__{} = order, true) do
-      [order.min_trade_quantity]
-    end
+  def maybe_serialize_combo_legs(_, _), do: []
 
-    def maybe_serialize_min_trade_quantity(_, _), do: []
+  @spec maybe_serialize_smart_combo_routing_params(__MODULE__.t(), boolean()) :: list()
+  def maybe_serialize_smart_combo_routing_params(%__MODULE__{} = order, true) do
+    SmartComboRoutingParams.serialize(order.smart_combo_routing_params)
+  end
+
+  def maybe_serialize_smart_combo_routing_params(_, _), do: []
+
+  @spec maybe_serialize_min_trade_quantity(__MODULE__.t(), boolean()) :: list()
+  def maybe_serialize_min_trade_quantity(%__MODULE__{} = order, true) do
+    [order.min_trade_quantity]
+  end
+
+  def maybe_serialize_min_trade_quantity(_, _), do: []
 end

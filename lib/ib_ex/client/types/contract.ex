@@ -70,7 +70,7 @@ defmodule IbEx.Client.Types.Contract do
   ]
 
   def rights, do: @rights
-  def security_types, do: @security_types
+  def security_types, do: Enum.map(@security_types, &to_string/1)
   def security_id_types, do: @security_id_types
 
   @spec from_serialized_fields(list(binary())) :: {:ok, t()} | {:error, :invalid_args}
@@ -92,7 +92,7 @@ defmodule IbEx.Client.Types.Contract do
   def from_serialized_fields(_) do
     {:error, :invalid_args}
   end
-  
+
   def assign_params(attrs, key, module) do
     Map.put(attrs, key, module.new(Map.get(attrs, key, %{})))
   end
@@ -102,6 +102,7 @@ defmodule IbEx.Client.Types.Contract do
     attrs =
       attrs
       |> assign_params(:delta_neutral_contract, DeltaNeutral)
+
     struct(__MODULE__, attrs)
   end
 
@@ -161,4 +162,11 @@ defmodule IbEx.Client.Types.Contract do
        |> Enum.reverse()
        |> List.flatten())
   end
+
+  @spec serialize_delta_neutral_contract(__MODULE__.t()) :: list()
+  def serialize_delta_neutral_contract(%__MODULE__{delta_neutral_contract: %DeltaNeutral{} = contract}) do
+    DeltaNeutral.serialize(contract)
+  end
+
+  def serialize_delta_neutral_contract(%__MODULE__{}), do: [false]
 end

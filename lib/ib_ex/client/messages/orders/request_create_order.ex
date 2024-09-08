@@ -46,15 +46,15 @@ defmodule IbEx.Client.Messages.Orders.RequestCreateOrder do
   defimpl String.Chars, for: __MODULE__ do
     alias IbEx.Client.Messages.Base
     alias IbEx.Client.Types.{Order, Contract}
-    alias Contract.DeltaNeutral
 
     def to_string(msg) do
+      is_bag_order? = msg.contract.security_type == "BAG"
+      is_ibkrats_exchange? = msg.contract.exchange == "IBKRATS"
+
       fields =
         [
           msg.message_id,
-          # old server versions put here the message version
           msg.order_id
-          # ] 
         ] ++
           Contract.serialize(msg.contract, false) ++
           [
@@ -63,16 +63,16 @@ defmodule IbEx.Client.Messages.Orders.RequestCreateOrder do
           ] ++
           Order.serialize(msg.order, :first_batch) ++
           Contract.maybe_serialize_combo_legs(msg.contract) ++
-          Order.maybe_serialize_combo_legs(msg.order, msg.contract.security_type == "BAG") ++          
+          Order.maybe_serialize_combo_legs(msg.order, is_bag_order?) ++
+          Order.maybe_serialize_smart_combo_routing_params(msg.order, is_bag_order?) ++
           Order.serialize(msg.order, :second_batch) ++
-          DeltaNeutral.serialize(msg.contract.delta_neutral_contract) ++ 
+          Contract.serialize_delta_neutral_contract(msg.contract) ++
           Order.serialize(msg.order, :third_batch) ++
-          Order.maybe_serialize_min_trade_quantity(msg.order, msg.contract.exchange == "IBKRATS") ++
+          Order.maybe_serialize_min_trade_quantity(msg.order, is_ibkrats_exchange?) ++
           Order.serialize(msg.order, :fourth_batch)
 
       Base.build(fields)
     end
-
   end
 
   defimpl Inspect, for: __MODULE__ do
@@ -87,9 +87,7 @@ defmodule IbEx.Client.Messages.Orders.RequestCreateOrder do
           total_quantity: #{msg.order.total_quantity}, 
           order_type: #{msg.order.order_type},
           limit_price: #{msg.order.limit_price},
-          aux_price: #{msg.order.aux_price},
-          algo_strategy: #{msg.order.algo_params.algo_strategy},
-          misc_options: #{msg.order.misc_options_params.misc_options}
+          aux_price: #{msg.order.aux_price}
         },
         contract: #{contract}
       }

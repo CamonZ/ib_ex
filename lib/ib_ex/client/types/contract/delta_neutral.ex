@@ -14,6 +14,7 @@ defmodule IbEx.Client.Types.Contract.DeltaNeutral do
 
   def new(), do: new(%{})
 
+  @spec serialize(__MODULE__.t()) :: list()
   def serialize(%__MODULE__{} = contract) do
     [
       true,
@@ -22,5 +23,6 @@ defmodule IbEx.Client.Types.Contract.DeltaNeutral do
       contract.price
     ]
   end
-  def serialize(_), do: [false]
+
+  def serialize(_), do: []
 end

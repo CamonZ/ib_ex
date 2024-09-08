@@ -9,12 +9,17 @@ defmodule IbEx.Client.Types.Order.ShortSaleParams do
   * code: Exempt Code
   """
 
-  defstruct slot: nil, location: nil, code: nil
+  defstruct short_sale_slot: 0, designated_location: nil, exempt_code: -1
+
+  # 0 for retail, 1 or 2 for institutions
+  # 1 if you hold the shares, 2 if they will be delivered from elsewhere.  
+  # Only for Action=SSHORT
+  @type short_sale_slot :: 0..2
 
   @type t :: %__MODULE__{
-          slot: binary(),
-          location: binary(),
-          code: binary()
+          short_sale_slot: short_sale_slot(),
+          designated_location: binary(),
+          exempt_code: binary()
         }
 
   def new(args) when is_list(args) do
@@ -31,17 +36,17 @@ defmodule IbEx.Client.Types.Order.ShortSaleParams do
 
   def new(slot, location, code) do
     %__MODULE__{
-      slot: slot,
-      location: location,
-      code: code
+      short_sale_slot: slot,
+      designated_location: location,
+      exempt_code: code
     }
   end
 
   def serialize(%__MODULE__{} = params) do
     [
-      params.slot,
-      params.location,
-      params.code
+      params.short_sale_slot,
+      params.designated_location,
+      params.exempt_code
     ]
   end
 end

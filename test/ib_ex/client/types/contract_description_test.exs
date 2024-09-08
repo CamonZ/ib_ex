@@ -1,6 +1,7 @@
 defmodule IbEx.Client.Types.ContractDescriptionTest do
   use ExUnit.Case, async: true
 
+  alias IbEx.Client.Types.Contract.DeltaNeutral
   alias IbEx.Client.Types.Contract
   alias IbEx.Client.Types.ContractDescription
 
@@ -30,6 +31,7 @@ defmodule IbEx.Client.Types.ContractDescriptionTest do
                symbol: "AAPL",
                security_type: "STK",
                currency: "USD",
+               delta_neutral_contract: DeltaNeutral.new(),
                primary_exchange: "NASDAQ",
                description: "APPLE INC",
                issuer_id: ""

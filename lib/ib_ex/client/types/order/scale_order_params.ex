@@ -9,10 +9,10 @@ defmodule IbEx.Client.Types.Order.ScaleOrderParams do
             price_adjust_value: nil,
             price_adjust_interval: nil,
             profit_offset: nil,
-            auto_reset: nil,
+            auto_reset: false,
             init_position: nil,
             init_fill_quantity: nil,
-            random_percent: nil,
+            random_percent: false,
             table: nil,
 
             # for GTC orders
@@ -51,7 +51,8 @@ defmodule IbEx.Client.Types.Order.ScaleOrderParams do
   def serialize(%__MODULE__{} = params) do
     [
       params.init_level_size,
-      params.subs_level_size
+      params.subs_level_size,
+      params.price_increment
     ] ++
       serialize_scale_price_increment_params(params) ++
       [
@@ -63,11 +64,13 @@ defmodule IbEx.Client.Types.Order.ScaleOrderParams do
 
   @spec serialize_scale_price_increment_params(__MODULE__.t()) :: list()
   defp serialize_scale_price_increment_params(%__MODULE__{price_increment: nil}), do: []
+
   defp serialize_scale_price_increment_params(%__MODULE__{price_increment: incr} = params) do
     case Decimal.gt?(incr, 0) do
       true ->
         [
           params.price_adjust_value,
+          params.price_adjust_interval,
           params.profit_offset,
           params.auto_reset,
           params.init_position,

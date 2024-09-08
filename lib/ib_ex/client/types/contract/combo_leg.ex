@@ -1,6 +1,8 @@
 defmodule IbEx.Client.Types.Contract.ComboLeg do
   @moduledoc """
+  Represents contract combo leg params
 
+  TODO: implement serialization
   """
   import IbEx.Client.Utils, only: [list_to_union_type: 1]
 
@@ -9,7 +11,7 @@ defmodule IbEx.Client.Types.Contract.ComboLeg do
             action: nil,
             exchange: nil,
             open_close: nil,
-            short_sale_slot: nil,
+            short_sale_slot: 0,
             designated_location: nil,
             exempt_code: -1
 
@@ -24,7 +26,7 @@ defmodule IbEx.Client.Types.Contract.ComboLeg do
   @type open_close :: 0..3
 
   # for stock legs when doing short sale
-  # short_sale_slot values:
+  # Contract.ComboLeg short_sale_slot values:
   # TODO: 
   # 0 ??? 
   # 1 = clearing broker, 2 = third party
@@ -40,4 +42,16 @@ defmodule IbEx.Client.Types.Contract.ComboLeg do
           designated_location: binary(),
           exempt_code: integer()
         }
+
+  def new(args) when is_list(args) do
+    args
+    |> Enum.into(%{})
+    |> new()
+  end
+
+  def new(args) when is_map(args) do
+    struct(__MODULE__, args)
+  end
+
+  def new(), do: new(%{})
 end
