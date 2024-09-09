@@ -22,7 +22,7 @@ defmodule IbEx.Client.Types.Order.ScaleOrderParams do
   @type t :: %__MODULE__{
           init_level_size: non_neg_integer(),
           subs_level_size: non_neg_integer(),
-          price_increment: Decimal.t(),
+          price_increment: Decimal.t() | nil,
           price_adjust_value: Decimal.t(),
           price_adjust_interval: non_neg_integer(),
           profit_offset: Decimal.t(),

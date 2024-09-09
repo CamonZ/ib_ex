@@ -53,7 +53,7 @@ defmodule IbEx.Client.Types.Order.VolatilityOrderParams do
   end
 
   @spec handle_extra_fields(list(), __MODULE__.t()) :: list()
-  def handle_extra_fields(fields, %__MODULE__{volatility_type: type} = params) when type not in ["", nil] do
+  def handle_extra_fields(fields, %__MODULE__{volatility_type: type} = params) when type in 1..2 do
     fields ++
       [
         params.delta_neutral_conid,

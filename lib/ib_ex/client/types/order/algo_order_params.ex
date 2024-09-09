@@ -2,16 +2,16 @@ defmodule IbEx.Client.Types.Order.AlgoOrderParams do
   @moduledoc """
   Params for an algo order
   """
-  alias IbEx.Client.Types.{TagValue, TagValueList}
+  alias IbEx.Client.Types.TagValueList
 
-  defstruct algo_id: "",
-            algo_strategy: "",
-            algo_params: []
+  defstruct algo_strategy: nil,
+            algo_params: [],
+            algo_id: nil
 
   @type t :: %__MODULE__{
-          algo_id: binary(),
           algo_strategy: binary(),
-          algo_params: list(TagValue.t())
+          algo_params: TagValueList.t(),
+          algo_id: binary()
         }
 
   def new(args) when is_list(args) do

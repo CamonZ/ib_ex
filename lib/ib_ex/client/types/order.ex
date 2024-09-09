@@ -7,6 +7,8 @@ defmodule IbEx.Client.Types.Order do
   2. add tests
   """
 
+  alias IbEx.Client.Types.TagValueList
+
   alias IbEx.Client.Types.Order.{
     ShortSaleParams,
     FinancialAdvisorParams,
@@ -15,7 +17,6 @@ defmodule IbEx.Client.Types.Order do
     ScaleOrderParams,
     ClearingInfoParams,
     AlgoOrderParams,
-    MiscOptionsParams,
     PegToBenchmarkOrderParams,
     OrderConditionsParams,
     SoftDollarTierParams,
@@ -83,7 +84,7 @@ defmodule IbEx.Client.Types.Order do
             not_held: false,
             algo_params: nil,
             what_if_info_and_commission: false,
-            misc_options_params: nil,
+            misc_options: [],
             solicited: false,
             randomize_size: false,
             randomize_price: false,
@@ -121,11 +122,9 @@ defmodule IbEx.Client.Types.Order do
   @times_in_force ~w(
    DAY GTC IOC GTD OPG FOK DTC
   )a
-
-  # Individual = 'I', Agency = 'A', AgentOtherMember = 'W', IndividualPTIA = 'J', AgencyPTIA = 'U', AgentOtherMemberPTIA = 'M', IndividualPT = 'K', AgencyPT = 'Y', AgentOtherMemberPT = 'N'
-  @rules_80a ~w(I A W J U M K Y N)a
-
   @type times_in_force :: unquote(list_to_union_type(@times_in_force))
+
+  @type open_close :: :O | :C
 
   # 0 = Customer, 1 = Firm, 2 = unknown
   @type origin :: 0..2
@@ -135,11 +134,13 @@ defmodule IbEx.Client.Types.Order do
 
   # 1 = CANCEL_WITH_BLOCK, 2 = REDUCE_WITH_BLOCK, 3 = REDUCE_NON_BLOCK
   @type oca_type :: 1..3
+
+  # Individual = 'I', Agency = 'A', AgentOtherMember = 'W', IndividualPTIA = 'J', AgencyPTIA = 'U', AgentOtherMemberPTIA = 'M', IndividualPT = 'K', AgencyPT = 'Y', AgentOtherMemberPT = 'N'
+  @rules_80a ~w(I A W J U M K Y N)a
   @type rules_80a :: unquote(list_to_union_type(@rules_80a))
 
   # 0 = AUCTION_UNSET, 1 = AUCTION_MATCH, 2 = AUCTION_IMPROVEMENT, 3 = AUCTION_TRANSPARENT
   @type auction_strategy :: 0..3
-  @type open_close :: :O | :C
 
   # 1 = :average, 2 = :bid_or_ask
   @type reference_price_type :: 1..2
@@ -184,7 +185,7 @@ defmodule IbEx.Client.Types.Order do
           rule_80a: rules_80a(),
           settling_firm: binary(),
           all_or_none: boolean(),
-          min_quantity: non_neg_integer(),
+          min_quantity: integer(),
           percent_offset: Decimal.t(),
           auction_strategy: auction_strategy(),
           starting_price: Decimal.t(),
@@ -194,7 +195,7 @@ defmodule IbEx.Client.Types.Order do
           stock_range_upper: Decimal.t(),
           override_percentage_constraints: boolean(),
           volatility_order_params: VolatilityOrderParams.t(),
-          continuous_update: non_neg_integer() | none(),
+          continuous_update: boolean() | nil,
           reference_price_type: reference_price_type(),
           trail_stop_price: Decimal.t(),
           trailing_percent: Decimal.t(),
@@ -205,7 +206,7 @@ defmodule IbEx.Client.Types.Order do
           not_held: boolean(),
           algo_params: AlgoOrderParams.t(),
           what_if_info_and_commission: boolean(),
-          misc_options_params: MiscOptionsParams.t(),
+          misc_options: TagValueList.t(),
           solicited: boolean(),
           randomize_size: boolean(),
           randomize_price: boolean(),
@@ -233,7 +234,7 @@ defmodule IbEx.Client.Types.Order do
           post_to_ats: integer(),
           auto_cancel_parent: binary(),
           advanced_error_override: binary(),
-          manual_order_time: non_neg_integer(),
+          manual_order_time: binary(),
           min_trade_quantity: non_neg_integer(),
           min_compete_size: non_neg_integer(),
           compete_against_best_offset: Decimal.t() | :infinity,
@@ -260,7 +261,6 @@ defmodule IbEx.Client.Types.Order do
       |> assign_params(:hedge_order_params, HedgeOrderParams)
       |> assign_params(:clearing_params, ClearingInfoParams)
       |> assign_params(:algo_params, AlgoOrderParams)
-      |> assign_params(:misc_options_params, MiscOptionsParams)
       |> assign_params(:peg_to_bench_params, PegToBenchmarkOrderParams)
       |> assign_params(:order_conditions_params, OrderConditionsParams)
       |> assign_params(:soft_dollar_tier_params, SoftDollarTierParams)
@@ -355,7 +355,7 @@ defmodule IbEx.Client.Types.Order do
     AlgoOrderParams.serialize(order.algo_params) ++
       [
         order.what_if_info_and_commission,
-        MiscOptionsParams.serialize(order.misc_options_params),
+        TagValueList.serialize_to_string(order.misc_options),
         order.solicited,
         order.randomize_size,
         order.randomize_price

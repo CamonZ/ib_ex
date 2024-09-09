@@ -19,7 +19,7 @@ defmodule IbEx.Client.Types.Order.ShortSaleParams do
   @type t :: %__MODULE__{
           short_sale_slot: short_sale_slot(),
           designated_location: binary(),
-          exempt_code: binary()
+          exempt_code: integer()
         }
 
   def new(args) when is_list(args) do
@@ -29,7 +29,13 @@ defmodule IbEx.Client.Types.Order.ShortSaleParams do
   end
 
   def new(args) when is_map(args) do
-    struct(__MODULE__, args)
+    result = struct(__MODULE__, args)
+
+    if result.short_sale_slot != 2 do
+      Map.put(result, :designated_location, nil)
+    else
+      result
+    end
   end
 
   def new(), do: new(%{})
@@ -37,7 +43,7 @@ defmodule IbEx.Client.Types.Order.ShortSaleParams do
   def new(slot, location, code) do
     %__MODULE__{
       short_sale_slot: slot,
-      designated_location: location,
+      designated_location: if(slot == 2, do: location, else: nil),
       exempt_code: code
     }
   end
