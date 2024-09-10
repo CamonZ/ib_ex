@@ -47,18 +47,19 @@ defmodule IbEx.Client.Messages.Orders.RequestCreateOrderTest do
       msg = %RequestCreateOrder{order_id: @order_id, order: @order, contract: @contract}
 
       contract_str = Enum.join(Contract.serialize(@contract, false), ", ")
-      assert inspect(msg) == 
-        """
-        --> RequestCreateOrder{
-          order_id: 123,
-          order: %Order{
-            action: BUY,
-            total_quantity: 1,
-            order_type: MKT
-          },
-          contract: #{contract_str}
-        }
-        """
+
+      assert inspect(msg) ==
+               """
+               --> RequestCreateOrder{
+                 order_id: 123,
+                 order: %Order{
+                   action: BUY,
+                   total_quantity: 1,
+                   order_type: MKT
+                 },
+                 contract: #{contract_str}
+               }
+               """
     end
   end
 end
