@@ -14,7 +14,7 @@ defmodule IbEx.Client.Messages.MarketData.RequestCancelDataTest do
   end
 
   describe "String.Chars implementation" do
-    test "converts the mesasge to a serializable binary" do
+    test "converts the message to a serializable binary" do
       msg = %RequestCancelData{message_id: 2, version: 2, request_id: "1000"}
       assert to_string(msg) == <<50, 0, 50, 0, 49, 48, 48, 48, 0>>
     end

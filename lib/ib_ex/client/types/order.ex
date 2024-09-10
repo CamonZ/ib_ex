@@ -153,7 +153,7 @@ defmodule IbEx.Client.Types.Order do
 
           # MAIN ORDER FIELDS 
           action: binary(),
-          total_quantity: Decimal.t(),
+          total_quantity: non_neg_integer(),
           order_type: binary(),
           limit_price: Decimal.t(),
           aux_price: Decimal.t(),

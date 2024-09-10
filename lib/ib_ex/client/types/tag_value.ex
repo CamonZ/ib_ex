@@ -42,6 +42,7 @@ defmodule IbEx.Client.Types.TagValueList do
   end
 
   def serialize_to_string(_), do: ""
+
   defp to_nested_list(list) when is_list(list) do
     list
     |> Enum.reduce([], fn %{tag: tag, value: value}, acc -> [[tag, value] | acc] end)

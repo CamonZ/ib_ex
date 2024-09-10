@@ -27,7 +27,7 @@ defmodule IbEx.Client.Types.OrderTest do
         api_client_id: 2,
         host_order_id: 3,
         action: "BUY",
-        total_quantity: Decimal.new("10"),
+        total_quantity: 10,
         order_type: "IBALGO"
       }
 
@@ -36,7 +36,7 @@ defmodule IbEx.Client.Types.OrderTest do
                api_client_id: 2,
                host_order_id: 3,
                action: "BUY",
-               total_quantity: Decimal.new("10"),
+               total_quantity: 10,
                order_type: "IBALGO",
                limit_price: nil,
                aux_price: nil,
@@ -129,7 +129,7 @@ defmodule IbEx.Client.Types.OrderTest do
     test "serializes first batch of parameters for RequestCreateOrder" do
       params = %{
         action: "BUY",
-        total_quantity: Decimal.new("1"),
+        total_quantity: 1,
         order_type: "IBALGO",
         limit_price: Decimal.new("2"),
         aux_price: Decimal.new("3"),

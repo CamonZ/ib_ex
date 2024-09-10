@@ -12,6 +12,17 @@ defmodule IbEx.Client.Types.ContractTest do
                conid: "520512263",
                symbol: "GTLB",
                security_type: "STK",
+               delta_neutral_contract: nil
+             }
+    end
+
+    test "creates a BAG Contract with valid attributes" do
+      attrs = %{conid: "520512263", symbol: "GTLB", security_type: "BAG"}
+
+      assert Contract.new(attrs) == %Contract{
+               conid: "520512263",
+               symbol: "GTLB",
+               security_type: "BAG",
                delta_neutral_contract: DeltaNeutral.new()
              }
     end
@@ -87,7 +98,7 @@ defmodule IbEx.Client.Types.ContractTest do
                currency: "USD",
                local_symbol: "GTLB",
                trading_class: "",
-               delta_neutral_contract: DeltaNeutral.new()
+               delta_neutral_contract: nil
              }
     end
 

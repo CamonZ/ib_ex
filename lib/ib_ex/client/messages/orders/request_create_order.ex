@@ -77,19 +77,17 @@ defmodule IbEx.Client.Messages.Orders.RequestCreateOrder do
 
   defimpl Inspect, for: __MODULE__ do
     def inspect(msg, _opts) do
-      contract = Contract.serialize(msg.contract, false)
+      contract_str = Enum.join(Contract.serialize(msg.contract, false), ", ")
 
       """
       --> RequestCreateOrder{
         order_id: #{msg.order_id},
         order: %Order{
-          action: #{msg.order.action}, 
-          total_quantity: #{msg.order.total_quantity}, 
-          order_type: #{msg.order.order_type},
-          limit_price: #{msg.order.limit_price},
-          aux_price: #{msg.order.aux_price}
+          action: #{msg.order.action},
+          total_quantity: #{msg.order.total_quantity},
+          order_type: #{msg.order.order_type}
         },
-        contract: #{contract}
+        contract: #{contract_str}
       }
       """
     end
