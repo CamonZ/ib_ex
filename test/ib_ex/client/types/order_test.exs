@@ -76,7 +76,7 @@ defmodule IbEx.Client.Types.OrderTest do
                stock_range_upper: nil,
                override_percentage_constraints: false,
                volatility_order_params: VolatilityOrderParams.new(),
-               continuous_update: nil,
+               continuous_update: false,
                reference_price_type: nil,
                trail_stop_price: nil,
                trailing_percent: nil,
@@ -120,7 +120,8 @@ defmodule IbEx.Client.Types.OrderTest do
                min_compete_size: nil,
                compete_against_best_offset: nil,
                mid_offset_at_whole: nil,
-               mid_offset_at_half: nil
+               mid_offset_at_half: nil,
+               customer_account: nil
              }
     end
   end
@@ -180,8 +181,7 @@ defmodule IbEx.Client.Types.OrderTest do
         fa_params: %{
           group_identifier: "fa_group",
           method: "fa_method",
-          percentage: "fa_percentage",
-          profile: "fa_profile"
+          percentage: "fa_percentage"
         },
         model_code: "model_code",
         short_sale_params: %{
@@ -255,7 +255,6 @@ defmodule IbEx.Client.Types.OrderTest do
                params.good_after_time,
                params.good_till_date,
                params.fa_params.group_identifier,
-               params.fa_params.profile,
                params.fa_params.method,
                params.fa_params.percentage,
                params.model_code,
@@ -418,12 +417,20 @@ defmodule IbEx.Client.Types.OrderTest do
       params = %{
         order_type: "PEG BEST",
         min_compete_size: 123,
-        compete_against_best_offset: Decimal.new("99")
+        compete_against_best_offset: Decimal.new("99"),
+        customer_account: "customer_account",
+        professional_customer: "professional_customer",
+        external_user_id: "external_user_id",
+        manual_order_indicator: 99
       }
 
       assert Order.new(params) |> Order.serialize(:fourth_batch) == [
                params.min_compete_size,
-               params.compete_against_best_offset
+               params.compete_against_best_offset,
+               params.customer_account,
+               params.professional_customer,
+               params.external_user_id,
+               params.manual_order_indicator
              ]
     end
 
@@ -433,23 +440,40 @@ defmodule IbEx.Client.Types.OrderTest do
         min_compete_size: 123,
         compete_against_best_offset: :infinity,
         mid_offset_at_whole: Decimal.new("123"),
-        mid_offset_at_half: Decimal.new("234")
+        mid_offset_at_half: Decimal.new("234"),
+        customer_account: "customer_account",
+        professional_customer: "professional_customer",
+        external_user_id: "external_user_id",
+        manual_order_indicator: 99
       }
 
       assert Order.new(params) |> Order.serialize(:fourth_batch) == [
                params.min_compete_size,
                params.compete_against_best_offset,
                params.mid_offset_at_whole,
-               params.mid_offset_at_half
+               params.mid_offset_at_half,
+               params.customer_account,
+               params.professional_customer,
+               params.external_user_id,
+               params.manual_order_indicator
              ]
     end
 
     test "serializes last batch of parameters for RequestCreateOrder if order_type is PEG MID" do
       params = %{
-        order_type: "PEG MID"
+        order_type: "PEG MID",
+        customer_account: "customer_account",
+        professional_customer: "professional_customer",
+        external_user_id: "external_user_id",
+        manual_order_indicator: 99
       }
 
-      assert Order.new(params) |> Order.serialize(:fourth_batch) == []
+      assert Order.new(params) |> Order.serialize(:fourth_batch) == [
+               params.customer_account,
+               params.professional_customer,
+               params.external_user_id,
+               params.manual_order_indicator
+             ]
     end
   end
 end

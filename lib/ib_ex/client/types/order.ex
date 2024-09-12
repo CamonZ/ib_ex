@@ -73,7 +73,7 @@ defmodule IbEx.Client.Types.Order do
             stock_range_upper: nil,
             override_percentage_constraints: false,
             volatility_order_params: nil,
-            continuous_update: nil,
+            continuous_update: false,
             reference_price_type: nil,
             trail_stop_price: nil,
             trailing_percent: nil,
@@ -117,7 +117,11 @@ defmodule IbEx.Client.Types.Order do
             min_compete_size: nil,
             compete_against_best_offset: nil,
             mid_offset_at_whole: nil,
-            mid_offset_at_half: nil
+            mid_offset_at_half: nil,
+            customer_account: nil,
+            professional_customer: false,
+            external_user_id: nil,
+            manual_order_indicator: @unset_integer
 
   @times_in_force ~w(
    DAY GTC IOC GTD OPG FOK DTC
@@ -239,7 +243,11 @@ defmodule IbEx.Client.Types.Order do
           min_compete_size: non_neg_integer(),
           compete_against_best_offset: Decimal.t() | :infinity,
           mid_offset_at_whole: Decimal.t(),
-          mid_offset_at_half: Decimal.t()
+          mid_offset_at_half: Decimal.t(),
+          customer_account: binary(),
+          professional_customer: boolean(),
+          external_user_id: binary(),
+          manual_order_indicator: non_neg_integer()
         }
 
   def unset_integer, do: @unset_integer
@@ -392,7 +400,13 @@ defmodule IbEx.Client.Types.Order do
   end
 
   def serialize(%__MODULE__{} = order, :fourth_batch) do
-    MidOffsets.serialize(order)
+    MidOffsets.serialize(order) ++
+      [
+        order.customer_account,
+        order.professional_customer,
+        order.external_user_id,
+        order.manual_order_indicator
+      ]
   end
 
   def serialize(%__MODULE__{}, _), do: :invalid_args

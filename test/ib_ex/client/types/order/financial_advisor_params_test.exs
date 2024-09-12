@@ -9,7 +9,6 @@ defmodule IbEx.Client.Types.FinancialAdvisorParamsTest do
     test "creates a FinancialAdvisorParams struct with default attributes" do
       assert FinancialAdvisorParams.new() == %FinancialAdvisorParams{
                group_identifier: nil,
-               profile: nil,
                method: nil,
                percentage: nil
              }
@@ -20,14 +19,12 @@ defmodule IbEx.Client.Types.FinancialAdvisorParamsTest do
     test "creates a FinancialAdvisorParams struct with valid attributes" do
       attrs = %{
         group_identifier: "fa_group",
-        profile: "fa_profile",
         method: "fa_method",
         percentage: "fa_percentage"
       }
 
       assert FinancialAdvisorParams.new(attrs) == %FinancialAdvisorParams{
                group_identifier: "fa_group",
-               profile: "fa_profile",
                method: "fa_method",
                percentage: "fa_percentage"
              }
@@ -38,7 +35,6 @@ defmodule IbEx.Client.Types.FinancialAdvisorParamsTest do
     test "serializes FinancialAdvisorParams" do
       attrs = %{
         group_identifier: "fa_group",
-        profile: "fa_profile",
         method: "fa_method",
         percentage: "fa_percentage"
       }
@@ -47,7 +43,6 @@ defmodule IbEx.Client.Types.FinancialAdvisorParamsTest do
 
       assert FinancialAdvisorParams.serialize(params) == [
                params.group_identifier,
-               params.profile,
                params.method,
                params.percentage
              ]

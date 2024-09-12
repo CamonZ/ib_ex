@@ -34,7 +34,6 @@ defmodule IbEx.Client.Types.Order.FinancialAdvisorParams do
   def serialize(%__MODULE__{} = params) do
     [
       params.group_identifier,
-      params.profile,
       params.method,
       params.percentage
     ]
