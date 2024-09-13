@@ -17,9 +17,6 @@ defmodule IbEx.Client.Types.OrderTest do
 
   alias IbEx.Client.Types.{Order, TagValue}
 
-  @unset_integer 2 ** 31 - 1
-  @unset_double Float.max_finite()
-
   describe "new/1" do
     test "creates an Order with valid attributes" do
       params = %{
@@ -94,15 +91,15 @@ defmodule IbEx.Client.Types.OrderTest do
                peg_to_bench_params: PegToBenchmarkOrderParams.new(),
                order_conditions_params: OrderConditionsParams.new(),
                adjusted_order_type: nil,
-               trigger_price: Order.unset_double(),
-               limit_price_offset: Order.unset_double(),
-               adjusted_stop_price: Order.unset_double(),
-               adjusted_stop_limit_price: Order.unset_double(),
-               adjusted_trailing_amount: Order.unset_double(),
+               trigger_price: :unset_double,
+               limit_price_offset: :unset_double,
+               adjusted_stop_price: :unset_double,
+               adjusted_stop_limit_price: :unset_double,
+               adjusted_trailing_amount: :unset_double,
                adjustable_trailing_unit: 0,
                ext_operator: nil,
                soft_dollar_tier_params: SoftDollarTierParams.new(),
-               cash_quantity: Order.unset_double(),
+               cash_quantity: :unset_double,
                mifid2_decision_maker: nil,
                mifid2_decision_algo: nil,
                mifid2_execution_trader: nil,
@@ -111,8 +108,8 @@ defmodule IbEx.Client.Types.OrderTest do
                is_oms_container: false,
                discretionary_up_to_limit_price: false,
                use_price_management_algo: nil,
-               duration: Order.unset_integer(),
-               post_to_ats: Order.unset_integer(),
+               duration: :unset_integer,
+               post_to_ats: :unset_integer,
                auto_cancel_parent: false,
                advanced_error_override: nil,
                manual_order_time: nil,
@@ -341,11 +338,11 @@ defmodule IbEx.Client.Types.OrderTest do
           conditions_ignore_rth: true
         },
         adjusted_order_type: "adjusted_order_type",
-        trigger_price: @unset_double,
-        limit_price_offset: @unset_double,
-        adjusted_stop_price: @unset_double,
-        adjusted_stop_limit_price: @unset_double,
-        adjusted_trailing_amount: @unset_double,
+        trigger_price: :unset_double,
+        limit_price_offset: :unset_double,
+        adjusted_stop_price: :unset_double,
+        adjusted_stop_limit_price: :unset_double,
+        adjusted_trailing_amount: :unset_double,
         adjustable_trailing_unit: 2,
         ext_operator: "ext_operator",
         soft_dollar_tier_params: %{
@@ -362,8 +359,8 @@ defmodule IbEx.Client.Types.OrderTest do
         is_oms_container: true,
         discretionary_up_to_limit_price: true,
         use_price_management_algo: false,
-        duration: @unset_integer,
-        post_to_ats: @unset_integer,
+        duration: :unset_integer,
+        post_to_ats: :unset_integer,
         auto_cancel_parent: true,
         advanced_error_override: false,
         manual_order_time: "manual_order_time"

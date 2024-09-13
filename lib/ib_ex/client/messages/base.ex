@@ -1,6 +1,7 @@
 defmodule IbEx.Client.Messages.Base do
   alias IbEx.Client.Connection.Frame
-
+  @unset_integer 2 ** 31 - 1
+  @unset_double Float.max_finite()
   @spec build(list(any())) :: binary()
   def build(fields, include_length \\ false) when is_list(fields) do
     fields
@@ -44,6 +45,9 @@ defmodule IbEx.Client.Messages.Base do
 
   def make_field(false), do: make_field(0)
 
+  def make_field(:unset_integer), do: make_field(@unset_integer)
+
+  def make_field(:unset_double), do: make_field(@unset_double)
   def make_field(thing) when is_tuple(thing) or is_map(thing), do: make_field("")
 
   def make_field(field), do: to_string(field) <> "\x00"

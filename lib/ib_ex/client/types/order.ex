@@ -25,8 +25,6 @@ defmodule IbEx.Client.Types.Order do
     SmartComboRoutingParams
   }
 
-  @unset_integer 2 ** 31 - 1
-  @unset_double Float.max_finite()
   import IbEx.Client.Utils, only: [list_to_union_type: 1]
 
   defstruct api_client_order_id: nil,
@@ -91,15 +89,15 @@ defmodule IbEx.Client.Types.Order do
             peg_to_bench_params: nil,
             order_conditions_params: [],
             adjusted_order_type: nil,
-            trigger_price: @unset_double,
-            limit_price_offset: @unset_double,
-            adjusted_stop_price: @unset_double,
-            adjusted_stop_limit_price: @unset_double,
-            adjusted_trailing_amount: @unset_double,
+            trigger_price: :unset_double,
+            limit_price_offset: :unset_double,
+            adjusted_stop_price: :unset_double,
+            adjusted_stop_limit_price: :unset_double,
+            adjusted_trailing_amount: :unset_double,
             adjustable_trailing_unit: 0,
             ext_operator: nil,
             soft_dollar_tier_params: nil,
-            cash_quantity: @unset_double,
+            cash_quantity: :unset_double,
             mifid2_decision_maker: nil,
             mifid2_decision_algo: nil,
             mifid2_execution_trader: nil,
@@ -108,8 +106,8 @@ defmodule IbEx.Client.Types.Order do
             is_oms_container: false,
             discretionary_up_to_limit_price: false,
             use_price_management_algo: nil,
-            duration: @unset_integer,
-            post_to_ats: @unset_integer,
+            duration: :unset_integer,
+            post_to_ats: :unset_integer,
             auto_cancel_parent: false,
             advanced_error_override: nil,
             manual_order_time: nil,
@@ -121,7 +119,7 @@ defmodule IbEx.Client.Types.Order do
             customer_account: nil,
             professional_customer: false,
             external_user_id: nil,
-            manual_order_indicator: @unset_integer
+            manual_order_indicator: :unset_integer
 
   @times_in_force ~w(
    DAY GTC IOC GTD OPG FOK DTC
@@ -249,9 +247,6 @@ defmodule IbEx.Client.Types.Order do
           external_user_id: binary(),
           manual_order_indicator: non_neg_integer()
         }
-
-  def unset_integer, do: @unset_integer
-  def unset_double, do: @unset_double
 
   def new(attrs) when is_list(attrs) do
     attrs
