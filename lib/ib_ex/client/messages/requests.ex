@@ -5,7 +5,7 @@ defmodule IbEx.Client.Messages.Requests do
     Messages.MarketData.RequestData => 1,
     Messages.MarketData.RequestCancelData => 2,
     Messages.Orders.RequestCreateOrder => 3,
-    "cancel_order" => 4,
+    Messages.Orders.RequestCancelOrder => 4,
     "open_orders" => 5,
     Messages.AccountData.Request => 6,
     Messages.Executions.Request => 7,
