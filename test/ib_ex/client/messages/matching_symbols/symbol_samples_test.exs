@@ -1,7 +1,6 @@
 defmodule IbEx.Client.Messages.MatchingSymbols.SymbolSamplesTest do
   use ExUnit.Case, async: true
 
-  alias IbEx.Client.Types.Contract.DeltaNeutral
   alias IbEx.Client.Messages.MatchingSymbols.SymbolSamples
   alias IbEx.Client.Protocols.Subscribable
   alias IbEx.Client.Types.Contract
