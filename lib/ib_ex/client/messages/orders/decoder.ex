@@ -125,7 +125,6 @@ defmodule IbEx.Client.Messages.Orders.Decoder do
     |> batch_parse_params(@third_batch)
 
     # |> parse_custom_params(VolatilityOrderParamsDecoder, :volatility_order_params, open_order: true)
-    # |> parse_custom_params(TrailParamsDecoder, :trail_params)
   end
 
   defp parse_contract_data(%{unprocessed: fields} = msg) do

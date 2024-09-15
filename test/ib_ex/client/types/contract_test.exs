@@ -2,11 +2,29 @@ defmodule IbEx.Client.Types.ContractTest do
   use ExUnit.Case, async: true
 
   alias IbEx.Client.Types.Contract
+  alias IbEx.Client.Types.Contract.{DeltaNeutral}
 
   describe "new/1" do
     test "creates a Contract with valid attributes" do
       attrs = %{conid: "520512263", symbol: "GTLB", security_type: "STK"}
-      assert Contract.new(attrs) == %Contract{conid: "520512263", symbol: "GTLB", security_type: "STK"}
+
+      assert Contract.new(attrs) == %Contract{
+               conid: "520512263",
+               symbol: "GTLB",
+               security_type: "STK",
+               delta_neutral_contract: nil
+             }
+    end
+
+    test "creates a BAG Contract with valid attributes" do
+      attrs = %{conid: "520512263", symbol: "GTLB", security_type: "BAG"}
+
+      assert Contract.new(attrs) == %Contract{
+               conid: "520512263",
+               symbol: "GTLB",
+               security_type: "BAG",
+               delta_neutral_contract: DeltaNeutral.new()
+             }
     end
   end
 
@@ -79,7 +97,8 @@ defmodule IbEx.Client.Types.ContractTest do
                exchange: "ISLAND",
                currency: "USD",
                local_symbol: "GTLB",
-               trading_class: ""
+               trading_class: "",
+               delta_neutral_contract: nil
              }
     end
 

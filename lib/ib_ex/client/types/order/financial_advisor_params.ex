@@ -28,4 +28,14 @@ defmodule IbEx.Client.Types.Order.FinancialAdvisorParams do
       profile: profile
     }
   end
+
+  def new(), do: new(%{})
+
+  def serialize(%__MODULE__{} = params) do
+    [
+      params.group_identifier,
+      params.method,
+      params.percentage
+    ]
+  end
 end

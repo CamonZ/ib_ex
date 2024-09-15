@@ -30,6 +30,7 @@ defmodule IbEx.Client.Types.ContractDescriptionTest do
                symbol: "AAPL",
                security_type: "STK",
                currency: "USD",
+               delta_neutral_contract: nil,
                primary_exchange: "NASDAQ",
                description: "APPLE INC",
                issuer_id: ""
