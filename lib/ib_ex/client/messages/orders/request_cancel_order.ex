@@ -10,28 +10,18 @@ defmodule IbEx.Client.Messages.Orders.RequestCancelOrder do
 
   @version 1
 
-  defstruct message_id: nil, version: @version, order_id: nil, order_cancel_params: OrderCancel.new()
+  defstruct message_id: nil, version: @version, order_id: nil, request_id: nil, order_cancel_params: OrderCancel.new()
 
   @type t :: %__MODULE__{
           message_id: non_neg_integer(),
           version: non_neg_integer(),
           order_id: non_neg_integer(),
+          request_id: non_neg_integer(),
           order_cancel_params: OrderCancel.t()
         }
 
   alias IbEx.Client.Messages.Requests
   alias IbEx.Client.Protocols.Subscribable
-
-  @spec new() :: {:ok, t()} | {:error, :not_implemented}
-  def new() do
-    case Requests.message_id_for(__MODULE__) do
-      {:ok, id} ->
-        {:ok, %__MODULE__{message_id: id}}
-
-      :error ->
-        {:error, :not_implemented}
-    end
-  end
 
   @spec new(non_neg_integer()) :: {:ok, t()} | {:error, :not_implemented}
   def new(order_id) do
@@ -79,12 +69,12 @@ defmodule IbEx.Client.Messages.Orders.RequestCancelOrder do
   defimpl Subscribable, for: __MODULE__ do
     alias IbEx.Client.Subscriptions
 
-    # Subscription based on order_id, can handle multiple requests
+    # Subscription based on request_id, can handle multiple requests
     def subscribe(msg, pid, table_ref) do
-      {:ok, order_id} = Subscriptions.reverse_lookup(table_ref, pid)
-      :ets.delete(table_ref, order_id)
+      {:ok, request_id} = Subscriptions.reverse_lookup(table_ref, pid)
+      :ets.delete(table_ref, request_id)
 
-      {:ok, %{msg | order_id: order_id}}
+      {:ok, %{msg | request_id: request_id}}
     end
 
     def lookup(_, _) do

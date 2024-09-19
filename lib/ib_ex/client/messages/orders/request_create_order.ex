@@ -12,7 +12,7 @@ defmodule IbEx.Client.Messages.Orders.RequestCreateOrder do
 
   @version 45
 
-  defstruct message_id: nil, order_id: nil, order: nil, contract: nil, version: @version
+  defstruct message_id: nil, order_id: nil, request_id: nil, order: nil, contract: nil, version: @version
 
   alias IbEx.Client.Messages.Requests
   alias IbEx.Client.Types.{Order, Contract}
@@ -20,6 +20,7 @@ defmodule IbEx.Client.Messages.Orders.RequestCreateOrder do
   @type t :: %__MODULE__{
           message_id: non_neg_integer(),
           order_id: non_neg_integer(),
+          request_id: non_neg_integer(),
           order: Order.t(),
           contract: Contract.t()
         }
@@ -90,6 +91,20 @@ defmodule IbEx.Client.Messages.Orders.RequestCreateOrder do
         contract: #{contract_str}
       }
       """
+    end
+  end
+
+  defimpl IbEx.Client.Protocols.Subscribable, for: __MODULE__ do
+    alias IbEx.Client.Subscriptions
+
+    # Subscription based on request_id, can handle multiple requests
+    def subscribe(msg, pid, table_ref) do
+      request_id = Subscriptions.subscribe_by_request_id(table_ref, pid)
+      {:ok, %{msg | request_id: request_id}}
+    end
+
+    def lookup(msg, table_ref) do
+      Subscriptions.lookup(table_ref, to_string(msg.request_id))
     end
   end
 end

@@ -3,6 +3,8 @@ defmodule IbEx.Client.Messages.Orders.RequestCreateOrderTest do
 
   alias IbEx.Client.Types.{Order, Contract}
   alias IbEx.Client.Messages.Orders.RequestCreateOrder
+  alias IbEx.Client.Protocols.Subscribable
+  alias IbEx.Client.Subscriptions
 
   @order_id 123
   @order Order.new(%{
@@ -61,6 +63,16 @@ defmodule IbEx.Client.Messages.Orders.RequestCreateOrderTest do
                  contract: #{contract_str}
                }
                """
+    end
+  end
+
+  describe "Subscribable" do
+    test "subscribes the message" do
+      pid = self()
+      table_ref = Subscriptions.initialize()
+      {:ok, msg} = RequestCreateOrder.new(@order_id, @order, @contract)
+      {:ok, subscribed_msg} = Subscribable.subscribe(msg, pid, table_ref)
+      assert {:ok, ^pid} = Subscribable.lookup(subscribed_msg, table_ref)
     end
   end
 end
