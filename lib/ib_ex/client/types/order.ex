@@ -1,10 +1,6 @@
 defmodule IbEx.Client.Types.Order do
   @moduledoc """
   Represents an Order.
-
-  TODO: 
-  1. tighten __MODULE__ param types
-  2. add tests
   """
 
   alias IbEx.Client.Types.TagValueList
