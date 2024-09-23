@@ -54,7 +54,7 @@ defmodule IbEx.Client.Messages.Responses do
     "72" => "position_multi_end",
     "73" => "account_update_multi",
     "74" => "account_update_multi_end",
-    "75" => "security_definition_option_parameter",
+    "75" => Messages.MarketData.OptionChain,
     "76" => "security_definition_option_parameter_end",
     "77" => "soft_dollar_tiers",
     "78" => "family_codes",
