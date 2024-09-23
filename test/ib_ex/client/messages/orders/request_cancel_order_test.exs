@@ -6,17 +6,6 @@ defmodule IbEx.Client.Messages.Orders.RequestCancelOrderTest do
   alias IbEx.Client.Protocols.Subscribable
   alias IbEx.Client.Subscriptions
 
-  describe "new/0" do
-    test "creates a RequestCancelOrder struct" do
-      assert {:ok, msg} = RequestCancelOrder.new()
-
-      assert msg.message_id == 4
-      assert msg.version == 1
-      assert msg.order_id == nil
-      assert msg.order_cancel_params == OrderCancel.new()
-    end
-  end
-
   describe "new/1" do
     test "creates a RequestCancelOrder struct with order_id" do
       order_id = 123
@@ -75,10 +64,10 @@ defmodule IbEx.Client.Messages.Orders.RequestCancelOrderTest do
     test "subscribe/2 unsubscribes incoming messages with the given request id to the given pid" do
       table_ref = Subscriptions.initialize()
       :ets.insert(table_ref, {"1", self()})
-      {:ok, msg} = RequestCancelOrder.new()
+      {:ok, msg} = RequestCancelOrder.new(123)
 
       assert {:ok, msg} = Subscribable.subscribe(msg, self(), table_ref)
-      assert msg.order_id == "1"
+      assert msg.request_id == "1"
 
       assert {:error, :missing_subscription} == Subscriptions.reverse_lookup(table_ref, self())
     end
