@@ -55,7 +55,7 @@ defmodule IbEx.Client.Messages.Requests do
     "cancel_positions_multi" => 75,
     "account_updates_multi" => 76,
     "cancel_account_updates_multi" => 77,
-    "sec_def_opt_params" => 78,
+    Messages.MarketData.RequestOptionChain => 78,
     "soft_dollar_tiers" => 79,
     "family_codes" => 80,
     Messages.MatchingSymbols.Request => 81,
