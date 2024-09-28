@@ -54,7 +54,8 @@ defmodule IbEx.Client.Messages.MarketData.RequestMarketDataType do
     def to_string(msg) do
       fields = [
         msg.message_id,
-        msg.version
+        msg.version,
+        msg.market_data_type
       ]
 
       Base.build(fields)

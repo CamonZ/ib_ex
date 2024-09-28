@@ -1,6 +1,6 @@
 defmodule IbEx.Client.Messages.MarketData.MarketDataType do
   @moduledoc """
-  Message received when the data type being received switches between frozen
+  Message received when the market data type being switched between frozen
   and realtime.
   """
 

@@ -22,7 +22,7 @@ defmodule IbEx.Client.Messages.MarketData.RequestMarketDataTypeTest do
         market_data_type: 3
       }
 
-      assert to_string(msg) == <<53, 57, 0, 49, 0>>
+      assert to_string(msg) == <<53, 57, 0, 49, 0, 51, 0>>
     end
   end
 
