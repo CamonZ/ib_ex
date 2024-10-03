@@ -3,13 +3,13 @@ defmodule IbEx.Client.Types.Order do
   Represents an Order.
   """
 
-  alias IbEx.Client.Types.Order.DeltaNeutralParams
   alias IbEx.Client.Types.TagValueList
 
   alias IbEx.Client.Types.Order.{
     ShortSaleParams,
     FinancialAdvisorParams,
     VolatilityOrderParams,
+    DeltaNeutralParams,
     HedgeOrderParams,
     ScaleOrderParams,
     ClearingInfoParams,
@@ -335,7 +335,7 @@ defmodule IbEx.Client.Types.Order do
         order.override_percentage_constraints
       ] ++
       VolatilityOrderParams.serialize(order.volatility_order_params) ++
-      DeltaNeutralParams.serialize(order.delta_neutral_params) ++           
+      DeltaNeutralParams.serialize(order.delta_neutral_params) ++
       [
         order.continuous_update,
         order.reference_price_type,

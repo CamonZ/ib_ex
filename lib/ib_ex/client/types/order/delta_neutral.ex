@@ -45,6 +45,7 @@ defmodule IbEx.Client.Types.Order.DeltaNeutralParams do
 
   @spec handle_extra_fields(list(), __MODULE__.t()) :: list()
   def handle_extra_fields(fields, %__MODULE__{order_type: ""}), do: fields
+
   def handle_extra_fields(fields, %__MODULE__{order_type: type} = params) when is_binary(type) do
     fields ++
       [

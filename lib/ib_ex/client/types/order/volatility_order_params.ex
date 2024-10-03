@@ -7,7 +7,7 @@ defmodule IbEx.Client.Types.Order.VolatilityOrderParams do
 
   @type t :: %__MODULE__{
           volatility: Decimal.t(),
-          volatility_type: volatility_type(),
+          volatility_type: volatility_type()
         }
 
   def new(args) when is_list(args) do
@@ -25,7 +25,7 @@ defmodule IbEx.Client.Types.Order.VolatilityOrderParams do
   def serialize(%__MODULE__{} = params) do
     [
       params.volatility,
-      params.volatility_type,
+      params.volatility_type
     ]
   end
 end

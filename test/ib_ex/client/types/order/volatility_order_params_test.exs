@@ -9,7 +9,7 @@ defmodule IbEx.Client.Types.VolatilityOrderParamsTest do
     test "creates a VolatilityOrderParams struct with default attributes" do
       assert VolatilityOrderParams.new() == %VolatilityOrderParams{
                volatility: nil,
-               volatility_type: nil,
+               volatility_type: nil
              }
     end
   end
@@ -18,12 +18,12 @@ defmodule IbEx.Client.Types.VolatilityOrderParamsTest do
     test "creates a VolatilityOrderParams struct with valid attributes" do
       attrs = %{
         volatility: Decimal.new("0.2"),
-        volatility_type: 1,
+        volatility_type: 1
       }
 
       assert VolatilityOrderParams.new(attrs) == %VolatilityOrderParams{
                volatility: Decimal.new("0.2"),
-               volatility_type: 1,
+               volatility_type: 1
              }
     end
   end
@@ -32,14 +32,14 @@ defmodule IbEx.Client.Types.VolatilityOrderParamsTest do
     test "serializes VolatilityOrderParams" do
       attrs = %{
         volatility: Decimal.new("0.2"),
-        volatility_type: 1,
+        volatility_type: 1
       }
 
       params = VolatilityOrderParams.new(attrs)
 
       assert VolatilityOrderParams.serialize(params) == [
                attrs.volatility,
-               attrs.volatility_type,
+               attrs.volatility_type
              ]
     end
   end
