@@ -1,6 +1,7 @@
 defmodule IbEx.Client.Messages.Ids.Request do
   @message_version 1
 
+  alias IbEx.Client.Protocols.Subscribable
   alias IbEx.Client.Messages.Base
   alias IbEx.Client.Messages.Requests
 
@@ -27,6 +28,16 @@ defmodule IbEx.Client.Messages.Ids.Request do
   defimpl Inspect, for: __MODULE__ do
     def inspect(msg, _opts) do
       "--> Ids.Request{number_of_ids: #{msg.number_of_ids}}"
+    end
+  end
+
+  defimpl Subscribable, for: __MODULE__ do
+    def subscribe(msg, _pid, _table_ref) do
+      {:ok, msg}
+    end
+
+    def lookup(_, _) do
+      {:error, :lookup_not_necessary}
     end
   end
 end

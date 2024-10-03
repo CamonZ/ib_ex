@@ -10,7 +10,7 @@ defmodule IbEx.Client.Types.Contract.ComboLeg do
             ratio: nil,
             action: nil,
             exchange: nil,
-            open_close: nil,
+            open_close: 0,
             short_sale_slot: 0,
             designated_location: nil,
             exempt_code: -1

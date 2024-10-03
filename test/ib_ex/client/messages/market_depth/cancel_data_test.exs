@@ -34,7 +34,7 @@ defmodule IbEx.Client.Messages.MarketDepth.CancelDataTest do
   end
 
   describe "Subscribable" do
-    test "subscribe/2 unsubscribes incoming messages with the given request id to the given pid" do
+    test "subscribe/3 unsubscribes incoming messages with the given request id to the given pid" do
       table_ref = Subscriptions.initialize()
       :ets.insert(table_ref, {"1", self()})
 

@@ -55,7 +55,7 @@ defmodule IbEx.Client.Messages.Responses do
     "73" => "account_update_multi",
     "74" => "account_update_multi_end",
     "75" => Messages.MarketData.OptionChain,
-    "76" => "security_definition_option_parameter_end",
+    "76" => Messages.MarketData.OptionChainEnd,
     "77" => "soft_dollar_tiers",
     "78" => "family_codes",
     "79" => Messages.MatchingSymbols.SymbolSamples,
@@ -112,7 +112,9 @@ defmodule IbEx.Client.Messages.Responses do
         {:error, :not_implemented}
 
       err ->
-        Logger.warning("Frame: #{inspect(str, printable_limit: :infinity)}")
+        fields = Base.get_fields(str)
+        Logger.warning("Frame: #{inspect(str, limit: :infinity)}")
+        Logger.warning("Fields: #{inspect(fields, limit: :infinity)}")
         Logger.error("Unexpected Error: #{inspect(err)}")
         {:error, :unexpected_error}
     end

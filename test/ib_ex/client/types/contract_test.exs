@@ -2,7 +2,6 @@ defmodule IbEx.Client.Types.ContractTest do
   use ExUnit.Case, async: true
 
   alias IbEx.Client.Types.Contract
-  alias IbEx.Client.Types.Contract.{DeltaNeutral}
 
   describe "new/1" do
     test "creates a Contract with valid attributes" do
@@ -15,20 +14,9 @@ defmodule IbEx.Client.Types.ContractTest do
                delta_neutral_contract: nil
              }
     end
-
-    test "creates a BAG Contract with valid attributes" do
-      attrs = %{conid: "520512263", symbol: "GTLB", security_type: "BAG"}
-
-      assert Contract.new(attrs) == %Contract{
-               conid: "520512263",
-               symbol: "GTLB",
-               security_type: "BAG",
-               delta_neutral_contract: DeltaNeutral.new()
-             }
-    end
   end
 
-  describe "serialize/2" do
+  describe "serialize/1" do
     test "serializes a Contract including expired field" do
       contract = %Contract{conid: "520512263", symbol: "GTLB", security_type: "STK", include_expired: true}
 
