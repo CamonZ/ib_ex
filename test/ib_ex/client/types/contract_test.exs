@@ -2,7 +2,6 @@ defmodule IbEx.Client.Types.ContractTest do
   use ExUnit.Case, async: true
 
   alias IbEx.Client.Types.Contract
-  alias IbEx.Client.Types.Contract.{DeltaNeutral}
 
   describe "new/1" do
     test "creates a Contract with valid attributes" do
