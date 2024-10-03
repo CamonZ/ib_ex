@@ -3,7 +3,6 @@ defmodule IbEx.Client.Messages.MarketData.OptionChainEndTest do
 
   alias IbEx.Client.Messages.MarketData.OptionChainEnd
 
-  
   @request_id 9001
   @message_id "76"
 

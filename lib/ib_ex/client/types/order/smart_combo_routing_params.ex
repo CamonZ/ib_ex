@@ -23,16 +23,18 @@ defmodule IbEx.Client.Types.Order.SmartComboRoutingParams do
   def new(), do: new(%{})
 
   @spec serialize(__MODULE__.t(), boolean()) :: list() | {:error, :invalid_args}
-  def serialize(module, to_string \\ false) 
+  def serialize(module, to_string \\ false)
+
   def serialize(%__MODULE__{params: params}, false) do
     [
       length(params)
     ] ++ TagValueList.serialize(params)
   end
+
   def serialize(%__MODULE__{params: params}, true) do
     [
       length(params),
-    TagValueList.serialize_to_string(params)
-    ] 
+      TagValueList.serialize_to_string(params)
+    ]
   end
 end
