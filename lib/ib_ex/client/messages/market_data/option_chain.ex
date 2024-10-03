@@ -22,10 +22,15 @@ defmodule IbEx.Client.Messages.MarketData.OptionChain do
         }
 
   @spec from_fields(list(String.t())) :: {:ok, t()} | {:error, :invalid_args}
-  def from_fields([_, request_id, exchange, conid, symbol, multiplier, expirations_length | rest]) do
+  def from_fields([request_id, exchange, conid, symbol, multiplier, expirations_length | rest]) do
     expirations_length = String.to_integer(expirations_length)
     expirations = Enum.slice(rest, 0, expirations_length)
-    strikes_length = Enum.slice(rest, expirations_length, 1) |> Enum.at(0) |> String.to_integer()
+
+    strikes_length =
+      Enum.slice(rest, expirations_length, 1)
+      |> Enum.at(0)
+      |> String.to_integer()
+
     strikes = Enum.slice(rest, -strikes_length..-1)
 
     msg = %__MODULE__{
@@ -41,7 +46,8 @@ defmodule IbEx.Client.Messages.MarketData.OptionChain do
     {:ok, msg}
   end
 
-  def from_fields(_) do
+  def from_fields(args) do
+    IO.inspect(args, label: "OptionChain.from_fields/1 args", limit: :infinity)
     {:error, :invalid_args}
   end
 
