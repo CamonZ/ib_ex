@@ -85,7 +85,7 @@ defmodule IbEx.Client.Messages.MarketData.RequestDataTest do
   end
 
   describe "Subscribable" do
-    test "subscribe/2 subscribes incoming messages with the msg's request id to the given pid" do
+    test "subscribe/3 subscribes incoming messages with the msg's request id to the given pid" do
       table_ref = Subscriptions.initialize()
       contract = Contract.new(%{conid: "265598", symbol: "AAPL", security_type: "STK"})
 
