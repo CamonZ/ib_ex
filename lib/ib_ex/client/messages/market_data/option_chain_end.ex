@@ -1,6 +1,6 @@
 defmodule IbEx.Client.Messages.MarketData.OptionChainEnd do
   @moduledoc """
-  Returned option chain struct 
+  End of option chain messages 
   """
 
   defstruct request_id: nil
@@ -10,13 +10,22 @@ defmodule IbEx.Client.Messages.MarketData.OptionChainEnd do
         }
 
   @spec from_fields(list(String.t())) :: {:ok, t()} | {:error, :invalid_args}
-  def from_fields(fields) do
-    IO.inspect(fields, label: "OptionChainEnd fields", limit: :infinity)
-    {:ok, struct(__MODULE__)}
+  def from_fields([request_id]) do
+    {:ok, %__MODULE__{ request_id: request_id }}
   end
 
   def from_fields(_) do
     {:error, :invalid_args}
+  end
+
+  defimpl Inspect, for: __MODULE__ do
+    def inspect(msg, _opts) do
+      """
+      <-- %MarketData.OptionChainEnd{
+        request_id: #{msg.request_id},
+      }
+      """
+    end
   end
 
   defimpl IbEx.Client.Protocols.Subscribable, for: __MODULE__ do

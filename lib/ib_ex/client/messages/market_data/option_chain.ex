@@ -46,8 +46,7 @@ defmodule IbEx.Client.Messages.MarketData.OptionChain do
     {:ok, msg}
   end
 
-  def from_fields(args) do
-    IO.inspect(args, label: "OptionChain.from_fields/1 args", limit: :infinity)
+  def from_fields(_) do
     {:error, :invalid_args}
   end
 
