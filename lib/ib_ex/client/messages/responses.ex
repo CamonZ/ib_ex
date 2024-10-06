@@ -98,9 +98,9 @@ defmodule IbEx.Client.Messages.Responses do
 
   def parse(str, _) do
     with fields <- Base.get_fields(str),
-      {:ok, msg_id} <- Base.message_id_from_fields(fields) |> IO.inspect(label: "message_id_from_fields"),
-      {:ok, type} <- Map.fetch(@ids_to_message_type, msg_id) |> IO.inspect(label: "type"),
-      {:ok, type} <- validate_implemented(type) |> IO.inspect(label: "validate_implemented"),
+         {:ok, msg_id} <- Base.message_id_from_fields(fields) |> IO.inspect(label: "message_id_from_fields"),
+         {:ok, type} <- Map.fetch(@ids_to_message_type, msg_id) |> IO.inspect(label: "type"),
+         {:ok, type} <- validate_implemented(type) |> IO.inspect(label: "validate_implemented"),
          {:ok, msg} <- type.from_fields(Enum.slice(fields, 1..-1//1)) do
       Logger.info("#{inspect(msg)}")
 

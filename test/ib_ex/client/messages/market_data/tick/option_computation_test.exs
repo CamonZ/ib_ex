@@ -6,22 +6,23 @@ defmodule IbEx.Client.Messages.MarketData.Tick.OptionComputationTest do
   alias IbEx.Client.Subscriptions
 
   @request_id "9001"
-  def fields (request_id) do 
-[
-    "21",
-    request_id,
-    "83",
-    "0",
-    "0.5099480112843168",
-    "0.2580487018296367",
-    "4.044118115579977",
-    "0.009916152757821517",
-    "0.011165298670040383",
-    "0.1903185064903541",
-    "-0.06499055635114762",
-    "124.2"
-  ]
+  def fields(request_id) do
+    [
+      "21",
+      request_id,
+      "83",
+      "0",
+      "0.5099480112843168",
+      "0.2580487018296367",
+      "4.044118115579977",
+      "0.009916152757821517",
+      "0.011165298670040383",
+      "0.1903185064903541",
+      "-0.06499055635114762",
+      "124.2"
+    ]
   end
+
   describe "from_fields/1" do
     test "creates OptionComputation struct with valid fields" do
       assert {:ok, msg} = OptionComputation.from_fields(fields(@request_id))
@@ -78,7 +79,6 @@ defmodule IbEx.Client.Messages.MarketData.Tick.OptionComputationTest do
                """
     end
   end
-
 
   describe "Subscribable" do
     test "looks up the message in the subscriptions mapping" do
