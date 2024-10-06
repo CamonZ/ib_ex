@@ -1,4 +1,4 @@
-defmodule IbEx.Client.Messages.MarketData.TickRequestParams do
+defmodule IbEx.Client.Messages.MarketData.Tick.RequestParams do
   @moduledoc """
   One of the subscription messages coming from subscribing to
   the market data request.
@@ -38,7 +38,7 @@ defmodule IbEx.Client.Messages.MarketData.TickRequestParams do
 
   defimpl Inspect, for: __MODULE__ do
     def inspect(msg, _opts) do
-      "<-- %MarketData.TickRequestParams{request_id: #{msg.request_id}, min_tick: #{msg.min_tick}, bbo_exchange: #{msg.bbo_exchange}, snapshot_permissions: #{msg.snapshot_permissions}}"
+      "<-- %MarketData.Tick.RequestParams{request_id: #{msg.request_id}, min_tick: #{msg.min_tick}, bbo_exchange: #{msg.bbo_exchange}, snapshot_permissions: #{msg.snapshot_permissions}}"
     end
   end
 

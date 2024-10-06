@@ -100,4 +100,11 @@ defmodule IbEx.Client.Utils do
   def list_to_union_type(value) when is_list(value) do
     Enum.reduce(value, &{:|, [], [&1, &2]})
   end
+
+  def decode_tick_type(type_str) do
+    case IbEx.Client.Constants.TickTypes.to_atom(type_str) do
+      {:ok, type} -> type
+      _ -> :error
+    end
+  end
 end
