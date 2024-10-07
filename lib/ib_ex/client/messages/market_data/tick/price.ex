@@ -1,4 +1,4 @@
-defmodule IbEx.Client.Messages.MarketData.TickPrice do
+defmodule IbEx.Client.Messages.MarketData.Tick.Price do
   @moduledoc """
   One of the subscription messages coming from subscribing to
   the market data request.
@@ -39,7 +39,7 @@ defmodule IbEx.Client.Messages.MarketData.TickPrice do
 
   @spec from_fields(list(String.t())) :: {:ok, t()} | {:error, :invalid_args}
   def from_fields([_, request_id, tick_type_str, price, size, mask]) do
-    tick_type = decode_tick_type(tick_type_str)
+    tick_type = Utils.decode_tick_type(tick_type_str)
 
     msg = %__MODULE__{
       request_id: request_id,
@@ -59,17 +59,10 @@ defmodule IbEx.Client.Messages.MarketData.TickPrice do
     {:error, :invalid_args}
   end
 
-  defp decode_tick_type(type_str) do
-    case TickTypes.to_atom(type_str) do
-      {:ok, type} -> type
-      _ -> :error
-    end
-  end
-
   defimpl Inspect, for: __MODULE__ do
     def inspect(msg, _opts) do
       """
-      <-- %MarketData.TickPrice{
+      <-- %MarketData.Tick.Price{
         request_id: #{msg.request_id},
         tick_type: #{msg.tick_type},
         price: #{msg.price},
