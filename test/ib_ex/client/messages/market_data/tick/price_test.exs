@@ -1,13 +1,13 @@
-defmodule IbEx.Client.Messages.MarketData.TickPriceTest do
+defmodule IbEx.Client.Messages.MarketData.Tick.PriceTest do
   use ExUnit.Case, async: true
 
-  alias IbEx.Client.Messages.MarketData.TickPrice
+  alias IbEx.Client.Messages.MarketData.Tick.Price
   alias IbEx.Client.Protocols.Subscribable
   alias IbEx.Client.Subscriptions
 
   describe "from_fields/1" do
     test "creates the message valid fields" do
-      assert {:ok, msg} = TickPrice.from_fields(["6", "123", "1", "100.5", "200", "7"])
+      assert {:ok, msg} = Price.from_fields(["6", "123", "1", "100.5", "200", "7"])
 
       assert msg.request_id == "123"
       assert msg.tick_type == :bid
@@ -20,13 +20,13 @@ defmodule IbEx.Client.Messages.MarketData.TickPriceTest do
     end
 
     test "returns an error with invalid args" do
-      assert {:error, :invalid_args} == TickPrice.from_fields(["123", "1", "100.50", "200"])
+      assert {:error, :invalid_args} == Price.from_fields(["123", "1", "100.50", "200"])
     end
   end
 
   describe "Inspect implementation" do
-    test "inspects TickPrice struct correctly" do
-      msg = %TickPrice{
+    test "inspects Price struct correctly" do
+      msg = %Price{
         request_id: "123",
         tick_type: :bid,
         price: 100.5,
@@ -39,7 +39,7 @@ defmodule IbEx.Client.Messages.MarketData.TickPriceTest do
 
       assert inspect(msg) ==
                """
-               <-- %MarketData.TickPrice{
+               <-- %MarketData.Tick.Price{
                  request_id: 123,
                  tick_type: bid,
                  price: 100.5,
@@ -57,7 +57,7 @@ defmodule IbEx.Client.Messages.MarketData.TickPriceTest do
     test "looks up the message in the subscriptions mapping" do
       table_ref = Subscriptions.initialize()
       Subscriptions.subscribe_by_request_id(table_ref, self())
-      {:ok, msg} = TickPrice.from_fields(["1", "1", "1", "100.5", "200", "7"])
+      {:ok, msg} = Price.from_fields(["1", "1", "1", "100.5", "200", "7"])
 
       assert {:ok, pid} = Subscribable.lookup(msg, table_ref)
       assert pid == self()

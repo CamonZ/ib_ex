@@ -1,7 +1,7 @@
-defmodule IbEx.Client.Messages.MarketData.TickNewsTest do
+defmodule IbEx.Client.Messages.MarketData.Tick.NewsTest do
   use ExUnit.Case, async: true
 
-  alias IbEx.Client.Messages.MarketData.TickNews
+  alias IbEx.Client.Messages.MarketData.Tick.News
   alias IbEx.Client.Types.NewsHeadline
   alias IbEx.Client.Protocols.Subscribable
   alias IbEx.Client.Subscriptions
@@ -16,8 +16,8 @@ defmodule IbEx.Client.Messages.MarketData.TickNewsTest do
   ]
 
   describe "from_fields/1" do
-    test "creates TickNews struct with valid fields" do
-      assert {:ok, msg} = TickNews.from_fields(@valid_fields)
+    test "creates News struct with valid fields" do
+      assert {:ok, msg} = News.from_fields(@valid_fields)
       headline = msg.headline
 
       assert msg.request_id == "1"
@@ -25,13 +25,13 @@ defmodule IbEx.Client.Messages.MarketData.TickNewsTest do
     end
 
     test "returns an error with insufficient fields" do
-      assert {:error, :invalid_args} == TickNews.from_fields(["123"])
+      assert {:error, :invalid_args} == News.from_fields(["123"])
     end
   end
 
   describe "Inspect implementation" do
-    test "inspects TickNews struct correctly" do
-      msg = %TickNews{
+    test "inspects News struct correctly" do
+      msg = %News{
         request_id: "1",
         headline: %NewsHeadline{
           title: "Alien Invasion!",
@@ -46,7 +46,7 @@ defmodule IbEx.Client.Messages.MarketData.TickNewsTest do
 
       assert inspect(msg) ==
                """
-               <-- %MarketData.TickNews{
+               <-- %MarketData.Tick.News{
                  request_id: 1,
                  headline: Alien Invasion!,
                  provider: FOO,
@@ -63,7 +63,7 @@ defmodule IbEx.Client.Messages.MarketData.TickNewsTest do
     test "looks up the message in the subscriptions mapping" do
       table_ref = Subscriptions.initialize()
       Subscriptions.subscribe_by_request_id(table_ref, self())
-      {:ok, msg} = TickNews.from_fields(@valid_fields)
+      {:ok, msg} = News.from_fields(@valid_fields)
 
       assert {:ok, pid} = Subscribable.lookup(msg, table_ref)
       assert pid == self()

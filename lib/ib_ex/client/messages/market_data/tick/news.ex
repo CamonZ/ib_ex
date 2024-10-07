@@ -1,4 +1,4 @@
-defmodule IbEx.Client.Messages.MarketData.TickNews do
+defmodule IbEx.Client.Messages.MarketData.Tick.News do
   @moduledoc """
   Message received on news tick market data subscription, receives a news headline
   """
@@ -30,7 +30,7 @@ defmodule IbEx.Client.Messages.MarketData.TickNews do
   defimpl Inspect, for: __MODULE__ do
     def inspect(msg, _opts) do
       """
-      <-- %MarketData.TickNews{
+      <-- %MarketData.Tick.News{
         request_id: #{msg.request_id},
         headline: #{msg.headline.title},
         provider: #{msg.headline.provider},

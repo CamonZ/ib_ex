@@ -1,31 +1,30 @@
-defmodule IbEx.Client.Messages.MarketData.TickSize do
+defmodule IbEx.Client.Messages.MarketData.Tick.String do
   @moduledoc """
   One of the subscription messages coming from subscribing to
   the market data request.
 
-  Represents the size of a tick, bid, ask, last or its delayed variants
+  Represents a tick string.
   """
 
   defstruct request_id: nil,
             tick_type: nil,
-            size: nil
+            value: nil
 
   @type t :: %__MODULE__{
           request_id: String.t(),
           tick_type: atom(),
-          size: Decimal.t() | nil
+          value: String.t()
         }
-
   alias IbEx.Client.Utils
-  alias IbEx.Client.Constants.TickTypes
 
-  def from_fields([_, request_id, tick_type_str, size]) do
-    tick_type = decode_tick_type(tick_type_str)
+  @spec from_fields(list(String.t())) :: {:ok, t()} | {:error, :invalid_args}
+  def from_fields([_, request_id, tick_type_str, value]) do
+    tick_type = Utils.decode_tick_type(tick_type_str)
 
     msg = %__MODULE__{
       request_id: request_id,
       tick_type: tick_type,
-      size: Utils.to_decimal(size)
+      value: value
     }
 
     {:ok, msg}
@@ -35,16 +34,9 @@ defmodule IbEx.Client.Messages.MarketData.TickSize do
     {:error, :invalid_args}
   end
 
-  defp decode_tick_type(type_str) do
-    case TickTypes.to_atom(type_str) do
-      {:ok, type} -> type
-      _ -> :error
-    end
-  end
-
   defimpl Inspect, for: __MODULE__ do
     def inspect(msg, _opts) do
-      "<-- %MarketData.TickSize{request_id: #{msg.request_id}, tick_type: #{msg.tick_type}, size: #{msg.size}}"
+      "<-- %MarketData.Tick.String{request_id: #{msg.request_id}, tick_type: #{msg.tick_type}, value: #{msg.value}}"
     end
   end
 
