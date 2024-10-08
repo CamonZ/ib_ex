@@ -47,6 +47,12 @@ defmodule IbEx.Client.Types.Execution do
 
   alias IbEx.Client.Utils
 
+  @last_liquidities %{
+    "1" => :add,
+    "2" => :remove,
+    "3" => :routed_out
+  }
+
   def from_execution_data([
         order_id,
         execution_id,
@@ -89,7 +95,7 @@ defmodule IbEx.Client.Types.Execution do
           ev_rule: ev_rule,
           ev_multiplier: Utils.to_float(ev_mult),
           model_code: model_code,
-          last_liquidity: Utils.to_integer(last_liq),
+          last_liquidity: @last_liquidities[last_liq],
           pending_price_revision: Utils.to_bool(pending_price_revision)
         }
       }

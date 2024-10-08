@@ -46,7 +46,7 @@ defmodule IbEx.Client.Types.ExecutionTest do
       assert execution.ev_rule == "rule1"
       assert execution.ev_multiplier == 2.0
       assert execution.model_code == "modelABC"
-      assert execution.last_liquidity == 1
+      assert execution.last_liquidity == :add
       assert execution.pending_price_revision == false
     end
 

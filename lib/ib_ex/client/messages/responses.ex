@@ -39,7 +39,7 @@ defmodule IbEx.Client.Messages.Responses do
     "56" => "deta_neutral_validation",
     "57" => "tick_snapshot_end",
     "58" => Messages.MarketData.MarketDataType,
-    "59" => Messages.Misc.CommissionReport,
+    "59" => Messages.Executions.CommissionReport,
     "61" => "position_data",
     "62" => "position_end",
     "63" => "account_summary",

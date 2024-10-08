@@ -55,13 +55,22 @@ defmodule IbEx.Client.Messages.Executions.ExecutionData do
 
   defimpl Subscribable, for: __MODULE__ do
     alias IbEx.Client.Subscriptions
+    alias IbEx.Client.Messages.Executions.ExecutionData
 
     def subscribe(_, _, _) do
       {:error, :response_messages_cannot_create_subscription}
     end
 
-    def lookup(msg, table_ref) do
-      Subscriptions.lookup(table_ref, msg.request_id)
+    # we subscribe on lookup for the commission report attached to this execution
+    def lookup(%ExecutionData{} = msg, table_ref) do
+      case Subscriptions.lookup(table_ref, msg.request_id) do
+        {:ok, pid} ->
+          Subscriptions.subscribe_by_custom_id(table_ref, msg.execution.execution_id, pid)
+          {:ok, pid}
+
+        error ->
+          error
+      end
     end
   end
 end
