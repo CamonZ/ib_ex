@@ -25,6 +25,10 @@ defmodule IbEx.Client.Subscriptions do
     :ok
   end
 
+  def subscribe_by_custom_id(table_ref, custom_id, pid) do
+    :ets.insert(table_ref, {to_string(custom_id), pid})
+  end
+
   def lookup(table_ref, key) do
     case :ets.lookup(table_ref, key) do
       [{_, pid}] ->
