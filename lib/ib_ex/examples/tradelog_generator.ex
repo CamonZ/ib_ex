@@ -15,6 +15,7 @@ defmodule IbEx.Examples.TradelogGenerator do
             commission_report_messages: %{},
             transactions: [],
             client_pid: nil,
+            contracts_to_fetch: [],
             contract_names: %{}
 
   def start_link(opts \\ []) do
@@ -69,25 +70,27 @@ defmodule IbEx.Examples.TradelogGenerator do
       |> Enum.map(fn item -> process_group(item, state.commission_report_messages) end)
       |> Enum.into(%{})
 
-    {:noreply, %{state | transactions: transactions}, {:continue, :fetch_contracts}}
+    contracts_to_fetch = Map.keys(transactions) |> Enum.sort()
+    contract_names = Enum.reduce(contracts_to_fetch, %{}, fn symbol, acc -> Map.put(acc, symbol, "") end)
+
+    new_state = %{
+      state
+      | transactions: transactions,
+        contracts_to_fetch: contracts_to_fetch,
+        contract_names: contract_names
+    }
+
+    {:noreply, new_state, {:continue, :fetch_contracts}}
   end
 
   @impl true
   def handle_continue(:fetch_contracts, state) do
-    symbols = Map.keys(state.transactions)
+    [first | contracts_to_fetch] = state.contracts_to_fetch
 
-    contracts = Enum.reduce(symbols, %{}, fn symbol, acc -> Map.put(acc, symbol, "") end)
+    {:ok, request} = MatchingSymbols.Request.new(first)
+    Client.send_request(state.client_pid, request)
 
-    requests =
-      Enum.map(symbols, fn symbol ->
-        symbol
-        |> MatchingSymbols.Request.new()
-        |> elem(1)
-      end)
-
-    Enum.each(requests, fn req -> Client.send_request(state.client_pid, req) end)
-
-    {:noreply, %{state | contract_names: contracts}}
+    {:noreply, %{state | contracts_to_fetch: contracts_to_fetch}}
   end
 
   @impl true
@@ -160,10 +163,17 @@ defmodule IbEx.Examples.TradelogGenerator do
         state.contract_names
       end
 
-    if Enum.all?(new_contracts, fn {_k, v} -> v != "" end) do
-      {:noreply, %{state | contract_names: new_contracts}, {:continue, :update_txns_with_contract}}
-    else
-      {:noreply, %{state | contract_names: new_contracts}}
+    new_state = %{state | contract_names: new_contracts}
+
+    cond do
+      Enum.all?(new_contracts, fn {_k, v} -> v != "" end) ->
+        {:noreply, new_state, {:continue, :update_txns_with_contract}}
+
+      not Enum.empty?(state.contracts_to_fetch) ->
+        {:noreply, new_state, {:continue, :fetch_contracts}}
+
+      true ->
+        {:noreply, new_state}
     end
   end
 
