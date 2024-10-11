@@ -19,10 +19,10 @@ defmodule IbEx.Client.Messages.MarketData.RequestCancelData do
   alias IbEx.Client.Messages.Requests
   alias IbEx.Client.Protocols.Subscribable
 
-  @spec new(non_neg_integer()) :: {:ok, t()} | {:error, :not_implemented}
-  def new(request_id) do
+  @spec new() :: {:ok, t()} | {:error, :not_implemented}
+  def new() do
     case Requests.message_id_for(__MODULE__) do
-      {:ok, id} -> {:ok, %__MODULE__{message_id: id, request_id: request_id}}
+      {:ok, id} -> {:ok, %__MODULE__{message_id: id}}
       :error -> {:error, :not_implemented}
     end
   end
@@ -42,10 +42,14 @@ defmodule IbEx.Client.Messages.MarketData.RequestCancelData do
   end
 
   defimpl Subscribable, for: __MODULE__ do
-    def subscribe(msg, _pid, table_ref) do
-      :ets.delete(table_ref, to_string(msg.request_id))
+    alias IbEx.Client.Subscriptions
 
-      {:ok, msg}
+    # Subscription based on request_id, can handle multiple requests
+    def subscribe(msg, pid, table_ref) do
+      {:ok, request_id} = Subscriptions.reverse_lookup(table_ref, pid)
+      :ets.delete(table_ref, request_id)
+
+      {:ok, %{msg | request_id: request_id}}
     end
 
     def lookup(_, _) do
