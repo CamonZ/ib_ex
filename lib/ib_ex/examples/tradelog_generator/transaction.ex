@@ -39,7 +39,7 @@ defmodule IbEx.Examples.TradelogGenerator.Transaction do
       quantity: adjusted_size(exec),
       price: exec.price,
       subtotal: calc_subtotal(exec),
-      commission: comm.commission
+      commission: Decimal.mult(Decimal.new(comm.commission), "-1")
     }
 
     cond do
