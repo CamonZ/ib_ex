@@ -80,7 +80,7 @@ defmodule IbEx.Client.Messages.Executions.ExecutionDataTest do
                ev_rule: "",
                exchange: "ISLAND",
                execution_id: "00025b44.656e0e0c.01.01",
-               last_liquidity: 1,
+               last_liquidity: :add,
                liquidation: 0,
                model_code: "",
                order_id: "0",
@@ -109,7 +109,7 @@ defmodule IbEx.Client.Messages.Executions.ExecutionDataTest do
                <-- ExecutionData{
                  request_id: 1,
                  contract: %IbEx.Client.Types.Contract{conid: "520512263", symbol: "GTLB", security_type: "STK", last_trade_date_or_contract_month: "", strike: "0.0", right: "", multiplier: "", exchange: "ISLAND", currency: "USD", local_symbol: "GTLB", primary_exchange: "", trading_class: "", include_expired: false, security_id_type: "", security_id: "", combo_legs_description: nil, combo_legs: [], delta_neutral_contract: nil, description: "", issuer_id: ""},
-                 execution: %IbEx.Client.Types.Execution{execution_id: "00025b44.656e0e0c.01.01", timestamp: ~U[2023-12-04 21:39:34Z], account_id: "DU3494644", exchange: "ISLAND", side: "BOT", size: 100.0, price: 61.54, perm_id: 727593489, client_id: 0, order_id: "0", liquidation: 0, cumulative_quantity: Decimal.new("1600"), average_price: 61.496875, order_ref: "MktDepth", ev_rule: "", ev_multiplier: nil, model_code: "", last_liquidity: 1, pending_price_revision: false}
+                 execution: %IbEx.Client.Types.Execution{execution_id: "00025b44.656e0e0c.01.01", timestamp: ~U[2023-12-04 21:39:34Z], account_id: "DU3494644", exchange: "ISLAND", side: "BOT", size: 100.0, price: 61.54, perm_id: 727593489, client_id: 0, order_id: "0", liquidation: 0, cumulative_quantity: Decimal.new("1600"), average_price: 61.496875, order_ref: "MktDepth", ev_rule: "", ev_multiplier: nil, model_code: "", last_liquidity: :add, pending_price_revision: false}
                }
                """
     end
