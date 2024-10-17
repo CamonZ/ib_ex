@@ -85,12 +85,16 @@ defmodule IbEx.Examples.TradelogGenerator do
 
   @impl true
   def handle_continue(:fetch_contracts, state) do
-    [first | contracts_to_fetch] = state.contracts_to_fetch
+    case state.contracts_to_fetch do
+      [first | contracts_to_fetch] ->
+        {:ok, request} = MatchingSymbols.Request.new(first)
+        Client.send_request(state.client_pid, request)
 
-    {:ok, request} = MatchingSymbols.Request.new(first)
-    Client.send_request(state.client_pid, request)
+        {:noreply, %{state | contracts_to_fetch: contracts_to_fetch}}
 
-    {:noreply, %{state | contracts_to_fetch: contracts_to_fetch}}
+      [] ->
+        {:noreply, state}
+    end
   end
 
   @impl true

@@ -26,7 +26,6 @@ defmodule IbEx.Client.Messages.MarketData.OptionChainTest do
   }
 
   @fields [
-            "75",
             @attrs.request_id,
             @attrs.exchange,
             @attrs.underlying_conid,

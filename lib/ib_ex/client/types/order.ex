@@ -9,6 +9,7 @@ defmodule IbEx.Client.Types.Order do
     ShortSaleParams,
     FinancialAdvisorParams,
     VolatilityOrderParams,
+    DeltaNeutralParams,
     HedgeOrderParams,
     ScaleOrderParams,
     ClearingInfoParams,
@@ -67,6 +68,7 @@ defmodule IbEx.Client.Types.Order do
             stock_range_upper: nil,
             override_percentage_constraints: false,
             volatility_order_params: nil,
+            delta_neutral_params: nil,
             continuous_update: false,
             reference_price_type: nil,
             trail_stop_price: nil,
@@ -193,6 +195,7 @@ defmodule IbEx.Client.Types.Order do
           stock_range_upper: Decimal.t(),
           override_percentage_constraints: boolean(),
           volatility_order_params: VolatilityOrderParams.t(),
+          delta_neutral_params: DeltaNeutralParams.t(),
           continuous_update: boolean() | nil,
           reference_price_type: reference_price_type(),
           trail_stop_price: Decimal.t(),
@@ -256,6 +259,7 @@ defmodule IbEx.Client.Types.Order do
       |> assign_params(:fa_params, FinancialAdvisorParams)
       |> assign_params(:short_sale_params, ShortSaleParams)
       |> assign_params(:volatility_order_params, VolatilityOrderParams)
+      |> assign_params(:delta_neutral_params, DeltaNeutralParams)
       |> assign_params(:scale_order_params, ScaleOrderParams)
       |> assign_params(:hedge_order_params, HedgeOrderParams)
       |> assign_params(:clearing_params, ClearingInfoParams)
@@ -331,6 +335,7 @@ defmodule IbEx.Client.Types.Order do
         order.override_percentage_constraints
       ] ++
       VolatilityOrderParams.serialize(order.volatility_order_params) ++
+      DeltaNeutralParams.serialize(order.delta_neutral_params) ++
       [
         order.continuous_update,
         order.reference_price_type,

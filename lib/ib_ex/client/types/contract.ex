@@ -99,15 +99,6 @@ defmodule IbEx.Client.Types.Contract do
 
   @spec new(map()) :: t()
   def new(attrs) when is_map(attrs) do
-    attrs =
-      case attrs.security_type == "BAG" do
-        true ->
-          assign_params(attrs, :delta_neutral_contract, DeltaNeutral)
-
-        false ->
-          attrs
-      end
-
     struct(__MODULE__, attrs)
   end
 

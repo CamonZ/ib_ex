@@ -31,7 +31,7 @@ defmodule IbEx.Client.Messages.CurrentTime.RequestTest do
   end
 
   describe "Subscribable" do
-    test "subscribe/2 subscribes incoming messages with the msg's request id to the given pid" do
+    test "subscribe/3 subscribes incoming messages with the msg's request id to the given pid" do
       table_ref = Subscriptions.initialize()
 
       {:ok, msg} = Request.new()
