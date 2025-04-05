@@ -6,6 +6,7 @@ defmodule IbEx.Client.Messages.InitConnection.Response do
   defstruct server_version: nil, connection_timestamp: nil
 
   alias IbEx.Client.Utils
+  alias IbEx.Client.Protocols.Traceable
 
   def from_fields([server_version, timestamp_str]) do
     with {version, _} <- Integer.parse(server_version),
@@ -28,8 +29,8 @@ defmodule IbEx.Client.Messages.InitConnection.Response do
     {:error, :invalid_args}
   end
 
-  defimpl Inspect, for: __MODULE__ do
-    def inspect(msg, _opts) do
+  defimpl Traceable, for: __MODULE__ do
+    def to_s(msg) do
       "<-- %InitConnection{version: #{msg.server_version} timestamp: #{msg.connection_timestamp}}"
     end
   end

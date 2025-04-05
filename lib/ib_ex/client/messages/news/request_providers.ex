@@ -8,6 +8,7 @@ defmodule IbEx.Client.Messages.News.RequestProviders do
   @type t :: %__MODULE__{message_id: non_neg_integer()}
 
   alias IbEx.Client.Messages.Requests
+  alias IbEx.Client.Protocols.Traceable
 
   @spec new() :: {:ok, t()} | {:error, :not_implemented}
   def new do
@@ -25,8 +26,8 @@ defmodule IbEx.Client.Messages.News.RequestProviders do
     end
   end
 
-  defimpl Inspect, for: __MODULE__ do
-    def inspect(_msg, _opts) do
+  defimpl Traceable, for: __MODULE__ do
+    def to_s(_msg) do
       "--> News.RequestProviders{}"
     end
   end

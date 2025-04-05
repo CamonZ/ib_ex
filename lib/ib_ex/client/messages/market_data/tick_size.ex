@@ -18,6 +18,7 @@ defmodule IbEx.Client.Messages.MarketData.TickSize do
 
   alias IbEx.Client.Utils
   alias IbEx.Client.Constants.TickTypes
+  alias IbEx.Client.Protocols.Traceable
 
   def from_fields([_, request_id, tick_type_str, size]) do
     tick_type = decode_tick_type(tick_type_str)
@@ -42,8 +43,8 @@ defmodule IbEx.Client.Messages.MarketData.TickSize do
     end
   end
 
-  defimpl Inspect, for: __MODULE__ do
-    def inspect(msg, _opts) do
+  defimpl Traceable, for: __MODULE__ do
+    def to_s(msg) do
       "<-- %MarketData.TickSize{request_id: #{msg.request_id}, tick_type: #{msg.tick_type}, size: #{msg.size}}"
     end
   end

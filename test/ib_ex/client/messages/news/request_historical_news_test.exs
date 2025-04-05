@@ -2,6 +2,7 @@ defmodule IbEx.Client.Messages.News.RequestHistoricalNewsTest do
   use ExUnit.Case, async: true
 
   alias IbEx.Client.Messages.News.RequestHistoricalNews
+  alias IbEx.Client.Protocols.Traceable
 
   describe "new/6" do
     test "creates the message with valid inputs" do
@@ -39,11 +40,11 @@ defmodule IbEx.Client.Messages.News.RequestHistoricalNewsTest do
     end
   end
 
-  describe "Inspect implementation" do
-    test "returns a human-readable version of the message" do
+  describe "Traceable" do
+    test "to_s/1 returns a human-readable version of the message" do
       msg = %RequestHistoricalNews{request_id: 90001, conid: 8314, provider_codes: "BRFG+BGRUPDN", max_results: 10}
 
-      assert inspect(msg) ==
+      assert Traceable.to_s(msg) ==
                """
                --> News.RequestHistoricalNews{
                  request_id: 90001,

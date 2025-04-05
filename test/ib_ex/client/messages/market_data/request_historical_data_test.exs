@@ -2,6 +2,7 @@ defmodule IbEx.Client.Messages.MarketData.RequestHistoricalDataTest do
   use ExUnit.Case, async: true
 
   alias IbEx.Client.Messages.MarketData.RequestHistoricalData
+  alias IbEx.Client.Protocols.Traceable
   alias IbEx.Client.Types.Contract
 
   @contract %Contract{
@@ -83,8 +84,8 @@ defmodule IbEx.Client.Messages.MarketData.RequestHistoricalDataTest do
     end
   end
 
-  describe "Inspect implementation" do
-    test "returns a human-readable version of the struct" do
+  describe "Traceable" do
+    test "to_s/1 returns a human-readable version of the struct" do
       msg = %RequestHistoricalData{
         request_id: 123,
         contract: @contract,
@@ -98,7 +99,7 @@ defmodule IbEx.Client.Messages.MarketData.RequestHistoricalDataTest do
 
       contract_str = Enum.join(Contract.serialize(@contract, false), ", ")
 
-      assert inspect(msg) ==
+      assert Traceable.to_s(msg) ==
                """
                --> MarketData.RequestHistoricalData{
                  request_id: 123,

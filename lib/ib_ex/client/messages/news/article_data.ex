@@ -8,6 +8,7 @@ defmodule IbEx.Client.Messages.News.ArticleData do
   defstruct request_id: nil, article: nil
 
   alias IbEx.Client.Types.NewsArticle
+  alias IbEx.Client.Protocols.Traceable
 
   @type t :: %__MODULE__{
           request_id: String.t(),
@@ -29,8 +30,8 @@ defmodule IbEx.Client.Messages.News.ArticleData do
     {:error, :invalid_args}
   end
 
-  defimpl Inspect, for: __MODULE__ do
-    def inspect(msg, _opts) do
+  defimpl Traceable, for: __MODULE__ do
+    def to_s(msg) do
       """
       <-- %News.ArticleData{item: #{inspect(msg.item)}}
       """

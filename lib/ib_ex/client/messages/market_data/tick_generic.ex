@@ -18,6 +18,7 @@ defmodule IbEx.Client.Messages.MarketData.TickGeneric do
 
   alias IbEx.Client.Constants.TickTypes
   alias IbEx.Client.Utils
+  alias IbEx.Client.Protocols.Traceable
 
   @spec from_fields(list(String.t())) :: {:ok, t()} | {:error, :invalid_args}
   def from_fields([_, request_id, tick_type_str, value]) do
@@ -43,8 +44,8 @@ defmodule IbEx.Client.Messages.MarketData.TickGeneric do
     end
   end
 
-  defimpl Inspect, for: __MODULE__ do
-    def inspect(msg, _opts) do
+  defimpl Traceable, for: __MODULE__ do
+    def to_s(msg) do
       "<-- %MarketData.TickGeneric{request_id: #{msg.request_id}, tick_type: #{msg.tick_type}, value: #{msg.value}}"
     end
   end

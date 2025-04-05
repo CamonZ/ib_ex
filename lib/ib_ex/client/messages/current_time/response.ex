@@ -5,6 +5,7 @@ defmodule IbEx.Client.Messages.CurrentTime.Response do
   defstruct version: nil, timestamp: nil
 
   alias IbEx.Client.Protocols.Subscribable
+  alias IbEx.Client.Protocols.Traceable
 
   def from_fields([version_str, epoch_str]) do
     with {version, _} <- Integer.parse(version_str),
@@ -21,8 +22,8 @@ defmodule IbEx.Client.Messages.CurrentTime.Response do
     {:error, :invalid_args}
   end
 
-  defimpl Inspect, for: __MODULE__ do
-    def inspect(msg, _opts) do
+  defimpl Traceable, for: __MODULE__ do
+    def to_s(msg) do
       """
       <-- %CurrentTime{version: #{msg.version}, timestamp: #{msg.timestamp}}
       """

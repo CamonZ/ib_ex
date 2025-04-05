@@ -70,7 +70,6 @@ defmodule IbEx.Client.Connection do
 
   @impl true
   def handle_call({:send_message, msg}, _from, state) do
-    Logger.info("#{inspect(msg)}")
     Socket.send_message(state.socket, to_string(msg))
 
     {:reply, :ok, state}

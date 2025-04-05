@@ -6,6 +6,7 @@ defmodule IbEx.Client.Messages.Executions.ExecutionDataTest do
   alias IbEx.Client.Types.Execution
 
   alias IbEx.Client.Protocols.Subscribable
+  alias IbEx.Client.Protocols.Traceable
   alias IbEx.Client.Subscriptions
 
   @fields [
@@ -100,11 +101,11 @@ defmodule IbEx.Client.Messages.Executions.ExecutionDataTest do
     end
   end
 
-  describe "inspect/2" do
-    test "returns a human-readable version of the message" do
+  describe "Traceable" do
+    test "to_s/1 returns a human-readable version of the message" do
       {:ok, msg} = ExecutionData.from_fields(@fields)
 
-      assert inspect(msg) ==
+      assert Traceable.to_s(msg) ==
                """
                <-- ExecutionData{
                  request_id: 1,

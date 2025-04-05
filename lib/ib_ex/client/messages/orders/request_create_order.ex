@@ -16,6 +16,7 @@ defmodule IbEx.Client.Messages.Orders.RequestCreateOrder do
 
   alias IbEx.Client.Messages.Requests
   alias IbEx.Client.Types.{Order, Contract}
+  alias IbEx.Client.Protocols.Traceable
 
   @type t :: %__MODULE__{
           message_id: non_neg_integer(),
@@ -76,8 +77,8 @@ defmodule IbEx.Client.Messages.Orders.RequestCreateOrder do
     end
   end
 
-  defimpl Inspect, for: __MODULE__ do
-    def inspect(msg, _opts) do
+  defimpl Traceable, for: __MODULE__ do
+    def to_s(msg) do
       contract_str = Enum.join(Contract.serialize(msg.contract, false), ", ")
 
       """

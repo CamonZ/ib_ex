@@ -2,6 +2,7 @@ defmodule IbEx.Client.Messages.News.ProvidersTest do
   use ExUnit.Case, async: true
 
   alias IbEx.Client.Messages.News.Providers
+  alias IbEx.Client.Protocols.Traceable
 
   describe "from_fields/1" do
     test "creates the message with valid fields" do
@@ -21,13 +22,13 @@ defmodule IbEx.Client.Messages.News.ProvidersTest do
     end
   end
 
-  describe "Inspect implementation" do
-    test "returns a human-readable version of the message" do
+  describe "Traceable" do
+    test "to_s/1 returns a human-readable version of the message" do
       msg = %Providers{
         items: [{"code1", "name1"}, {"code2", "name2"}]
       }
 
-      assert inspect(msg) ==
+      assert Traceable.to_s(msg) ==
                """
                <-- %News.Providers{items: [{\"code1\", \"name1\"}, {\"code2\", \"name2\"}]}
                """

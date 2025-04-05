@@ -2,6 +2,7 @@ defmodule IbEx.Client.Messages.News.HistoricalNewsTest do
   use ExUnit.Case, async: true
 
   alias IbEx.Client.Messages.News.HistoricalNews
+  alias IbEx.Client.Protocols.Traceable
 
   describe "from_fields/1" do
     test "creates HistoricalNews struct with valid fields" do
@@ -19,8 +20,8 @@ defmodule IbEx.Client.Messages.News.HistoricalNewsTest do
     end
   end
 
-  describe "Inspect implementation" do
-    test "returns a human-readable version of the message" do
+  describe "Traceable" do
+    test "to_s/1 returns a human-readable version of the message" do
       msg = %HistoricalNews{
         request_id: "123",
         timestamp: "2021-12-31T23:59:59Z",
@@ -29,7 +30,7 @@ defmodule IbEx.Client.Messages.News.HistoricalNewsTest do
         headline: "Breaking News"
       }
 
-      assert inspect(msg) ==
+      assert Traceable.to_s(msg) ==
                """
                <-- %News.HistoricalNews{
                  request_id: 123,

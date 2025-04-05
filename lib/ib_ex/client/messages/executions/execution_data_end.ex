@@ -9,6 +9,7 @@ defmodule IbEx.Client.Messages.Executions.ExecutionDataEnd do
 
   alias IbEx.Client.Utils
   alias IbEx.Client.Protocols.Subscribable
+  alias IbEx.Client.Protocols.Traceable
 
   @spec from_fields(list(String.t())) :: {:ok, t()} | {:error, :invalid_args}
   def from_fields([version_str, request_id]) do
@@ -20,8 +21,8 @@ defmodule IbEx.Client.Messages.Executions.ExecutionDataEnd do
     {:error, :invalid_args}
   end
 
-  defimpl Inspect, for: __MODULE__ do
-    def inspect(msg, _opts) do
+  defimpl Traceable, for: __MODULE__ do
+    def to_s(msg) do
       """
       <-- ExecutionDataEnd{version: #{msg.version}, request_id: #{msg.request_id}}
       """

@@ -3,6 +3,7 @@ defmodule IbEx.Client.Messages.MarketDepth.L2DataSingleTest do
 
   alias IbEx.Client.Messages.MarketDepth.L2DataSingle
   alias IbEx.Client.Protocols.Subscribable
+  alias IbEx.Client.Protocols.Traceable
   alias IbEx.Client.Subscriptions
 
   describe "from_fields/1" do
@@ -89,8 +90,8 @@ defmodule IbEx.Client.Messages.MarketDepth.L2DataSingleTest do
     end
   end
 
-  describe "Inspect implementation" do
-    test "inspects L2DataSingle struct correctly" do
+  describe "Traceable" do
+    test "to_s/1 returns a human readable version of the message" do
       timestamp = DateTime.utc_now()
 
       msg = %L2DataSingle{
@@ -103,7 +104,7 @@ defmodule IbEx.Client.Messages.MarketDepth.L2DataSingleTest do
         timestamp: timestamp
       }
 
-      assert inspect(msg) ==
+      assert Traceable.to_s(msg) ==
                """
                <-- %MarketDepth.L2DataSingle{
                  request_id: 90001,

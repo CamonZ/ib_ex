@@ -2,6 +2,7 @@ defmodule IbEx.Client.Messages.MarketData.OptionChainEnd do
   @moduledoc """
   End of option chain messages 
   """
+  alias IbEx.Client.Protocols.Traceable
 
   defstruct request_id: nil
 
@@ -18,8 +19,8 @@ defmodule IbEx.Client.Messages.MarketData.OptionChainEnd do
     {:error, :invalid_args}
   end
 
-  defimpl Inspect, for: __MODULE__ do
-    def inspect(msg, _opts) do
+  defimpl Traceable, for: __MODULE__ do
+    def to_s(msg) do
       """
       <-- %MarketData.OptionChainEnd{
         request_id: #{msg.request_id},

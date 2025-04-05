@@ -2,6 +2,7 @@ defmodule IbEx.Client.Messages.Pnl.SinglePositionRequestTest do
   use ExUnit.Case, async: true
 
   alias IbEx.Client.Messages.Pnl.SinglePositionRequest
+  alias IbEx.Client.Protocols.Traceable
 
   @apple_conid "265598"
   @account_id "GU12345678"
@@ -34,8 +35,8 @@ defmodule IbEx.Client.Messages.Pnl.SinglePositionRequestTest do
     end
   end
 
-  describe "Inspect implementation" do
-    test "inspect/2 returns the correct string representation" do
+  describe "Traceable" do
+    test "to_s/1 returns the correct string representation" do
       msg = %SinglePositionRequest{
         message_id: 94,
         request_id: @request_id,
@@ -44,7 +45,7 @@ defmodule IbEx.Client.Messages.Pnl.SinglePositionRequestTest do
         model_code: ""
       }
 
-      assert Inspect.inspect(msg, []) ==
+      assert Traceable.to_s(msg) ==
                """
                --> Pnl.SinglePositionRequest{
                  message_id: 94,

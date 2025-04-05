@@ -4,6 +4,8 @@ defmodule IbEx.Client.Messages.MarketData.MarketDataType do
   and realtime.
   """
 
+  alias IbEx.Client.Protocols.Traceable
+
   defstruct request_id: nil, data_type: nil
 
   @type t :: %__MODULE__{
@@ -53,8 +55,8 @@ defmodule IbEx.Client.Messages.MarketData.MarketDataType do
     end
   end
 
-  defimpl Inspect, for: __MODULE__ do
-    def inspect(msg, _opts) do
+  defimpl Traceable, for: __MODULE__ do
+    def to_s(msg) do
       "<-- %MarketData.MarketDataType{request_id: #{msg.request_id}, data_type: #{msg.data_type}}"
     end
   end

@@ -4,6 +4,7 @@ defmodule IbEx.Client.Messages.MarketData.RequestDataTest do
   alias IbEx.Client.Messages.MarketData.RequestData
   alias IbEx.Client.Types.Contract
   alias IbEx.Client.Protocols.Subscribable
+  alias IbEx.Client.Protocols.Traceable
   alias IbEx.Client.Subscriptions
 
   @contract %Contract{
@@ -59,8 +60,8 @@ defmodule IbEx.Client.Messages.MarketData.RequestDataTest do
     end
   end
 
-  describe "Inspect implementation" do
-    test "returns a human-readable version of the struct" do
+  describe "Traceable" do
+    test "to_s/1 returns a human-readable version of the struct" do
       msg = %RequestData{
         request_id: 123,
         contract: @contract,
@@ -71,7 +72,7 @@ defmodule IbEx.Client.Messages.MarketData.RequestDataTest do
 
       contract_str = Enum.join(Contract.serialize(@contract, false), ", ")
 
-      assert inspect(msg) ==
+      assert Traceable.to_s(msg) ==
                """
                --> MarketData.RequestData{
                  request_id: 123,

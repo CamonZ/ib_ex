@@ -32,6 +32,7 @@ defmodule IbEx.Client.Messages.MarketData.TickPrice do
 
   alias IbEx.Client.Utils
   alias IbEx.Client.Constants.TickTypes
+  alias IbEx.Client.Protocols.Traceable
 
   @autoexecute_flag 1
   @past_limit_flag 2
@@ -66,8 +67,8 @@ defmodule IbEx.Client.Messages.MarketData.TickPrice do
     end
   end
 
-  defimpl Inspect, for: __MODULE__ do
-    def inspect(msg, _opts) do
+  defimpl Traceable, for: __MODULE__ do
+    def to_s(msg) do
       """
       <-- %MarketData.TickPrice{
         request_id: #{msg.request_id},

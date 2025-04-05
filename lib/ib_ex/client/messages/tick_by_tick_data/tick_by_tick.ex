@@ -14,8 +14,7 @@ defmodule IbEx.Client.Messages.TickByTickData.TickByTick do
   alias IbEx.Client.Types.Trade
   alias IbEx.Client.Types.BidAsk
   alias IbEx.Client.Types.MidPoint
-
-  require Logger
+  alias IbEx.Client.Protocols.Traceable
 
   def from_fields([request_id, tick_type | rest]) do
     case parse_data_fields(tick_type, rest) do
@@ -46,8 +45,8 @@ defmodule IbEx.Client.Messages.TickByTickData.TickByTick do
     MidPoint.from_tick_by_tick(fields)
   end
 
-  defimpl Inspect, for: __MODULE__ do
-    def inspect(msg, _opts) do
+  defimpl Traceable, for: __MODULE__ do
+    def to_s(msg) do
       "<-- TickByTick{request_id: #{msg.request_id}, tick: #{inspect(msg.tick)}}"
     end
   end

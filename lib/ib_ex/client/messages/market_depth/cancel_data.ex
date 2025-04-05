@@ -23,6 +23,7 @@ defmodule IbEx.Client.Messages.MarketDepth.CancelData do
 
   alias IbEx.Client.Messages.Requests
   alias IbEx.Client.Protocols.Subscribable
+  alias IbEx.Client.Protocols.Traceable
 
   @spec new(boolean()) :: {:ok, t()} | {:error, :not_implemented}
   def new(is_smart_depth \\ true) do
@@ -56,8 +57,8 @@ defmodule IbEx.Client.Messages.MarketDepth.CancelData do
     end
   end
 
-  defimpl Inspect, for: __MODULE__ do
-    def inspect(msg, _opts) do
+  defimpl Traceable, for: __MODULE__ do
+    def to_s(msg) do
       """
       --> %MarketDepth.CancelData{
         request_id: #{msg.request_id},

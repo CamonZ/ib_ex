@@ -33,13 +33,15 @@ defmodule IbEx.Client do
             connection_timestamp: nil,
             managed_accounts: nil,
             next_valid_id: nil,
-            subscriptions_table_ref: nil
+            subscriptions_table_ref: nil,
+            trace_messages: false
 
   alias IbEx.Client.Connection
   alias IbEx.Client.Constants
   alias IbEx.Client.Messages
   alias IbEx.Client.Messages.Responses
   alias IbEx.Client.Protocols.Subscribable
+  alias IbEx.Client.Protocols.Traceable
   alias IbEx.Client.Subscriptions
 
   require Logger
@@ -91,8 +93,9 @@ defmodule IbEx.Client do
     case connection_handler.start_link(connection_opts) do
       {:ok, pid} ->
         table_ref = Subscriptions.initialize()
+        trace_messages = Keyword.get(opts, :trace_messages, false)
 
-        {:ok, %__MODULE__{connection: pid, subscriptions_table_ref: table_ref}}
+        {:ok, %__MODULE__{connection: pid, subscriptions_table_ref: table_ref, trace_messages: trace_messages}}
 
       err ->
         {:stop, {:connection_error, err}}
@@ -147,10 +150,8 @@ defmodule IbEx.Client do
   end
 
   def handle_cast({:process_message, str}, state) do
-    case Responses.parse(str, state.status) do
+    case Responses.parse(str, state.status, state.trace_messages) do
       {:ok, %Messages.InitConnection.Response{} = msg} ->
-        Logger.warning("#{inspect(msg)}")
-
         update = %{
           server_version: msg.server_version,
           connection_timestamp: msg.connection_timestamp,
@@ -177,6 +178,10 @@ defmodule IbEx.Client do
   def handle_cast({:send_request, subscriber_pid, request}, state) do
     case Subscribable.subscribe(request, subscriber_pid, state.subscriptions_table_ref) do
       {:ok, msg} ->
+        if state.trace_messages do
+          Logger.info(Traceable.to_s(msg))
+        end
+
         Connection.send_message(state.connection, msg)
 
       _ ->

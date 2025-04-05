@@ -3,6 +3,8 @@ defmodule IbEx.Client.Messages.MarketData.OptionChain do
   Returned option chain struct 
   """
 
+  alias IbEx.Client.Protocols.Traceable
+
   defstruct request_id: nil,
             exchange: nil,
             underlying_conid: nil,
@@ -50,8 +52,8 @@ defmodule IbEx.Client.Messages.MarketData.OptionChain do
     {:error, :invalid_args}
   end
 
-  defimpl Inspect, for: __MODULE__ do
-    def inspect(msg, _opts) do
+  defimpl Traceable, for: __MODULE__ do
+    def to_s(msg) do
       """
       <-- %MarketData.OptionChain{
         request_id: #{msg.request_id},

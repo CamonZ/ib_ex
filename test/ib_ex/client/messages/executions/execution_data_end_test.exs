@@ -3,6 +3,7 @@ defmodule IbEx.Client.Messages.Executions.ExecutionDataEndTest do
 
   alias IbEx.Client.Messages.Executions.ExecutionDataEnd
   alias IbEx.Client.Protocols.Subscribable
+  alias IbEx.Client.Protocols.Traceable
   alias IbEx.Client.Subscriptions
 
   describe "from_fields/1" do
@@ -22,11 +23,11 @@ defmodule IbEx.Client.Messages.Executions.ExecutionDataEndTest do
     end
   end
 
-  describe "inspect/2" do
-    test "returns a human-readable version of the message" do
+  describe "Traceable" do
+    test "to_s/1 returns a human-readable version of the message" do
       msg = %ExecutionDataEnd{version: 3, request_id: "123"}
 
-      assert inspect(msg) ==
+      assert Traceable.to_s(msg) ==
                """
                <-- ExecutionDataEnd{version: 3, request_id: 123}
                """

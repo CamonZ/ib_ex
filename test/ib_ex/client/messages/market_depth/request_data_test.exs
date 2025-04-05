@@ -3,6 +3,7 @@ defmodule IbEx.Client.Messages.MarketDepth.RequestDataTest do
 
   alias IbEx.Client.Messages.MarketDepth.RequestData
   alias IbEx.Client.Protocols.Subscribable
+  alias IbEx.Client.Protocols.Traceable
   alias IbEx.Client.Types.Contract
   alias IbEx.Client.Subscriptions
 
@@ -39,8 +40,8 @@ defmodule IbEx.Client.Messages.MarketDepth.RequestDataTest do
     end
   end
 
-  describe "Inspect implementation" do
-    test "inspects RequestData struct correctly" do
+  describe "Traceable" do
+    test "to_s/1 returns a human readable version of the message" do
       contract = %Contract{symbol: "AAPL", security_type: "STK"}
 
       msg = %RequestData{
@@ -50,7 +51,7 @@ defmodule IbEx.Client.Messages.MarketDepth.RequestDataTest do
         smart_depth?: true
       }
 
-      assert inspect(msg) ==
+      assert Traceable.to_s(msg) ==
                """
                --> MarketDepth.RequestData{
                  request_id: 90001,

@@ -8,6 +8,7 @@ defmodule IbEx.Client.Messages.Executions.CommissionReport do
             yield_redemption_date: nil
 
   alias IbEx.Client.Protocols.Subscribable
+  alias IbEx.Client.Protocols.Traceable
 
   def from_fields(fields) when length(fields) == 7 do
     [version, exec_id, commission, currency, realized, yield, redemption_date] = fields
@@ -29,8 +30,8 @@ defmodule IbEx.Client.Messages.Executions.CommissionReport do
     {:error, :invalid_args}
   end
 
-  defimpl Inspect, for: __MODULE__ do
-    def inspect(msg, _opts) do
+  defimpl Traceable, for: __MODULE__ do
+    def to_s(msg) do
       """
         <-- CommissionReport{
             version: #{msg.version},

@@ -5,6 +5,8 @@ defmodule IbEx.Client.Messages.HistoricalTicks.Last do
 
   alias IbEx.Client.Types.Trade
 
+  # TODO: Implement Traceable for this message
+
   def from_fields([request_id, _amount_of_ticks | ticks_fields]) do
     trades =
       ticks_fields

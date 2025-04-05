@@ -8,6 +8,7 @@ defmodule IbEx.Client.Messages.InitConnection.Request do
   defstruct prefix: @prefix, version: nil
 
   alias IbEx.Client.Constants.ServerVersions
+  alias IbEx.Client.Protocols.Traceable
 
   def new do
     {:ok, %__MODULE__{version: ServerVersions.client_version()}}
@@ -21,8 +22,8 @@ defmodule IbEx.Client.Messages.InitConnection.Request do
     end
   end
 
-  defimpl Inspect, for: __MODULE__ do
-    def inspect(msg, _opts) do
+  defimpl Traceable, for: __MODULE__ do
+    def to_s(msg) do
       "--> API, #{msg.version}"
     end
   end

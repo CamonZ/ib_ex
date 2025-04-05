@@ -3,6 +3,7 @@ defmodule IbEx.Client.Messages.MarketData.TickRequestParamsTest do
 
   alias IbEx.Client.Messages.MarketData.TickRequestParams
   alias IbEx.Client.Protocols.Subscribable
+  alias IbEx.Client.Protocols.Traceable
   alias IbEx.Client.Subscriptions
 
   describe "from_fields/1" do
@@ -20,8 +21,8 @@ defmodule IbEx.Client.Messages.MarketData.TickRequestParamsTest do
     end
   end
 
-  describe "Inspect implementation" do
-    test "inspects TickRequestParams struct correctly" do
+  describe "Traceable" do
+    test "to_s/1 returns a human readable version of the message" do
       msg = %TickRequestParams{
         request_id: "9001",
         min_tick: 0.01,
@@ -29,7 +30,7 @@ defmodule IbEx.Client.Messages.MarketData.TickRequestParamsTest do
         snapshot_permissions: 1
       }
 
-      assert inspect(msg) ==
+      assert Traceable.to_s(msg) ==
                "<-- %MarketData.TickRequestParams{request_id: 9001, min_tick: 0.01, bbo_exchange: 9c0001, snapshot_permissions: 1}"
     end
   end

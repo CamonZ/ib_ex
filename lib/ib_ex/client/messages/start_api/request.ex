@@ -8,6 +8,7 @@ defmodule IbEx.Client.Messages.StartApi.Request do
   @version 2
 
   alias IbEx.Client.Messages.Requests
+  alias IbEx.Client.Protocols.Traceable
 
   defstruct message_id: nil, optional_capabilities: nil, client_id: nil, version: @version
 
@@ -46,8 +47,8 @@ defmodule IbEx.Client.Messages.StartApi.Request do
     end
   end
 
-  defimpl Inspect, for: __MODULE__ do
-    def inspect(msg, _opts) do
+  defimpl Traceable, for: __MODULE__ do
+    def to_s(msg) do
       "--> StartAPI{id: #{msg.message_id}, version: #{msg.version}, client_id: #{msg.client_id}, opt_capabilities: #{inspect(msg.optional_capabilities)}}"
     end
   end

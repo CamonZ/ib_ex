@@ -3,6 +3,7 @@ defmodule IbEx.Client.Messages.AccountData.AccountDownloadEndTest do
 
   alias IbEx.Client.Messages.AccountData.AccountDownloadEnd
   alias IbEx.Client.Protocols.Subscribable
+  alias IbEx.Client.Protocols.Traceable
   alias IbEx.Client.Subscriptions
 
   describe "from_fields/1" do
@@ -21,10 +22,10 @@ defmodule IbEx.Client.Messages.AccountData.AccountDownloadEndTest do
     end
   end
 
-  describe "Inspect" do
-    test "inspect/2 returns a human-readable version of the message" do
+  describe "Traceable" do
+    test "to_s/1 returns a human-readable version of the message" do
       {:ok, msg} = AccountDownloadEnd.from_fields(["3", "ACCT456"])
-      assert inspect(msg) == "<-- AccountDownloadEnd{account: ACCT456}"
+      assert Traceable.to_s(msg) == "<-- AccountDownloadEnd{account: ACCT456}"
     end
   end
 

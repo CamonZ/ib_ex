@@ -4,6 +4,7 @@ defmodule IbEx.Client.Messages.Ids.Request do
   alias IbEx.Client.Protocols.Subscribable
   alias IbEx.Client.Messages.Base
   alias IbEx.Client.Messages.Requests
+  alias IbEx.Client.Protocols.Traceable
 
   defstruct message_id: nil, version: @message_version, number_of_ids: 1
 
@@ -25,8 +26,8 @@ defmodule IbEx.Client.Messages.Ids.Request do
     end
   end
 
-  defimpl Inspect, for: __MODULE__ do
-    def inspect(msg, _opts) do
+  defimpl Traceable, for: __MODULE__ do
+    def to_s(msg) do
       "--> Ids.Request{number_of_ids: #{msg.number_of_ids}}"
     end
   end

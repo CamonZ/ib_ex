@@ -13,6 +13,7 @@ defmodule IbEx.Client.Types.Trade do
             unreported: nil
 
   alias IbEx.Client.Utils
+  alias IbEx.Client.Protocols.Traceable
 
   def from_tick_by_tick([ts, price_str, size_str, mask_str, exchange, conditions]) do
     from_historical_ticks_last([ts, mask_str, size_str, price_str, exchange, conditions])
@@ -51,8 +52,8 @@ defmodule IbEx.Client.Types.Trade do
     {:error, :invalid_args}
   end
 
-  defimpl Inspect, for: __MODULE__ do
-    def inspect(trade, _opts) do
+  defimpl Traceable, for: __MODULE__ do
+    def to_s(trade) do
       "%Trade{timestamp: #{trade.timestamp}, price: #{trade.price}, size: #{trade.size}, exchange: #{trade.exchange}, conditions: #{trade.conditions}}"
     end
   end

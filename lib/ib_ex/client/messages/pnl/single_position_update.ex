@@ -4,6 +4,7 @@ defmodule IbEx.Client.Messages.Pnl.SinglePositionUpdate do
   """
 
   alias IbEx.Client.Utils
+  alias IbEx.Client.Protocols.Traceable
 
   defstruct request_id: nil, position: nil, daily_pnl: nil, unrealized_pnl: nil, realized_pnl: nil, value: nil
 
@@ -28,8 +29,8 @@ defmodule IbEx.Client.Messages.Pnl.SinglePositionUpdate do
     {:error, :invalid_args}
   end
 
-  defimpl Inspect, for: __MODULE__ do
-    def inspect(msg, _opts) do
+  defimpl Traceable, for: __MODULE__ do
+    def to_s(msg) do
       """
       <-- Pnl.SinglePositionUpdate{
         request_id: #{msg.request_id},

@@ -5,6 +5,7 @@ defmodule IbEx.Client.Messages.MarketDepth.ExchangesTest do
   alias IbEx.Client.Types.MarketDepthDescription
 
   alias IbEx.Client.Protocols.Subscribable
+  alias IbEx.Client.Protocols.Traceable
   alias IbEx.Client.Subscriptions
 
   @fields [
@@ -42,16 +43,16 @@ defmodule IbEx.Client.Messages.MarketDepth.ExchangesTest do
     end
   end
 
-  describe "Inspect" do
-    test "inspect/2 Exchanges struct correctly" do
+  describe "Traceable" do
+    test "to_s/1 returns a human readable version of the message" do
       description = %MarketDepthDescription{
         exchange: "NYSE",
         security_type: "STK"
       }
 
-      assert inspect(%Exchanges{items: [description]}) ==
+      assert Traceable.to_s(%Exchanges{items: [description]}) ==
                """
-               <-- %MarketDepth.Exchanges{items: [%MarketDepthDescription{exchange: NYSE, security_type: STK}]}
+               <-- %MarketDepth.Exchanges{items: [%IbEx.Client.Types.MarketDepthDescription{exchange: \"NYSE\", security_type: \"STK\", listing_exchange: nil, service_data_type: nil, aggregate_group: nil}]}
                """
     end
   end

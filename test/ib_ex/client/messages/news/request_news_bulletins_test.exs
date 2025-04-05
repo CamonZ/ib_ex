@@ -2,6 +2,7 @@ defmodule IbEx.Client.Messages.News.RequestBulletinsTest do
   use ExUnit.Case, async: true
 
   alias IbEx.Client.Messages.News.RequestBulletins
+  alias IbEx.Client.Protocols.Traceable
 
   describe "new/1" do
     test "creates the message with all_messages set to false by default" do
@@ -28,9 +29,9 @@ defmodule IbEx.Client.Messages.News.RequestBulletinsTest do
     end
   end
 
-  describe "Inspect implementation" do
-    test "returns a human-readable version of the struct" do
-      assert inspect(%RequestBulletins{all_messages: true}) == "--> News.RequestBulletins{all_messages: true}"
+  describe "Traceable" do
+    test "to_s/1 returns a human-readable version of the struct" do
+      assert Traceable.to_s(%RequestBulletins{all_messages: true}) == "--> News.RequestBulletins{all_messages: true}"
     end
   end
 end

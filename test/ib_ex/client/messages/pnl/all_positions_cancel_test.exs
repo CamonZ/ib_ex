@@ -2,6 +2,7 @@ defmodule IbEx.Client.Messages.Pnl.AllPositionsCancelTest do
   use ExUnit.Case, async: true
 
   alias IbEx.Client.Messages.Pnl.AllPositionsCancel
+  alias IbEx.Client.Protocols.Traceable
 
   describe "new/0" do
     test "creates a new AllPositionsCancel message with valid message id" do
@@ -12,11 +13,11 @@ defmodule IbEx.Client.Messages.Pnl.AllPositionsCancelTest do
     end
   end
 
-  describe "Inspect" do
-    test "inspect/2 returns a human-readable version of the message" do
+  describe "Traceable" do
+    test "to_s/2 returns a human-readable version of the message" do
       {:ok, msg} = AllPositionsCancel.new("19001")
 
-      assert inspect(msg) ==
+      assert Traceable.to_s(msg) ==
                """
                --> Pnl.AllPositionsCancel{message_id: 93, request_id: 19001}
                """

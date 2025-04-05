@@ -2,6 +2,7 @@ defmodule IbEx.Client.Messages.News.RequestArticleTest do
   use ExUnit.Case, async: true
 
   alias IbEx.Client.Messages.News.RequestArticle
+  alias IbEx.Client.Protocols.Traceable
 
   describe "new/3" do
     test "creates a RequestArticle struct with valid inputs" do
@@ -28,15 +29,15 @@ defmodule IbEx.Client.Messages.News.RequestArticleTest do
     end
   end
 
-  describe "Inspect implementation" do
-    test "inspects RequestArticle struct correctly" do
+  describe "Traceable" do
+    test "to_s/1 returns a human readable version of the message" do
       request_article = %RequestArticle{
         request_id: 9001,
         provider_code: "BZ",
         provider_id: "BZ$12345abc"
       }
 
-      assert inspect(request_article) ==
+      assert Traceable.to_s(request_article) ==
                """
                <-- %News.RequestArticle{
                  request_id: 9001,

@@ -2,6 +2,7 @@ defmodule IbEx.Client.Messages.StartApi.RequestTest do
   use ExUnit.Case, async: true
 
   alias IbEx.Client.Messages.StartApi.Request
+  alias IbEx.Client.Protocols.Traceable
 
   describe "new/1" do
     test "returns a StartApi Request message" do
@@ -22,11 +23,11 @@ defmodule IbEx.Client.Messages.StartApi.RequestTest do
     end
   end
 
-  describe "Inspect" do
-    test "inspect/2 returns a human-readable version of the message" do
+  describe "Traceable" do
+    test "to_s/1 returns a human-readable version of the message" do
       {:ok, msg} = Request.new([])
 
-      assert inspect(msg) == "--> StartAPI{id: 71, version: 2, client_id: 0, opt_capabilities: []}"
+      assert Traceable.to_s(msg) == "--> StartAPI{id: 71, version: 2, client_id: 0, opt_capabilities: []}"
     end
   end
 end

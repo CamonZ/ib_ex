@@ -3,6 +3,7 @@ defmodule IbEx.Client.Messages.MarketData.TickGenericTest do
 
   alias IbEx.Client.Messages.MarketData.TickGeneric
   alias IbEx.Client.Protocols.Subscribable
+  alias IbEx.Client.Protocols.Traceable
   alias IbEx.Client.Subscriptions
 
   describe "from_fields/1" do
@@ -19,15 +20,15 @@ defmodule IbEx.Client.Messages.MarketData.TickGenericTest do
     end
   end
 
-  describe "Inspect implementation" do
-    test "inspects TickSize struct correctly" do
+  describe "Traceable" do
+    test "to_s/1 returns a human readable version of the message" do
       msg = %TickGeneric{
         request_id: "9001",
         tick_type: :halted,
         value: 0.0
       }
 
-      assert inspect(msg) ==
+      assert Traceable.to_s(msg) ==
                "<-- %MarketData.TickGeneric{request_id: 9001, tick_type: halted, value: 0.0}"
     end
   end

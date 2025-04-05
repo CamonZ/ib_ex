@@ -6,6 +6,7 @@ defmodule IbEx.Client.Messages.AccountData.AccountDownloadEnd do
   defstruct version: nil, account: nil
 
   alias IbEx.Client.Protocols.Subscribable
+  alias IbEx.Client.Protocols.Traceable
 
   def from_fields([version_str, account]) do
     case Integer.parse(version_str) do
@@ -27,8 +28,8 @@ defmodule IbEx.Client.Messages.AccountData.AccountDownloadEnd do
     {:error, :invalid_args}
   end
 
-  defimpl Inspect, for: __MODULE__ do
-    def inspect(msg, _opts) do
+  defimpl Traceable, for: __MODULE__ do
+    def to_s(msg) do
       "<-- AccountDownloadEnd{account: #{msg.account}}"
     end
   end

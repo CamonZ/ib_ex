@@ -36,6 +36,7 @@ defmodule IbEx.Client.Messages.MarketData.RequestHistoricalData do
   alias IbEx.Client.Constants.{WhatToShow, BarSizes, Durations}
   alias IbEx.Client.Messages.Requests
   alias IbEx.Client.Types.Contract
+  alias IbEx.Client.Protocols.Traceable
 
   @type end_date_time_type :: DateTime.t() | nil
   @type t :: %__MODULE__{
@@ -141,10 +142,10 @@ defmodule IbEx.Client.Messages.MarketData.RequestHistoricalData do
     end
   end
 
-  defimpl Inspect, for: __MODULE__ do
+  defimpl Traceable, for: __MODULE__ do
     alias IbEx.Client.Types.Contract
 
-    def inspect(msg, _opts) do
+    def to_s(msg) do
       contract = Enum.join(Contract.serialize(msg.contract, false), ", ")
 
       """

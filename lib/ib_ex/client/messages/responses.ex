@@ -1,6 +1,7 @@
 defmodule IbEx.Client.Messages.Responses do
   alias IbEx.Client.Messages
   alias Messages.Base
+  alias IbEx.Client.Protocols.Traceable
 
   require Logger
 
@@ -89,20 +90,29 @@ defmodule IbEx.Client.Messages.Responses do
     "107" => "user_info"
   }
 
-  @spec parse(String.t(), atom()) :: {:ok, any()} | {:error, :unexpected_error} | {:error, :not_implemented}
-  def parse(str, :connecting) do
-    str
-    |> Base.get_fields()
-    |> Messages.InitConnection.Response.from_fields()
+  @spec parse(String.t(), atom(), boolean()) :: {:ok, any()} | {:error, :unexpected_error} | {:error, :not_implemented}
+  def parse(str, :connecting, trace_messages) do
+    {:ok, msg} =
+      str
+      |> Base.get_fields()
+      |> Messages.InitConnection.Response.from_fields()
+
+    if trace_messages do
+      Logger.info(Traceable.to_s(msg))
+    end
+
+    {:ok, msg}
   end
 
-  def parse(str, _) do
+  def parse(str, _, trace_messages) do
     with fields <- Base.get_fields(str),
          {:ok, msg_id} <- Base.message_id_from_fields(fields),
          {:ok, type} <- Map.fetch(@ids_to_message_type, msg_id),
          {:ok, type} <- validate_implemented(type),
          {:ok, msg} <- type.from_fields(Enum.slice(fields, 1..-1//1)) do
-      Logger.info("#{inspect(msg)}")
+      if trace_messages do
+        Logger.info(Traceable.to_s(msg))
+      end
 
       {:ok, msg}
     else

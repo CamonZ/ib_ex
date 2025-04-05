@@ -3,6 +3,7 @@ defmodule IbEx.Client.Messages.Ids.NextValidId do
   Gets the next valid id to be used for order placement
   """
   require Logger
+  alias IbEx.Client.Protocols.Traceable
 
   defstruct version: nil, next_valid_id: nil
 
@@ -20,8 +21,8 @@ defmodule IbEx.Client.Messages.Ids.NextValidId do
     {:error, :invalid_args}
   end
 
-  defimpl Inspect, for: __MODULE__ do
-    def inspect(msg, _opts) do
+  defimpl Traceable, for: __MODULE__ do
+    def to_s(msg) do
       "<-- %NextValidId{version: #{msg.version}, next_valid_id: #{msg.next_valid_id}}"
     end
   end
