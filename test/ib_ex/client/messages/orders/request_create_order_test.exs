@@ -4,6 +4,7 @@ defmodule IbEx.Client.Messages.Orders.RequestCreateOrderTest do
   alias IbEx.Client.Types.{Order, Contract}
   alias IbEx.Client.Messages.Orders.RequestCreateOrder
   alias IbEx.Client.Protocols.Subscribable
+  alias IbEx.Client.Protocols.Traceable
   alias IbEx.Client.Subscriptions
 
   @order_id 123
@@ -45,13 +46,13 @@ defmodule IbEx.Client.Messages.Orders.RequestCreateOrderTest do
     end
   end
 
-  describe "Inspect implementation" do
-    test "inspects RequestCreateOrder struct correctly" do
+  describe "Traceable" do
+    test "to_s/1 returns a human readable version of the message" do
       msg = %RequestCreateOrder{order_id: @order_id, order: @order, contract: @contract}
 
       contract_str = Enum.join(Contract.serialize(@contract, false), ", ")
 
-      assert inspect(msg) ==
+      assert Traceable.to_s(msg) ==
                """
                --> RequestCreateOrder{
                  order_id: 123,

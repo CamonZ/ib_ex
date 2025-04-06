@@ -13,6 +13,7 @@ defmodule IbEx.Client.Types.BidAsk do
             ask_past_high: nil
 
   alias IbEx.Client.Utils
+  alias IbEx.Client.Protocols.Traceable
 
   def from_tick_by_tick([ts, bid_price_str, ask_price_str, bid_size_str, ask_size_str, mask_str]) do
     case DateTime.from_unix(String.to_integer(ts)) do
@@ -43,8 +44,8 @@ defmodule IbEx.Client.Types.BidAsk do
     {:error, :invalid_args}
   end
 
-  defimpl Inspect, for: __MODULE__ do
-    def inspect(tick, _opts) do
+  defimpl Traceable, for: __MODULE__ do
+    def to_s(tick) do
       "BidAsk{
         timestamp: #{tick.timestamp},
         bid_price: #{tick.bid_price},

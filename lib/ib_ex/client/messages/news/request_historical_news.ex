@@ -35,6 +35,7 @@ defmodule IbEx.Client.Messages.News.RequestHistoricalNews do
   @type t :: %__MODULE__{message_id: non_neg_integer()}
 
   alias IbEx.Client.Messages.Requests
+  alias IbEx.Client.Protocols.Traceable
 
   @spec new(non_neg_integer(), non_neg_integer(), binary(), DateTime.t(), DateTime.t(), non_neg_integer()) ::
           {:ok, t()} | {:error, :not_implemented}
@@ -86,8 +87,8 @@ defmodule IbEx.Client.Messages.News.RequestHistoricalNews do
     end
   end
 
-  defimpl Inspect, for: __MODULE__ do
-    def inspect(msg, _opts) do
+  defimpl Traceable, for: __MODULE__ do
+    def to_s(msg) do
       """
       --> News.RequestHistoricalNews{
         request_id: #{msg.request_id},

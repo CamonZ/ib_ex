@@ -3,6 +3,7 @@ defmodule IbEx.Client.Messages.AccountData.AccountUpdateTimeTest do
 
   alias IbEx.Client.Messages.AccountData.AccountUpdateTime
   alias IbEx.Client.Protocols.Subscribable
+  alias IbEx.Client.Protocols.Traceable
   alias IbEx.Client.Subscriptions
 
   describe "from_fields/1" do
@@ -26,13 +27,13 @@ defmodule IbEx.Client.Messages.AccountData.AccountUpdateTimeTest do
     end
   end
 
-  describe "Inspect" do
-    test "inspect/2 returns a human-readable version of the struct" do
+  describe "Traceable" do
+    test "to_s/1 returns a human-readable version of the struct" do
       {:ok, msg} = AccountUpdateTime.from_fields(["1", "10:47"])
       {:ok, ts} = NaiveDateTime.new(Date.utc_today(), ~T[10:47:00])
 
       expected_output = "<-- AccountUpdateTime{timestamp: #{ts}}"
-      assert inspect(msg) == expected_output
+      assert Traceable.to_s(msg) == expected_output
     end
   end
 

@@ -22,6 +22,7 @@ defmodule IbEx.Client.Messages.MarketData.RequestMarketDataType do
 
   alias IbEx.Client.Messages.Requests
   alias IbEx.Client.Messages.MarketData.MarketDataType
+  alias IbEx.Client.Protocols.Traceable
 
   @type t :: %__MODULE__{
           message_id: non_neg_integer(),
@@ -62,10 +63,10 @@ defmodule IbEx.Client.Messages.MarketData.RequestMarketDataType do
     end
   end
 
-  defimpl Inspect, for: __MODULE__ do
+  defimpl Traceable, for: __MODULE__ do
     alias IbEx.Client.Messages.MarketData.MarketDataType
 
-    def inspect(msg, _opts) do
+    def to_s(msg) do
       """
       --> MarketData.RequestMarketDataType{
         market_data_type: :#{MarketDataType.integer_to_atom(msg.market_data_type)}

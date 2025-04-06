@@ -29,6 +29,7 @@ defmodule IbEx.Client.Messages.MarketData.RequestData do
   alias IbEx.Client.Messages.Requests
   alias IbEx.Client.Types.Contract
   alias IbEx.Client.Protocols.Subscribable
+  alias IbEx.Client.Protocols.Traceable
 
   @type t :: %__MODULE__{
           message_id: non_neg_integer(),
@@ -82,10 +83,10 @@ defmodule IbEx.Client.Messages.MarketData.RequestData do
     end
   end
 
-  defimpl Inspect, for: __MODULE__ do
+  defimpl Traceable, for: __MODULE__ do
     alias IbEx.Client.Types.Contract
 
-    def inspect(msg, _opts) do
+    def to_s(msg) do
       contract = Enum.join(Contract.serialize(msg.contract, false), ", ")
 
       """

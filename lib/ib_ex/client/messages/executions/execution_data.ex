@@ -6,6 +6,7 @@ defmodule IbEx.Client.Messages.Executions.ExecutionData do
   alias IbEx.Client.Types.Contract
   alias IbEx.Client.Types.Execution
   alias IbEx.Client.Protocols.Subscribable
+  alias IbEx.Client.Protocols.Traceable
 
   defstruct request_id: nil, contract: nil, execution: nil
 
@@ -41,8 +42,8 @@ defmodule IbEx.Client.Messages.Executions.ExecutionData do
     {:error, :invalid_args}
   end
 
-  defimpl Inspect, for: __MODULE__ do
-    def inspect(msg, _opts) do
+  defimpl Traceable, for: __MODULE__ do
+    def to_s(msg) do
       """
       <-- ExecutionData{
         request_id: #{msg.request_id},

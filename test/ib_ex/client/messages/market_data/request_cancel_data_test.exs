@@ -3,6 +3,7 @@ defmodule IbEx.Client.Messages.MarketData.RequestCancelDataTest do
 
   alias IbEx.Client.Messages.MarketData.RequestCancelData
   alias IbEx.Client.Protocols.Subscribable
+  alias IbEx.Client.Protocols.Traceable
   alias IbEx.Client.Subscriptions
 
   describe "new/1" do
@@ -21,10 +22,10 @@ defmodule IbEx.Client.Messages.MarketData.RequestCancelDataTest do
     end
   end
 
-  describe "Inspect implementation" do
-    test "inspects RequestCancelData struct correctly" do
+  describe "Traceable" do
+    test "to_s/1 returns a human-readable version of the message" do
       msg = %RequestCancelData{request_id: 1000}
-      assert inspect(msg) == "--> %MarketData.RequestCancelData{request_id: 1000}"
+      assert Traceable.to_s(msg) == "--> %MarketData.RequestCancelData{request_id: 1000}"
     end
   end
 

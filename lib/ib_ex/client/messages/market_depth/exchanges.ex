@@ -7,6 +7,7 @@ defmodule IbEx.Client.Messages.MarketDepth.Exchanges do
 
   alias IbEx.Client.Protocols.Subscribable
   alias IbEx.Client.Types.MarketDepthDescription
+  alias IbEx.Client.Protocols.Traceable
 
   defstruct items: nil
 
@@ -34,8 +35,8 @@ defmodule IbEx.Client.Messages.MarketDepth.Exchanges do
     end
   end
 
-  defimpl Inspect, for: __MODULE__ do
-    def inspect(msg, _opts) do
+  defimpl Traceable, for: __MODULE__ do
+    def to_s(msg) do
       """
       <-- %MarketDepth.Exchanges{items: #{inspect(msg.items)}}
       """

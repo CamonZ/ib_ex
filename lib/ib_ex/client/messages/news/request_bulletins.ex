@@ -14,6 +14,7 @@ defmodule IbEx.Client.Messages.News.RequestBulletins do
 
   alias IbEx.Client.Messages.Base
   alias IbEx.Client.Messages.Requests
+  alias IbEx.Client.Protocols.Traceable
 
   defstruct message_id: nil, version: @message_version, all_messages: nil
 
@@ -42,8 +43,8 @@ defmodule IbEx.Client.Messages.News.RequestBulletins do
     end
   end
 
-  defimpl Inspect, for: __MODULE__ do
-    def inspect(msg, _opts) do
+  defimpl Traceable, for: __MODULE__ do
+    def to_s(msg) do
       "--> News.RequestBulletins{all_messages: #{msg.all_messages}}"
     end
   end

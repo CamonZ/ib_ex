@@ -3,6 +3,7 @@ defmodule IbEx.Client.Messages.MatchingSymbols.RequestTest do
 
   alias IbEx.Client.Messages.MatchingSymbols.Request
   alias IbEx.Client.Protocols.Subscribable
+  alias IbEx.Client.Protocols.Traceable
   alias IbEx.Client.Subscriptions
 
   describe "new/1" do
@@ -23,12 +24,12 @@ defmodule IbEx.Client.Messages.MatchingSymbols.RequestTest do
     end
   end
 
-  describe "Inspect" do
-    test "inspect/2 returns a human-readable version of the message" do
+  describe "Traceable" do
+    test "to_s/1 returns a human-readable version of the message" do
       {:ok, msg} = Request.new("AAPL")
       msg = %{msg | request_id: 1}
 
-      assert inspect(msg) == "--> MatchingSymbols{id: 81, request_id: 1, pattern: AAPL}"
+      assert Traceable.to_s(msg) == "--> MatchingSymbols{id: 81, request_id: 1, pattern: AAPL}"
     end
   end
 

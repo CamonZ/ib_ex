@@ -3,6 +3,8 @@ defmodule IbEx.Client.Messages.News.HistoricalNews do
   Received message with the details of a historical news article
   """
 
+  alias IbEx.Client.Protocols.Traceable
+
   defstruct request_id: nil, timestamp: nil, provider_code: nil, article_id: nil, headline: nil
 
   # TODO: Refactor this message to use the NewsHeadline type
@@ -24,8 +26,8 @@ defmodule IbEx.Client.Messages.News.HistoricalNews do
     {:error, :invalid_args}
   end
 
-  defimpl Inspect, for: __MODULE__ do
-    def inspect(msg, _opts) do
+  defimpl Traceable, for: __MODULE__ do
+    def to_s(msg) do
       """
       <-- %News.HistoricalNews{
         request_id: #{msg.request_id},

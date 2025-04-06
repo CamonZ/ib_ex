@@ -2,6 +2,7 @@ defmodule IbEx.Client.Messages.MarketData.OptionChainTest do
   use ExUnit.Case, async: true
 
   alias IbEx.Client.Messages.MarketData.OptionChain
+  alias IbEx.Client.Protocols.Traceable
 
   @attrs %{
     request_id: "9001",
@@ -62,9 +63,9 @@ defmodule IbEx.Client.Messages.MarketData.OptionChainTest do
     end
   end
 
-  describe "Inspect implementation" do
-    test "inspects OptionChain struct correctly" do
-      assert inspect(@msg) ==
+  describe "Traceab;e" do
+    test "to_s/1 returns a human-readable version of the message" do
+      assert Traceable.to_s(@msg) ==
                """
                <-- %MarketData.OptionChain{
                  request_id: 9001,

@@ -57,7 +57,7 @@ defmodule IbEx.ClientTest do
 
   describe "handle_cast/2 when processing an incoming message" do
     test "updates the client's state with the server version, the connection timestamp and continues to validate the server version" do
-      initial_state = %{status: :connecting}
+      initial_state = %{status: :connecting, trace_messages: false}
 
       str = "178\x0020240605 17:25:52 Central European Standard Time\x00"
 
@@ -83,7 +83,8 @@ defmodule IbEx.ClientTest do
 
       state = %{
         subscriptions_table_ref: table_ref,
-        status: :connected
+        status: :connected,
+        trace_messages: false
       }
 
       assert {:noreply, ^state} = Client.handle_cast({:process_message, @symbol_samples_msg_str}, state)

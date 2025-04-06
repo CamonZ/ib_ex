@@ -4,6 +4,7 @@ defmodule IbEx.Client.Messages.Executions.RequestTest do
   alias IbEx.Client.Messages.Executions.Request
   alias IbEx.Client.Types.ExecutionsFilter
   alias IbEx.Client.Protocols.Subscribable
+  alias IbEx.Client.Protocols.Traceable
   alias IbEx.Client.Subscriptions
 
   describe "new/2" do
@@ -28,15 +29,15 @@ defmodule IbEx.Client.Messages.Executions.RequestTest do
     end
   end
 
-  describe "inspect/2" do
-    test "returns a human-readable version of the message" do
+  describe "Traceable" do
+    test "to_s/1 returns a human-readable version of the message" do
       msg = %Request{
         message_id: 7,
         request_id: 90001,
         filter: %ExecutionsFilter{client_id: 123}
       }
 
-      assert inspect(msg) ==
+      assert Traceable.to_s(msg) ==
                """
                --> Executions.Request{
                  message_id: 7,

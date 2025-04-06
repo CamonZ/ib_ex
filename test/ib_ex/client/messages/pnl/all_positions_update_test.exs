@@ -2,6 +2,7 @@ defmodule IbEx.Client.Messages.Pnl.AllPositionsUpdateTest do
   use ExUnit.Case, async: true
 
   alias IbEx.Client.Messages.Pnl.AllPositionsUpdate
+  alias IbEx.Client.Protocols.Traceable
 
   describe "from_fields/1" do
     test "returns the parsed message with the PnL for the given position" do
@@ -18,8 +19,8 @@ defmodule IbEx.Client.Messages.Pnl.AllPositionsUpdateTest do
     end
   end
 
-  describe "Inspect" do
-    test "inspect/2 returns a human-readable version of the struct" do
+  describe "Traceable" do
+    test "to_s/1 returns a human-readable version of the struct" do
       pnl_single = %AllPositionsUpdate{
         request_id: "90001",
         daily_pnl: Decimal.new("-11.483693125"),
@@ -27,7 +28,7 @@ defmodule IbEx.Client.Messages.Pnl.AllPositionsUpdateTest do
         realized_pnl: Decimal.new("1.5298190129036")
       }
 
-      assert inspect(pnl_single) ==
+      assert Traceable.to_s(pnl_single) ==
                """
                <-- Pnl.AllPositionsUpdate{
                  request_id: 90001,

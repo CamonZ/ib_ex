@@ -7,6 +7,7 @@ defmodule IbEx.Client.Messages.MarketDepth.L2DataSingle do
 
   alias IbEx.Client.Utils
   alias IbEx.Client.Protocols.Subscribable
+  alias IbEx.Client.Protocols.Traceable
 
   defstruct request_id: nil,
             position: nil,
@@ -48,8 +49,8 @@ defmodule IbEx.Client.Messages.MarketDepth.L2DataSingle do
     {:error, :invalid_args}
   end
 
-  defimpl Inspect, for: __MODULE__ do
-    def inspect(msg, _opts) do
+  defimpl Traceable, for: __MODULE__ do
+    def to_s(msg) do
       """
       <-- %MarketDepth.L2DataSingle{
         request_id: #{msg.request_id},

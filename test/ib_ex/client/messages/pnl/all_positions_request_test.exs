@@ -2,6 +2,7 @@ defmodule IbEx.Client.Messages.Pnl.AllPositionsRequestTest do
   use ExUnit.Case, async: true
 
   alias IbEx.Client.Messages.Pnl.AllPositionsRequest
+  alias IbEx.Client.Protocols.Traceable
 
   @account_id "GU12345678"
   @request_id 70001
@@ -30,8 +31,8 @@ defmodule IbEx.Client.Messages.Pnl.AllPositionsRequestTest do
     end
   end
 
-  describe "Inspect implementation" do
-    test "inspect/2 returns the correct string representation" do
+  describe "Traceable" do
+    test "to_s/1 returns the correct string representation" do
       msg = %AllPositionsRequest{
         message_id: 92,
         request_id: @request_id,
@@ -39,7 +40,7 @@ defmodule IbEx.Client.Messages.Pnl.AllPositionsRequestTest do
         model_code: ""
       }
 
-      assert Inspect.inspect(msg, []) ==
+      assert Traceable.to_s(msg) ==
                """
                --> Pnl.AllPositionsRequest{
                  message_id: 92,

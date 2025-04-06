@@ -12,6 +12,7 @@ defmodule IbEx.Client.Messages.MarketData.RequestOptionChain do
 
   alias IbEx.Client.Messages.Requests
   alias IbEx.Client.Protocols.Subscribable
+  alias IbEx.Client.Protocols.Traceable
 
   @type t :: %__MODULE__{
           message_id: non_neg_integer(),
@@ -55,8 +56,8 @@ defmodule IbEx.Client.Messages.MarketData.RequestOptionChain do
     end
   end
 
-  defimpl Inspect, for: __MODULE__ do
-    def inspect(msg, _opts) do
+  defimpl Traceable, for: __MODULE__ do
+    def to_s(msg) do
       """
       --> MarketData.RequestOptionChain{
         request_id: #{msg.request_id},

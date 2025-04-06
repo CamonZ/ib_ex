@@ -2,6 +2,7 @@ defmodule IbEx.Client.Messages.News.BulletinsTest do
   use ExUnit.Case, async: true
 
   alias IbEx.Client.Messages.News.Bulletins
+  alias IbEx.Client.Protocols.Traceable
 
   describe "from_fields/1" do
     test "creates a regular_news message" do
@@ -35,15 +36,15 @@ defmodule IbEx.Client.Messages.News.BulletinsTest do
     end
   end
 
-  describe "Inspect implementation" do
-    test "returns a human-readable version of the message" do
+  describe "Traceable" do
+    test "to_s/1 returns a human-readable version of the message" do
       msg = %Bulletins{
         type: "regular_news",
         message: "Some news message",
         exchange: "NYSE"
       }
 
-      assert inspect(msg) ==
+      assert Traceable.to_s(msg) ==
                """
                <-- %News.Bulletins{
                  type: regular_news,

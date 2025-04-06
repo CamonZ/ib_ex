@@ -7,6 +7,7 @@ defmodule IbEx.Client.Messages.Orders.RequestCancelOrder do
   * %OrderCancel{}
   """
   alias IbEx.Client.Types.OrderCancel
+  alias IbEx.Client.Protocols.Traceable
 
   @version 1
 
@@ -60,8 +61,8 @@ defmodule IbEx.Client.Messages.Orders.RequestCancelOrder do
     end
   end
 
-  defimpl Inspect, for: __MODULE__ do
-    def inspect(msg, _opts) do
+  defimpl Traceable, for: __MODULE__ do
+    def to_s(msg) do
       "--> %MarketData.RequestCancelOrder{order_id: #{msg.order_id}}"
     end
   end

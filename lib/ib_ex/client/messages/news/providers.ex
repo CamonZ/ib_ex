@@ -5,6 +5,8 @@ defmodule IbEx.Client.Messages.News.Providers do
   Receives a list of different news providers 
   """
 
+  alias IbEx.Client.Protocols.Traceable
+
   defstruct items: nil
 
   def from_fields([_number_of_items | rest]) when length(rest) >= 5 do
@@ -24,8 +26,8 @@ defmodule IbEx.Client.Messages.News.Providers do
     build_items(rest, [{code, name} | acc])
   end
 
-  defimpl Inspect, for: __MODULE__ do
-    def inspect(msg, _opts) do
+  defimpl Traceable, for: __MODULE__ do
+    def to_s(msg) do
       """
       <-- %News.Providers{items: #{inspect(msg.items)}}
       """

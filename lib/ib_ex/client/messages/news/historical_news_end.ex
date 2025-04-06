@@ -12,6 +12,7 @@ defmodule IbEx.Client.Messages.News.HistoricalNewsEnd do
         }
 
   alias IbEx.Client.Utils
+  alias IbEx.Client.Protocols.Traceable
 
   @spec from_fields(list(binary())) :: {:ok, t()} | {:error, :invalid_args}
   def from_fields([request_id, has_more]) do
@@ -22,8 +23,8 @@ defmodule IbEx.Client.Messages.News.HistoricalNewsEnd do
     {:error, :invalid_args}
   end
 
-  defimpl Inspect, for: __MODULE__ do
-    def inspect(msg, _opts) do
+  defimpl Traceable, for: __MODULE__ do
+    def to_s(msg) do
       "<-- %News.HistoricalNewsEnd{request_id: #{msg.request_id}, has_more: #{msg.has_more}}"
     end
   end

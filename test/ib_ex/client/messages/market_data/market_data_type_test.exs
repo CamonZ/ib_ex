@@ -3,6 +3,7 @@ defmodule IbEx.Client.Messages.MarketData.MarketDataTypeTest do
 
   alias IbEx.Client.Messages.MarketData.MarketDataType
   alias IbEx.Client.Protocols.Subscribable
+  alias IbEx.Client.Protocols.Traceable
   alias IbEx.Client.Subscriptions
 
   describe "from_fields/1" do
@@ -55,10 +56,10 @@ defmodule IbEx.Client.Messages.MarketData.MarketDataTypeTest do
     end
   end
 
-  describe "Inspect implementation" do
-    test "inspects MarketDataType struct correctly" do
+  describe "Traceable" do
+    test "to_s/1 returns a human-readable version of the message" do
       msg = %MarketDataType{request_id: 9001, data_type: :live}
-      assert inspect(msg) == "<-- %MarketData.MarketDataType{request_id: 9001, data_type: live}"
+      assert Traceable.to_s(msg) == "<-- %MarketData.MarketDataType{request_id: 9001, data_type: live}"
     end
   end
 

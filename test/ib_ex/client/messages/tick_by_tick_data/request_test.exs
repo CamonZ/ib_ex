@@ -1,7 +1,9 @@
 defmodule IbEx.Client.Messages.TickByTickData.RequestTest do
   use ExUnit.Case, async: true
+
   alias IbEx.Client.Messages.TickByTickData.Request
   alias IbEx.Client.Types.Contract
+  alias IbEx.Client.Protocols.Traceable
 
   setup do
     contract = %Contract{symbol: "AAPL", security_type: "STK", exchange: "NASDAQ", currency: "USD"}
@@ -47,11 +49,11 @@ defmodule IbEx.Client.Messages.TickByTickData.RequestTest do
     end
   end
 
-  describe "Inspect" do
-    test "inspect/2 returns a human-readable version of the struct", %{contract: contract} do
+  describe "Traceable" do
+    test "to_s/1 returns a human-readable version of the struct", %{contract: contract} do
       {:ok, msg} = Request.new(contract, 123, "Last", 10, true)
 
-      assert inspect(msg) == "-->
+      assert Traceable.to_s(msg) == "-->
         TickByTickData{
           message_id: 97,
           request_id: 123,

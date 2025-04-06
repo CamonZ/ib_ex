@@ -16,6 +16,8 @@ defmodule IbEx.Client.Messages.News.Bulletins do
 
   defstruct type: nil, message: nil, exchange: nil
 
+  alias IbEx.Client.Protocols.Traceable
+
   def from_fields([type, message, exchange]) do
     {
       :ok,
@@ -40,8 +42,8 @@ defmodule IbEx.Client.Messages.News.Bulletins do
     end
   end
 
-  defimpl Inspect, for: __MODULE__ do
-    def inspect(msg, _opts) do
+  defimpl Traceable, for: __MODULE__ do
+    def to_s(msg) do
       """
       <-- %News.Bulletins{
         type: #{msg.type},

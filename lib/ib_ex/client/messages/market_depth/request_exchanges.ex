@@ -5,6 +5,7 @@ defmodule IbEx.Client.Messages.MarketDepth.RequestExchanges do
 
   alias IbEx.Client.Messages.Requests
   alias IbEx.Client.Protocols.Subscribable
+  alias IbEx.Client.Protocols.Traceable
 
   defstruct message_id: nil
 
@@ -26,8 +27,8 @@ defmodule IbEx.Client.Messages.MarketDepth.RequestExchanges do
     end
   end
 
-  defimpl Inspect, for: __MODULE__ do
-    def inspect(_msg, _opts) do
+  defimpl Traceable, for: __MODULE__ do
+    def to_s(_msg) do
       "--> RequestExchanges{}"
     end
   end

@@ -2,6 +2,7 @@ defmodule IbEx.Client.Messages.MarketData.RequestMarketDataTypeTest do
   use ExUnit.Case, async: true
 
   alias IbEx.Client.Protocols.Subscribable
+  alias IbEx.Client.Protocols.Traceable
   alias IbEx.Client.Messages.MarketData.RequestMarketDataType
   alias IbEx.Client.Messages.MarketData.MarketDataType
   alias IbEx.Client.Subscriptions
@@ -26,14 +27,14 @@ defmodule IbEx.Client.Messages.MarketData.RequestMarketDataTypeTest do
     end
   end
 
-  describe "Inspect implementation" do
-    test "returns a human-readable version of the struct" do
+  describe "Traceable" do
+    test "to_s/1 returns a human-readable version of the struct" do
       msg = %RequestMarketDataType{
         message_id: 59,
         market_data_type: 3
       }
 
-      assert inspect(msg) ==
+      assert Traceable.to_s(msg) ==
                """
                --> MarketData.RequestMarketDataType{
                  market_data_type: :#{MarketDataType.integer_to_atom(msg.market_data_type)}

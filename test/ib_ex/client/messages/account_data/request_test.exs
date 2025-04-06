@@ -7,6 +7,7 @@ defmodule IbEx.Client.Messages.AccountData.RequestTest do
   alias IbEx.Client.Messages.AccountData.AccountUpdateTime
 
   alias IbEx.Client.Protocols.Subscribable
+  alias IbEx.Client.Protocols.Traceable
   alias IbEx.Client.Subscriptions
 
   describe "new/2" do
@@ -26,12 +27,12 @@ defmodule IbEx.Client.Messages.AccountData.RequestTest do
     end
   end
 
-  describe "Inspect" do
-    test "inspect/2 returns a human-readable version of the message" do
+  describe "Traceable" do
+    test "to_s/1 returns a human-readable version of the message" do
       {:ok, msg} = Request.new(true)
 
       # Adjust this expected string to the format that your Inspect implementation produces.
-      assert inspect(msg) == "--> AccountUpdates{message_id: 6, subscribe: true, account_code: nil}"
+      assert Traceable.to_s(msg) == "--> AccountUpdates{message_id: 6, subscribe: true, account_code: nil}"
     end
   end
 

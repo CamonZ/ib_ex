@@ -4,6 +4,7 @@ defmodule IbEx.Client.Messages.MarketData.TickNewsTest do
   alias IbEx.Client.Messages.MarketData.TickNews
   alias IbEx.Client.Types.NewsHeadline
   alias IbEx.Client.Protocols.Subscribable
+  alias IbEx.Client.Protocols.Traceable
   alias IbEx.Client.Subscriptions
 
   @valid_fields [
@@ -29,8 +30,8 @@ defmodule IbEx.Client.Messages.MarketData.TickNewsTest do
     end
   end
 
-  describe "Inspect implementation" do
-    test "inspects TickNews struct correctly" do
+  describe "Traceable" do
+    test "to_s/1 returns a human readable version of the message" do
       msg = %TickNews{
         request_id: "1",
         headline: %NewsHeadline{
@@ -44,7 +45,7 @@ defmodule IbEx.Client.Messages.MarketData.TickNewsTest do
         }
       }
 
-      assert inspect(msg) ==
+      assert Traceable.to_s(msg) ==
                """
                <-- %MarketData.TickNews{
                  request_id: 1,

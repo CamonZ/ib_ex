@@ -3,6 +3,7 @@ defmodule IbEx.Client.Messages.MarketData.TickPriceTest do
 
   alias IbEx.Client.Messages.MarketData.TickPrice
   alias IbEx.Client.Protocols.Subscribable
+  alias IbEx.Client.Protocols.Traceable
   alias IbEx.Client.Subscriptions
 
   describe "from_fields/1" do
@@ -24,8 +25,8 @@ defmodule IbEx.Client.Messages.MarketData.TickPriceTest do
     end
   end
 
-  describe "Inspect implementation" do
-    test "inspects TickPrice struct correctly" do
+  describe "Traceable" do
+    test "to_s/1 returns a human readable version of the message" do
       msg = %TickPrice{
         request_id: "123",
         tick_type: :bid,
@@ -37,7 +38,7 @@ defmodule IbEx.Client.Messages.MarketData.TickPriceTest do
         should_tick_for_size?: false
       }
 
-      assert inspect(msg) ==
+      assert Traceable.to_s(msg) ==
                """
                <-- %MarketData.TickPrice{
                  request_id: 123,

@@ -4,6 +4,7 @@ defmodule IbEx.Client.Messages.AccountData.AccountDetailTest do
   alias IbEx.Client.Messages.AccountData.AccountDetail
 
   alias IbEx.Client.Protocols.Subscribable
+  alias IbEx.Client.Protocols.Traceable
   alias IbEx.Client.Subscriptions
 
   @valid_fields ["1", "NetLiquidation", "100000", "USD", "MYACCT123"]
@@ -29,11 +30,11 @@ defmodule IbEx.Client.Messages.AccountData.AccountDetailTest do
     end
   end
 
-  describe "Inspect" do
-    test "inspect/2 returns a human-readable version of the message" do
+  describe "Traceable" do
+    test "to_s/1 returns a human-readable version of the message" do
       {:ok, msg} = AccountDetail.from_fields(@valid_fields)
 
-      assert inspect(msg) ==
+      assert Traceable.to_s(msg) ==
                "<-- AccountDetail{field: NetLiquidation, value: 100000, currency: USD, account: MYACCT123}"
     end
   end

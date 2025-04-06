@@ -4,6 +4,7 @@ defmodule IbEx.Client.Messages.MarketDepth.RequestExchangesTest do
   alias IbEx.Client.Messages.MarketDepth.Exchanges
   alias IbEx.Client.Messages.MarketDepth.RequestExchanges
   alias IbEx.Client.Protocols.Subscribable
+  alias IbEx.Client.Protocols.Traceable
   alias IbEx.Client.Subscriptions
 
   describe "new/0" do
@@ -20,9 +21,9 @@ defmodule IbEx.Client.Messages.MarketDepth.RequestExchangesTest do
     end
   end
 
-  describe "inspect/2 " do
-    test "returns a human-readable version of the message" do
-      assert inspect(%RequestExchanges{}) == "--> RequestExchanges{}"
+  describe "Traceable" do
+    test "to_s/1 returns a human-readable version of the message" do
+      assert Traceable.to_s(%RequestExchanges{}) == "--> RequestExchanges{}"
     end
   end
 

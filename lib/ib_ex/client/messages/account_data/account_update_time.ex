@@ -7,6 +7,7 @@ defmodule IbEx.Client.Messages.AccountData.AccountUpdateTime do
   defstruct version: nil, timestamp: nil
 
   alias IbEx.Client.Protocols.Subscribable
+  alias IbEx.Client.Protocols.Traceable
 
   @spec from_fields([String.t()]) :: {:ok, %__MODULE__{}} | {:error, :invalid_args}
   def from_fields([version_str, hour_minute]) do
@@ -32,8 +33,8 @@ defmodule IbEx.Client.Messages.AccountData.AccountUpdateTime do
     end
   end
 
-  defimpl Inspect, for: __MODULE__ do
-    def inspect(msg, _opts) do
+  defimpl Traceable, for: __MODULE__ do
+    def to_s(msg) do
       "<-- AccountUpdateTime{timestamp: #{msg.timestamp}}"
     end
   end

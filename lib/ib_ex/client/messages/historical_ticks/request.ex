@@ -1,6 +1,7 @@
 defmodule IbEx.Client.Messages.HistoricalTicks.Request do
   alias IbEx.Client.Messages.Requests
   alias IbEx.Client.Types.Contract
+  alias IbEx.Client.Protocols.Traceable
 
   @valid_what_to_show ["TRADES", "BID_ASK", "MIDPOINT"]
 
@@ -84,8 +85,8 @@ defmodule IbEx.Client.Messages.HistoricalTicks.Request do
     end
   end
 
-  defimpl Inspect, for: __MODULE__ do
-    def inspect(msg, _opts) do
+  defimpl Traceable, for: __MODULE__ do
+    def to_s(msg) do
       """
       --> %HistoricalTicks{
         message_id: #{msg.message_id}
