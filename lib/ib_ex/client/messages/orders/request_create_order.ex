@@ -15,8 +15,9 @@ defmodule IbEx.Client.Messages.Orders.RequestCreateOrder do
   defstruct message_id: nil, order_id: nil, request_id: nil, order: nil, contract: nil, version: @version
 
   alias IbEx.Client.Messages.Requests
-  alias IbEx.Client.Types.{Order, Contract}
   alias IbEx.Client.Protocols.Traceable
+  alias IbEx.Client.Types.Order
+  alias IbEx.Client.Types.Contract
 
   @type t :: %__MODULE__{
           message_id: non_neg_integer(),

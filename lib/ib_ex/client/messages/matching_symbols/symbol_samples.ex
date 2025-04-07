@@ -10,6 +10,7 @@ defmodule IbEx.Client.Messages.MatchingSymbols.SymbolSamples do
 
   alias IbEx.Client.Types.ContractDescription
   alias IbEx.Client.Protocols.Subscribable
+  alias IbEx.Client.Protocols.Traceable
 
   require Logger
 
@@ -52,6 +53,12 @@ defmodule IbEx.Client.Messages.MatchingSymbols.SymbolSamples do
   defp extract_contract_fields(fields) do
     derivatives_length = String.to_integer(Enum.at(fields, @derivatives_length_position))
     Enum.split(fields, @base_fields_length + derivatives_length)
+  end
+
+  defimpl Traceable, for: __MODULE__ do
+    def to_s(msg) do
+      "<-- SymbolSamples{request_id: #{msg.request_id}, contracts: #{inspect(msg.contracts)}}"
+    end
   end
 
   defimpl Subscribable, for: __MODULE__ do
