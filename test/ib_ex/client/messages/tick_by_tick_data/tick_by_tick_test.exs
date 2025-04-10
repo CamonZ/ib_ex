@@ -2,6 +2,8 @@ defmodule IbEx.Client.Messages.TickByTickData.TickByTickTest do
   use ExUnit.Case, async: true
 
   alias IbEx.Client.Messages.TickByTickData.TickByTick
+  alias IbEx.Client.Protocols.Subscribable
+  alias IbEx.Client.Subscriptions
 
   alias IbEx.Client.Types.Trade
   alias IbEx.Client.Types.BidAsk
@@ -36,6 +38,19 @@ defmodule IbEx.Client.Messages.TickByTickData.TickByTickTest do
     test "returns error for incomplete or invalid arguments" do
       assert TickByTick.from_fields([]) == {:error, :invalid_args}
       assert TickByTick.from_fields(["1005"]) == {:error, :invalid_args}
+    end
+  end
+
+  describe "Subscribable" do
+    test "looks up the message in the subscriptions mapping" do
+      table_ref = Subscriptions.initialize()
+      Subscriptions.subscribe_by_request_id(table_ref, self())
+
+      {:ok, msg} = TickByTick.from_fields(["1", "1", "1701251310", "3.25", "23", "2", "ARCA", "TI"])
+
+      assert {:ok, pid} = Subscribable.lookup(msg, table_ref)
+
+      assert pid == self()
     end
   end
 end

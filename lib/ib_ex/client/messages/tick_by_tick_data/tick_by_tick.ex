@@ -15,6 +15,7 @@ defmodule IbEx.Client.Messages.TickByTickData.TickByTick do
   alias IbEx.Client.Types.BidAsk
   alias IbEx.Client.Types.MidPoint
   alias IbEx.Client.Protocols.Traceable
+  alias IbEx.Client.Protocols.Subscribable
 
   def from_fields([request_id, tick_type | rest]) do
     case parse_data_fields(tick_type, rest) do
@@ -48,6 +49,18 @@ defmodule IbEx.Client.Messages.TickByTickData.TickByTick do
   defimpl Traceable, for: __MODULE__ do
     def to_s(msg) do
       "<-- TickByTick{request_id: #{msg.request_id}, tick: #{inspect(msg.tick)}}"
+    end
+  end
+
+  defimpl Subscribable, for: __MODULE__ do
+    alias IbEx.Client.Subscriptions
+
+    def subscribe(_, _, _) do
+      {:error, :response_messages_cannot_create_subscription}
+    end
+
+    def lookup(msg, table_ref) do
+      Subscriptions.lookup(table_ref, msg.request_id)
     end
   end
 end
