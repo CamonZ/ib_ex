@@ -30,9 +30,9 @@ defmodule IbEx.Client.Types.Trade do
           :ok,
           %__MODULE__{
             timestamp: timestamp,
-            price: Decimal.new(price_str),
-            size: Decimal.new(size_str),
-            mask: String.to_integer(mask),
+            price: Utils.to_float(price_str),
+            size: Utils.to_integer(size_str),
+            mask: Utils.to_integer(mask),
             conditions: conditions,
             exchange: exchange,
             past_limit: Utils.boolify_mask(mask, 1),

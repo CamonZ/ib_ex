@@ -4,8 +4,7 @@ defmodule IbEx.Client.Messages.HistoricalTicks.Last do
   require Logger
 
   alias IbEx.Client.Types.Trade
-
-  # TODO: Implement Traceable for this message
+  alias IbEx.Client.Protocols.Traceable
 
   def from_fields([request_id, _amount_of_ticks | ticks_fields]) do
     trades =
@@ -23,5 +22,11 @@ defmodule IbEx.Client.Messages.HistoricalTicks.Last do
 
   def from_fields(_fields) do
     {:error, :invalid_args}
+  end
+
+  defimpl Traceable, for: __MODULE__ do
+    def to_s(msg) do
+      "<-- HistoricalTicks{request_id: #{msg.request_id}, ticks: #{inspect(msg.ticks)}}"
+    end
   end
 end

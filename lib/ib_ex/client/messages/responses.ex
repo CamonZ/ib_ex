@@ -79,7 +79,7 @@ defmodule IbEx.Client.Messages.Responses do
     "96" => "historical_ticks",
     "97" => "historical_ticks_bid_ask",
     "98" => Messages.HistoricalTicks.Last,
-    "99" => "tick_by_tick",
+    "99" => Messages.TickByTickData.TickByTick,
     "100" => "order_bound",
     "101" => "completed_orders",
     "102" => "completed_orders_end",
