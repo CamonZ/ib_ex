@@ -9,8 +9,8 @@ defmodule IbEx.Client.Types.TradeTest do
 
       assert trade.timestamp == ~U[2023-11-29 09:48:30Z]
       assert trade.mask == 2
-      assert trade.size == Decimal.new("23")
-      assert trade.price == Decimal.new("3.25")
+      assert trade.size == 23
+      assert trade.price == 3.25
       assert trade.exchange == "ARCA"
       assert trade.conditions == "TI"
       refute trade.past_limit
@@ -24,8 +24,8 @@ defmodule IbEx.Client.Types.TradeTest do
 
       assert trade.timestamp == ~U[2023-11-29 09:48:30Z]
       assert trade.mask == 2
-      assert trade.size == Decimal.new("23")
-      assert trade.price == Decimal.new("3.25")
+      assert trade.size == 23
+      assert trade.price == 3.25
       assert trade.exchange == "ARCA"
       assert trade.conditions == "TI"
       refute trade.past_limit
