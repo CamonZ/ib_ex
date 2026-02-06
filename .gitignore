@@ -23,4 +23,5 @@ erl_crash.dump
 ib_ex-*.tar
 .iex.exs
 .samples/**/*
-
+/.claude
+/scratch
