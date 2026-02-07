@@ -6,30 +6,13 @@ defmodule IbEx.Client.Messages.Executions.ExecutionDataEndTest do
   alias IbEx.Client.Protocols.Traceable
   alias IbEx.Client.Subscriptions
 
-  describe "from_fields/1" do
-    test "creates an ExecutionDataEnd with valid fields" do
-      assert {:ok, msg} = ExecutionDataEnd.from_fields(["3", "123"])
-
-      assert msg.version == 3
-      assert msg.request_id == "123"
-    end
-
-    test "returns an error with invalid number of fields" do
-      assert {:error, :invalid_args} == ExecutionDataEnd.from_fields(["3"])
-    end
-
-    test "returns an error with non-list input" do
-      assert {:error, :invalid_args} == ExecutionDataEnd.from_fields(nil)
-    end
-  end
-
   describe "Traceable" do
     test "to_s/1 returns a human-readable version of the message" do
-      msg = %ExecutionDataEnd{version: 3, request_id: "123"}
+      msg = %ExecutionDataEnd{request_id: "123"}
 
       assert Traceable.to_s(msg) ==
                """
-               <-- ExecutionDataEnd{version: 3, request_id: 123}
+               <-- ExecutionDataEnd{request_id: 123}
                """
     end
   end
@@ -39,7 +22,7 @@ defmodule IbEx.Client.Messages.Executions.ExecutionDataEndTest do
       table_ref = Subscriptions.initialize()
       Subscriptions.subscribe_by_request_id(table_ref, self())
 
-      {:ok, msg} = ExecutionDataEnd.from_fields(["3", "1"])
+      msg = %ExecutionDataEnd{request_id: "1"}
 
       assert {:ok, pid} = Subscribable.lookup(msg, table_ref)
 

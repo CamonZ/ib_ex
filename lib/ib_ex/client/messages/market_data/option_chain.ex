@@ -23,35 +23,6 @@ defmodule IbEx.Client.Messages.MarketData.OptionChain do
           strikes: list(Decimal.t())
         }
 
-  @spec from_fields(list(String.t())) :: {:ok, t()} | {:error, :invalid_args}
-  def from_fields([request_id, exchange, conid, symbol, multiplier, expirations_length | rest]) do
-    expirations_length = String.to_integer(expirations_length)
-    expirations = Enum.slice(rest, 0, expirations_length)
-
-    strikes_length =
-      Enum.slice(rest, expirations_length, 1)
-      |> Enum.at(0)
-      |> String.to_integer()
-
-    strikes = Enum.slice(rest, -strikes_length..-1)
-
-    msg = %__MODULE__{
-      request_id: request_id,
-      exchange: exchange,
-      underlying_conid: conid,
-      underlying_symbol: symbol,
-      multiplier: multiplier,
-      expirations: expirations,
-      strikes: strikes
-    }
-
-    {:ok, msg}
-  end
-
-  def from_fields(_) do
-    {:error, :invalid_args}
-  end
-
   defimpl Traceable, for: __MODULE__ do
     def to_s(msg) do
       """

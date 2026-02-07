@@ -22,3 +22,13 @@ defprotocol IbEx.Client.Protocols.Subscribable do
   """
   def lookup(msg, table_id)
 end
+
+defimpl IbEx.Client.Protocols.Subscribable, for: Any do
+  def subscribe(_, _, _) do
+    {:error, :not_implemented}
+  end
+
+  def lookup(_, _) do
+    {:error, :not_implemented}
+  end
+end

@@ -19,14 +19,6 @@ defmodule IbEx.Client.Messages.MarketDepth.RequestExchanges do
     end
   end
 
-  defimpl String.Chars, for: __MODULE__ do
-    alias IbEx.Client.Messages.Base
-
-    def to_string(msg) do
-      Base.build([msg.message_id])
-    end
-  end
-
   defimpl Traceable, for: __MODULE__ do
     def to_s(_msg) do
       "--> RequestExchanges{}"

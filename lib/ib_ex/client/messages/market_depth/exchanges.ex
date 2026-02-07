@@ -6,34 +6,9 @@ defmodule IbEx.Client.Messages.MarketDepth.Exchanges do
   """
 
   alias IbEx.Client.Protocols.Subscribable
-  alias IbEx.Client.Types.MarketDepthDescription
   alias IbEx.Client.Protocols.Traceable
 
   defstruct items: nil
-
-  def from_fields([_number_of_items | rest]) when length(rest) >= 5 do
-    {:ok, %__MODULE__{items: build_items(rest, [])}}
-  end
-
-  def from_fields(_) do
-    {:error, :invalid_args}
-  end
-
-  defp build_items([], acc) do
-    Enum.reverse(acc)
-  end
-
-  defp build_items(fields, acc) when is_list(fields) do
-    {desc_fields, rest} = Enum.split(fields, 5)
-
-    case MarketDepthDescription.from_market_depth_exchanges(desc_fields) do
-      {:ok, description} ->
-        build_items(rest, [description | acc])
-
-      _ ->
-        build_items(rest, acc)
-    end
-  end
 
   defimpl Traceable, for: __MODULE__ do
     def to_s(msg) do

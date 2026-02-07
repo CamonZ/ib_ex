@@ -15,12 +15,9 @@ defmodule IbEx.Client.Messages.MarketData.RequestData do
   delta neutral contract are not implemented yet
   """
 
-  @version 11
-
   defstruct message_id: nil,
             request_id: nil,
             contract: nil,
-            version: @version,
             tick_list: nil,
             snapshot: nil,
             regulatory_snapshot: nil,
@@ -35,7 +32,6 @@ defmodule IbEx.Client.Messages.MarketData.RequestData do
           message_id: non_neg_integer(),
           request_id: non_neg_integer(),
           contract: Contract.t(),
-          version: non_neg_integer(),
           tick_list: String.t(),
           snapshot: boolean(),
           regulatory_snapshot: boolean(),
@@ -60,26 +56,6 @@ defmodule IbEx.Client.Messages.MarketData.RequestData do
 
       :error ->
         {:error, :not_implemented}
-    end
-  end
-
-  defimpl String.Chars, for: __MODULE__ do
-    alias IbEx.Client.Messages.Base
-    alias IbEx.Client.Types.Contract
-
-    def to_string(msg) do
-      fields = [
-        msg.message_id,
-        msg.version,
-        msg.request_id
-      ]
-
-      fields =
-        fields ++
-          Contract.serialize(msg.contract, false) ++
-          [false, msg.tick_list, msg.snapshot, msg.regulatory_snapshot, ""]
-
-      Base.build(fields)
     end
   end
 

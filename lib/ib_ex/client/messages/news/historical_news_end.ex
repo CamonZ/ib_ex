@@ -11,17 +11,7 @@ defmodule IbEx.Client.Messages.News.HistoricalNewsEnd do
           has_more: boolean()
         }
 
-  alias IbEx.Client.Utils
   alias IbEx.Client.Protocols.Traceable
-
-  @spec from_fields(list(binary())) :: {:ok, t()} | {:error, :invalid_args}
-  def from_fields([request_id, has_more]) do
-    {:ok, %__MODULE__{request_id: request_id, has_more: Utils.to_bool(has_more)}}
-  end
-
-  def from_fields(_) do
-    {:error, :invalid_args}
-  end
 
   defimpl Traceable, for: __MODULE__ do
     def to_s(msg) do

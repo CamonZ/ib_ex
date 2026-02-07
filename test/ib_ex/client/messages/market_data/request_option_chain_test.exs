@@ -57,13 +57,6 @@ defmodule IbEx.Client.Messages.MarketData.RequestOptionChainTest do
     end
   end
 
-  describe "String.Chars implementation" do
-    test "converts the message to a serializable string" do
-      assert Kernel.to_string(@msg) ==
-               <<55, 56, 0, 49, 50, 51, 0, 77, 82, 78, 65, 0, 0, 83, 84, 75, 0, 51, 52, 52, 56, 48, 57, 49, 48, 54, 0>>
-    end
-  end
-
   describe "Traceable" do
     test "to_s/1 returns a human-readable version of the struct" do
       assert Traceable.to_s(@msg) ==

@@ -13,11 +13,8 @@ defmodule IbEx.Client.Messages.MarketData.RequestMarketDataType do
 
   """
 
-  @version 1
-
   defstruct message_id: nil,
             request_id: nil,
-            version: @version,
             market_data_type: :live
 
   alias IbEx.Client.Messages.Requests
@@ -27,7 +24,6 @@ defmodule IbEx.Client.Messages.MarketData.RequestMarketDataType do
   @type t :: %__MODULE__{
           message_id: non_neg_integer(),
           request_id: non_neg_integer(),
-          version: non_neg_integer(),
           market_data_type: 1..4
         }
 
@@ -46,20 +42,6 @@ defmodule IbEx.Client.Messages.MarketData.RequestMarketDataType do
 
       :error ->
         {:error, :not_implemented}
-    end
-  end
-
-  defimpl String.Chars, for: __MODULE__ do
-    alias IbEx.Client.Messages.Base
-
-    def to_string(msg) do
-      fields = [
-        msg.message_id,
-        msg.version,
-        msg.market_data_type
-      ]
-
-      Base.build(fields)
     end
   end
 

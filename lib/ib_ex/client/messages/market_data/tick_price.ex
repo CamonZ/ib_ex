@@ -30,42 +30,7 @@ defmodule IbEx.Client.Messages.MarketData.TickPrice do
           should_tick_for_size?: boolean()
         }
 
-  alias IbEx.Client.Utils
-  alias IbEx.Client.Constants.TickTypes
   alias IbEx.Client.Protocols.Traceable
-
-  @autoexecute_flag 1
-  @past_limit_flag 2
-  @pre_open_flag 4
-
-  @spec from_fields(list(String.t())) :: {:ok, t()} | {:error, :invalid_args}
-  def from_fields([_, request_id, tick_type_str, price, size, mask]) do
-    tick_type = decode_tick_type(tick_type_str)
-
-    msg = %__MODULE__{
-      request_id: request_id,
-      tick_type: tick_type,
-      price: Utils.to_float(price),
-      size: Utils.to_decimal(size),
-      can_autoexecute?: Utils.boolify_mask(mask, @autoexecute_flag),
-      past_limit?: Utils.boolify_mask(mask, @past_limit_flag),
-      pre_open?: Utils.boolify_mask(mask, @pre_open_flag),
-      should_tick_for_size?: TickTypes.size_related_type?(tick_type)
-    }
-
-    {:ok, msg}
-  end
-
-  def from_fields(_) do
-    {:error, :invalid_args}
-  end
-
-  defp decode_tick_type(type_str) do
-    case TickTypes.to_atom(type_str) do
-      {:ok, type} -> type
-      _ -> :error
-    end
-  end
 
   defimpl Traceable, for: __MODULE__ do
     def to_s(msg) do

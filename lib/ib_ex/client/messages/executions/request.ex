@@ -16,9 +16,7 @@ defmodule IbEx.Client.Messages.Executions.Request do
   alias IbEx.Client.Protocols.Subscribable
   alias IbEx.Client.Protocols.Traceable
 
-  @version 3
-
-  defstruct message_id: nil, version: @version, request_id: nil, filter: nil
+  defstruct message_id: nil, request_id: nil, filter: nil
 
   @type t :: %__MODULE__{
           message_id: integer(),
@@ -40,27 +38,6 @@ defmodule IbEx.Client.Messages.Executions.Request do
 
       _ ->
         {:error, :not_implemented}
-    end
-  end
-
-  defimpl String.Chars, for: __MODULE__ do
-    alias IbEx.Client.Messages.Base
-
-    def to_string(msg) do
-      fields = [
-        msg.message_id,
-        msg.version,
-        msg.request_id,
-        msg.filter.client_id,
-        msg.filter.account_id,
-        msg.filter.time,
-        msg.filter.symbol,
-        msg.filter.security_type,
-        msg.filter.exchange,
-        msg.filter.side
-      ]
-
-      Base.build(fields)
     end
   end
 

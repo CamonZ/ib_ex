@@ -26,15 +26,6 @@ defmodule IbEx.Client.Messages.MarketData.OptionChainTest do
     ]
   }
 
-  @fields [
-            @attrs.request_id,
-            @attrs.exchange,
-            @attrs.underlying_conid,
-            @attrs.underlying_symbol,
-            @attrs.multiplier,
-            @attrs.expirations_length
-          ] ++ @attrs.expirations ++ [@attrs.strikes_length] ++ @attrs.strikes
-
   @msg %OptionChain{
     request_id: @attrs.request_id,
     exchange: @attrs.exchange,
@@ -44,24 +35,6 @@ defmodule IbEx.Client.Messages.MarketData.OptionChainTest do
     expirations: @attrs.expirations,
     strikes: @attrs.strikes
   }
-
-  describe "from_fields/1" do
-    test "creates OptionChain struct with valid fields" do
-      assert {:ok, msg} = OptionChain.from_fields(@fields)
-
-      assert msg.request_id == @attrs.request_id
-      assert msg.exchange == @attrs.exchange
-      assert msg.underlying_conid == @attrs.underlying_conid
-      assert msg.underlying_symbol == @attrs.underlying_symbol
-      assert msg.multiplier == @attrs.multiplier
-      assert msg.expirations == @attrs.expirations
-      assert msg.strikes == @attrs.strikes
-    end
-
-    test "returns an error with insufficient fields" do
-      assert {:error, :invalid_args} == OptionChain.from_fields(["123", "1"])
-    end
-  end
 
   describe "Traceab;e" do
     test "to_s/1 returns a human-readable version of the message" do

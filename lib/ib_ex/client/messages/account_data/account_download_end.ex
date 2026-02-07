@@ -3,30 +3,10 @@ defmodule IbEx.Client.Messages.AccountData.AccountDownloadEnd do
   Incoming message indicating the end of the batch of account detail messages
   """
 
-  defstruct version: nil, account: nil
+  defstruct account: nil
 
   alias IbEx.Client.Protocols.Subscribable
   alias IbEx.Client.Protocols.Traceable
-
-  def from_fields([version_str, account]) do
-    case Integer.parse(version_str) do
-      {version, _} ->
-        {
-          :ok,
-          %__MODULE__{
-            version: version,
-            account: account
-          }
-        }
-
-      _ ->
-        {:error, :invalid_args}
-    end
-  end
-
-  def from_fields(_fields) do
-    {:error, :invalid_args}
-  end
 
   defimpl Traceable, for: __MODULE__ do
     def to_s(msg) do

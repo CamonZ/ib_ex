@@ -1,6 +1,5 @@
 defmodule IbEx.Client.Messages.Responses do
   alias IbEx.Client.Messages
-  alias Messages.Base
   alias IbEx.Client.Protocols.Traceable
 
   require Logger
@@ -94,10 +93,12 @@ defmodule IbEx.Client.Messages.Responses do
 
   @spec parse(binary(), atom(), boolean()) :: {:ok, any()} | {:error, :unexpected_error} | {:error, :not_implemented}
   def parse(str, :connecting, trace_messages) do
-    {:ok, msg} =
+    fields =
       str
-      |> Base.get_fields()
-      |> Messages.InitConnection.Response.from_fields()
+      |> String.split("\x00")
+      |> Enum.slice(0..-2//1)
+
+    {:ok, msg} = Messages.InitConnection.Response.from_fields(fields)
 
     if trace_messages do
       Logger.info(Traceable.to_s(msg))

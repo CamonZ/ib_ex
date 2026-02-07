@@ -15,15 +15,6 @@ defmodule IbEx.Client.Messages.MatchingSymbols.RequestTest do
     end
   end
 
-  describe "String.Chars" do
-    test "to_string/1 returns the binary representation of the message" do
-      {:ok, msg} = Request.new("AAPL")
-      msg = %{msg | request_id: 1}
-
-      assert to_string(msg) == <<56, 49, 0, 49, 0, 65, 65, 80, 76, 0>>
-    end
-  end
-
   describe "Traceable" do
     test "to_s/1 returns a human-readable version of the message" do
       {:ok, msg} = Request.new("AAPL")

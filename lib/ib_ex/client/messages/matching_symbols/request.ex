@@ -3,7 +3,6 @@ defmodule IbEx.Client.Messages.MatchingSymbols.Request do
   Request message for symbol to Contract lookups in IBKR
   """
 
-  alias IbEx.Client.Messages.Base
   alias IbEx.Client.Messages.Requests
   alias IbEx.Client.Protocols.Subscribable
   alias IbEx.Client.Protocols.Traceable
@@ -32,14 +31,6 @@ defmodule IbEx.Client.Messages.MatchingSymbols.Request do
       pattern: msg.pattern
     }
     |> Protobuf.encode()
-  end
-
-  defimpl String.Chars, for: __MODULE__ do
-    alias IbEx.Client.Messages.Base
-
-    def to_string(msg) do
-      Base.build([msg.message_id, msg.request_id, msg.pattern])
-    end
   end
 
   defimpl Traceable, for: __MODULE__ do

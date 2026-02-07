@@ -15,13 +15,6 @@ defmodule IbEx.Client.Messages.MarketDepth.CancelDataTest do
     end
   end
 
-  describe "String.Chars implementation" do
-    test "converts the message to a binary correctly" do
-      request = %CancelData{message_id: 11, request_id: 90001, smart_depth?: true}
-      assert to_string(request) == <<49, 49, 0, 49, 0, 57, 48, 48, 48, 49, 0, 49, 0>>
-    end
-  end
-
   describe "Traceable " do
     test "to_s/1 returns a human-readable version of the message" do
       assert Traceable.to_s(%CancelData{request_id: 90001}) ==

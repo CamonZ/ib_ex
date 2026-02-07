@@ -5,7 +5,6 @@ defmodule IbEx.Client.Messages.MarketDepth.L2DataSingle do
   Receives a single update to the bids or the asks in the orderbook
   """
 
-  alias IbEx.Client.Utils
   alias IbEx.Client.Protocols.Subscribable
   alias IbEx.Client.Protocols.Traceable
 
@@ -26,28 +25,6 @@ defmodule IbEx.Client.Messages.MarketDepth.L2DataSingle do
           size: non_neg_integer(),
           timestamp: DateTime.t()
         }
-
-  def from_fields([_, req_id, pos, op_str, side_str, price, size]) do
-    with {:ok, operation} <- Utils.MarketDepth.parse_operation(op_str),
-         {:ok, side} <- Utils.MarketDepth.parse_side(side_str) do
-      {
-        :ok,
-        %__MODULE__{
-          request_id: req_id,
-          position: Utils.to_integer(pos),
-          operation: operation,
-          side: side,
-          price: Utils.to_float(price),
-          size: Utils.to_integer(size),
-          timestamp: DateTime.utc_now()
-        }
-      }
-    end
-  end
-
-  def from_fields(_) do
-    {:error, :invalid_args}
-  end
 
   defimpl Traceable, for: __MODULE__ do
     def to_s(msg) do

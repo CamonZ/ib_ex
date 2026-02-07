@@ -5,12 +5,10 @@ defmodule IbEx.Client.Messages.StartApi.Request do
   regarding the data connections
   """
 
-  @version 2
-
   alias IbEx.Client.Messages.Requests
   alias IbEx.Client.Protocols.Traceable
 
-  defstruct message_id: nil, optional_capabilities: nil, client_id: nil, version: @version
+  defstruct message_id: nil, optional_capabilities: nil, client_id: nil
 
   def new(opts) do
     with {:ok, message_id} <- Requests.message_id_for(__MODULE__),
@@ -47,23 +45,9 @@ defmodule IbEx.Client.Messages.StartApi.Request do
     |> Protobuf.encode()
   end
 
-  defimpl String.Chars, for: __MODULE__ do
-    alias IbEx.Client.Messages.Base
-
-    def to_string(msg) do
-      Base.build(
-        [
-          msg.message_id,
-          msg.version,
-          msg.client_id
-        ] ++ msg.optional_capabilities
-      )
-    end
-  end
-
   defimpl Traceable, for: __MODULE__ do
     def to_s(msg) do
-      "--> StartAPI{id: #{msg.message_id}, version: #{msg.version}, client_id: #{msg.client_id}, opt_capabilities: #{inspect(msg.optional_capabilities)}}"
+      "--> StartAPI{id: #{msg.message_id}, client_id: #{msg.client_id}, opt_capabilities: #{inspect(msg.optional_capabilities)}}"
     end
   end
 end

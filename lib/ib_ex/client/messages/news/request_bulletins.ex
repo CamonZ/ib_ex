@@ -10,17 +10,13 @@ defmodule IbEx.Client.Messages.News.RequestBulletins do
     new bulletins.
   """
 
-  @message_version 1
-
-  alias IbEx.Client.Messages.Base
   alias IbEx.Client.Messages.Requests
   alias IbEx.Client.Protocols.Traceable
 
-  defstruct message_id: nil, version: @message_version, all_messages: nil
+  defstruct message_id: nil, all_messages: nil
 
   @type t :: %__MODULE__{
           message_id: non_neg_integer(),
-          version: non_neg_integer(),
           all_messages: boolean()
         }
 
@@ -32,14 +28,6 @@ defmodule IbEx.Client.Messages.News.RequestBulletins do
 
       :error ->
         {:error, :not_implemented}
-    end
-  end
-
-  defimpl String.Chars, for: __MODULE__ do
-    alias IbEx.Client.Messages.Base
-
-    def to_string(msg) do
-      Base.build([msg.message_id, msg.version, msg.all_messages])
     end
   end
 

@@ -16,19 +16,6 @@ defmodule IbEx.Client.Messages.Executions.RequestTest do
     end
   end
 
-  describe "String.Chars implementation" do
-    test "converts Request struct to string" do
-      msg = %Request{
-        message_id: 7,
-        version: 3,
-        request_id: 90001,
-        filter: %ExecutionsFilter{client_id: 123}
-      }
-
-      assert to_string(msg) == <<55, 0, 51, 0, 57, 48, 48, 48, 49, 0, 49, 50, 51, 0, 0, 0, 0, 0, 0, 0>>
-    end
-  end
-
   describe "Traceable" do
     test "to_s/1 returns a human-readable version of the message" do
       msg = %Request{

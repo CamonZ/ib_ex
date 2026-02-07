@@ -19,10 +19,7 @@ defmodule IbEx.Client.Messages.MarketData.RequestHistoricalData do
   * keep_up_to_date: boolean(). Whether a subscription is made to return updates of unfinished real time bars as they are available (true), or all data is returned on a one-time basis (false). If `true` then `end_date_time` cannot be specified. Supported `what_to_show` values: `:trades`, `:midpoint`, `:bid`, `:ask`
   """
 
-  @version 6
-
-  defstruct version: @version,
-            message_id: nil,
+  defstruct message_id: nil,
             request_id: nil,
             contract: nil,
             end_date_time: nil,
@@ -40,7 +37,6 @@ defmodule IbEx.Client.Messages.MarketData.RequestHistoricalData do
 
   @type end_date_time_type :: DateTime.t() | nil
   @type t :: %__MODULE__{
-          version: non_neg_integer(),
           message_id: non_neg_integer(),
           request_id: non_neg_integer(),
           contract: Contract.t(),
@@ -112,34 +108,6 @@ defmodule IbEx.Client.Messages.MarketData.RequestHistoricalData do
 
   def format_end_date_time(_) do
     {:error, :invalid_args}
-  end
-
-  defimpl String.Chars, for: __MODULE__ do
-    alias IbEx.Client.Messages.Base
-    alias IbEx.Client.Types.Contract
-
-    def to_string(msg) do
-      fields =
-        [
-          msg.message_id,
-          msg.request_id
-        ] ++
-          Contract.serialize(msg.contract, true) ++
-          [
-            msg.end_date_time,
-            msg.bar_size,
-            msg.duration,
-            msg.use_rth,
-            msg.what_to_show,
-            msg.format_date,
-            msg.keep_up_to_date,
-            []
-          ]
-
-      # TODO: implement BAG / Combo request fields 
-
-      Base.build(fields)
-    end
   end
 
   defimpl Traceable, for: __MODULE__ do

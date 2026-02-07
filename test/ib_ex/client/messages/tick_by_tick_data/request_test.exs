@@ -43,15 +43,6 @@ defmodule IbEx.Client.Messages.TickByTickData.RequestTest do
     test "returns error for negative number of ticks", %{contract: contract} do
       assert {:error, :invalid_args} = Request.new(contract, "Last", -1, true)
     end
-
-    test "to_string returns the correct binary representation of the message", %{contract: contract} do
-      {:ok, msg} = Request.new(contract, "Last", 10, true)
-      msg = %{msg | request_id: 1}
-
-      assert to_string(msg) ==
-               <<57, 55, 0, 49, 0, 48, 0, 65, 65, 80, 76, 0, 83, 84, 75, 0, 0, 48, 46, 48, 0, 0, 0, 78, 65, 83, 68, 65,
-                 81, 0, 0, 85, 83, 68, 0, 0, 0, 76, 97, 115, 116, 0, 49, 48, 0, 49, 0>>
-    end
   end
 
   describe "Traceable" do

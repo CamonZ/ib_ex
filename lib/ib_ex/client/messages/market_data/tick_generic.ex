@@ -16,33 +16,7 @@ defmodule IbEx.Client.Messages.MarketData.TickGeneric do
           value: float() | nil
         }
 
-  alias IbEx.Client.Constants.TickTypes
-  alias IbEx.Client.Utils
   alias IbEx.Client.Protocols.Traceable
-
-  @spec from_fields(list(String.t())) :: {:ok, t()} | {:error, :invalid_args}
-  def from_fields([_, request_id, tick_type_str, value]) do
-    tick_type = decode_tick_type(tick_type_str)
-
-    msg = %__MODULE__{
-      request_id: request_id,
-      tick_type: tick_type,
-      value: Utils.to_float(value)
-    }
-
-    {:ok, msg}
-  end
-
-  def from_fields(_) do
-    {:error, :invalid_args}
-  end
-
-  defp decode_tick_type(type_str) do
-    case TickTypes.to_atom(type_str) do
-      {:ok, type} -> type
-      _ -> :error
-    end
-  end
 
   defimpl Traceable, for: __MODULE__ do
     def to_s(msg) do

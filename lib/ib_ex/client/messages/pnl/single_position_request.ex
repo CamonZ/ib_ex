@@ -36,14 +36,6 @@ defmodule IbEx.Client.Messages.Pnl.SinglePositionRequest do
     end
   end
 
-  defimpl String.Chars, for: __MODULE__ do
-    alias IbEx.Client.Messages.Base
-
-    def to_string(msg) do
-      Base.build([msg.message_id, msg.request_id, msg.account, msg.model_code, msg.conid])
-    end
-  end
-
   defimpl Traceable, for: __MODULE__ do
     def to_s(msg) do
       """

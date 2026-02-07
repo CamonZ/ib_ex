@@ -14,29 +14,9 @@ defmodule IbEx.Client.Messages.MarketDepth.RequestDataTest do
       assert {:ok, msg} = RequestData.new(contract, 10, false)
 
       assert msg.message_id == 10
-      assert msg.version == 5
       assert msg.contract == contract
       assert msg.num_rows == 10
       refute msg.smart_depth?
-    end
-  end
-
-  describe "String.Chars implementation" do
-    test "converts RequestData struct to string" do
-      contract = %Contract{symbol: "AAPL", security_type: "STK"}
-
-      msg = %RequestData{
-        message_id: 10,
-        version: 5,
-        request_id: "123",
-        contract: contract,
-        num_rows: 10,
-        smart_depth?: true
-      }
-
-      assert to_string(msg) ==
-               <<49, 48, 0, 53, 0, 49, 50, 51, 0, 48, 0, 65, 65, 80, 76, 0, 83, 84, 75, 0, 0, 48, 46, 48, 0, 0, 0, 83,
-                 77, 65, 82, 84, 0, 0, 0, 0, 0, 49, 48, 0, 49, 0, 0>>
     end
   end
 
