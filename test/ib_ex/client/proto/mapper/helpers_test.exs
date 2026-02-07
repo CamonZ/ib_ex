@@ -151,38 +151,38 @@ defmodule IbEx.Client.Proto.Mapper.HelpersTest do
     end
   end
 
-  describe "sentinel_double_to_proto/1 and proto_to_sentinel_double/1" do
+  describe "unset_double_to_proto/1 and proto_to_unset_double/1" do
     test ":unset_double becomes nil" do
-      assert Helpers.sentinel_double_to_proto(:unset_double) == nil
+      assert Helpers.unset_double_to_proto(:unset_double) == nil
     end
 
     test "nil becomes :unset_double" do
-      assert Helpers.proto_to_sentinel_double(nil) == :unset_double
+      assert Helpers.proto_to_unset_double(nil) == :unset_double
     end
 
     test "Decimal value becomes float" do
-      result = Helpers.sentinel_double_to_proto(Decimal.new("42.5"))
+      result = Helpers.unset_double_to_proto(Decimal.new("42.5"))
       assert_in_delta result, 42.5, 0.001
     end
 
     test "float becomes Decimal" do
-      result = Helpers.proto_to_sentinel_double(42.5)
+      result = Helpers.proto_to_unset_double(42.5)
       assert Decimal.equal?(Decimal.round(result, 1), Decimal.new("42.5"))
     end
   end
 
-  describe "sentinel_int_to_proto/1 and proto_to_sentinel_int/1" do
+  describe "unset_int_to_proto/1 and proto_to_unset_int/1" do
     test ":unset_integer becomes nil" do
-      assert Helpers.sentinel_int_to_proto(:unset_integer) == nil
+      assert Helpers.unset_int_to_proto(:unset_integer) == nil
     end
 
     test "nil becomes :unset_integer" do
-      assert Helpers.proto_to_sentinel_int(nil) == :unset_integer
+      assert Helpers.proto_to_unset_int(nil) == :unset_integer
     end
 
     test "integer passes through" do
-      assert Helpers.sentinel_int_to_proto(42) == 42
-      assert Helpers.proto_to_sentinel_int(42) == 42
+      assert Helpers.unset_int_to_proto(42) == 42
+      assert Helpers.proto_to_unset_int(42) == 42
     end
   end
 

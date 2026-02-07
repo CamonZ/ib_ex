@@ -129,35 +129,35 @@ defmodule IbEx.Client.Proto.Mapper.Helpers do
   Converts an IbEx sentinel double value to nil for proto, or a Decimal/float to double.
   Combines unset_sentinel_to_nil with decimal_to_double.
   """
-  @spec sentinel_double_to_proto(any()) :: float() | nil
-  def sentinel_double_to_proto(:unset_double), do: nil
-  def sentinel_double_to_proto(%Decimal{} = d), do: Decimal.to_float(d)
-  def sentinel_double_to_proto(nil), do: nil
-  def sentinel_double_to_proto(val) when is_float(val), do: val
-  def sentinel_double_to_proto(val) when is_integer(val), do: val / 1
+  @spec unset_double_to_proto(any()) :: float() | nil
+  def unset_double_to_proto(:unset_double), do: nil
+  def unset_double_to_proto(%Decimal{} = d), do: Decimal.to_float(d)
+  def unset_double_to_proto(nil), do: nil
+  def unset_double_to_proto(val) when is_float(val), do: val
+  def unset_double_to_proto(val) when is_integer(val), do: val / 1
 
   @doc """
-  Converts a proto double to an IbEx value, using :unset_double sentinel for nil.
+  Converts a proto double to an IbEx value, using :unset_double for nil.
   """
-  @spec proto_to_sentinel_double(float() | nil) :: Decimal.t() | :unset_double
-  def proto_to_sentinel_double(nil), do: :unset_double
-  def proto_to_sentinel_double(val) when is_float(val), do: Decimal.from_float(val)
-  def proto_to_sentinel_double(val) when is_integer(val), do: Decimal.new(val)
+  @spec proto_to_unset_double(float() | nil) :: Decimal.t() | :unset_double
+  def proto_to_unset_double(nil), do: :unset_double
+  def proto_to_unset_double(val) when is_float(val), do: Decimal.from_float(val)
+  def proto_to_unset_double(val) when is_integer(val), do: Decimal.new(val)
 
   @doc """
-  Converts an IbEx sentinel integer value to nil for proto.
+  Converts an IbEx :unset_integer value to nil for proto.
   """
-  @spec sentinel_int_to_proto(any()) :: integer() | nil
-  def sentinel_int_to_proto(:unset_integer), do: nil
-  def sentinel_int_to_proto(nil), do: nil
-  def sentinel_int_to_proto(val) when is_integer(val), do: val
+  @spec unset_int_to_proto(any()) :: integer() | nil
+  def unset_int_to_proto(:unset_integer), do: nil
+  def unset_int_to_proto(nil), do: nil
+  def unset_int_to_proto(val) when is_integer(val), do: val
 
   @doc """
-  Converts a proto integer to an IbEx value, using :unset_integer sentinel for nil.
+  Converts a proto integer to an IbEx value, using :unset_integer for nil.
   """
-  @spec proto_to_sentinel_int(integer() | nil) :: integer() | :unset_integer
-  def proto_to_sentinel_int(nil), do: :unset_integer
-  def proto_to_sentinel_int(val) when is_integer(val), do: val
+  @spec proto_to_unset_int(integer() | nil) :: integer() | :unset_integer
+  def proto_to_unset_int(nil), do: :unset_integer
+  def proto_to_unset_int(val) when is_integer(val), do: val
 
   @doc """
   Converts a proto double that represents the IB unset double sentinel back to the atom.
