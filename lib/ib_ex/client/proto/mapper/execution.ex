@@ -17,7 +17,7 @@ defmodule IbEx.Client.Proto.Mapper.Execution do
 
   alias IbEx.Client.Types.Execution, as: DomainExecution
   alias IbEx.Client.Proto.Protobuf.Execution, as: ProtoExecution
-  alias IbEx.Client.Proto.Mapper.Helpers
+  alias IbEx.Client.Utils
 
   @option_exercise_type_map %{
     none: 0,
@@ -37,22 +37,22 @@ defmodule IbEx.Client.Proto.Mapper.Execution do
   @spec to_proto(DomainExecution.t()) :: ProtoExecution.t()
   def to_proto(%DomainExecution{} = exec) do
     %ProtoExecution{
-      order_id: to_integer(exec.order_id),
+      order_id: Utils.to_integer(exec.order_id, :nullable),
       exec_id: exec.execution_id,
       time: timestamp_to_string(exec.timestamp),
       acct_number: exec.account_id,
       exchange: exec.exchange,
       side: exec.side,
-      shares: float_or_int_to_string(exec.size),
-      price: to_double(exec.price),
+      shares: Utils.to_string_value(exec.size, :nullable),
+      price: Utils.to_float(exec.price, :nullable),
       perm_id: exec.perm_id,
       client_id: exec.client_id,
       is_liquidation: exec.liquidation != 0,
-      cum_qty: Helpers.decimal_to_string(exec.cumulative_quantity),
-      avg_price: to_double(exec.average_price),
+      cum_qty: Utils.to_string_value(exec.cumulative_quantity, :nullable),
+      avg_price: Utils.to_float(exec.average_price, :nullable),
       order_ref: exec.order_ref,
       ev_rule: exec.ev_rule,
-      ev_multiplier: decimal_or_float_to_double(exec.ev_multiplier),
+      ev_multiplier: Utils.to_float(exec.ev_multiplier, :nullable),
       model_code: exec.model_code,
       last_liquidity: exec.last_liquidity,
       is_price_revision_pending: exec.pending_price_revision,
@@ -73,16 +73,16 @@ defmodule IbEx.Client.Proto.Mapper.Execution do
       account_id: proto.acct_number || "",
       exchange: proto.exchange || "",
       side: proto.side || "",
-      size: string_to_float(proto.shares) || 0,
+      size: Utils.to_float(proto.shares, :nullable) || 0,
       price: proto.price || 0.0,
       perm_id: proto.perm_id || 0,
       client_id: proto.client_id || 0,
       liquidation: bool_to_liquidation(proto.is_liquidation),
-      cumulative_quantity: Helpers.string_to_decimal(proto.cum_qty) || Decimal.new("0"),
+      cumulative_quantity: Utils.to_decimal(proto.cum_qty, :nullable) || Decimal.new("0"),
       average_price: proto.avg_price || 0.0,
       order_ref: proto.order_ref || "",
       ev_rule: proto.ev_rule || "",
-      ev_multiplier: double_to_decimal_or_default(proto.ev_multiplier),
+      ev_multiplier: Utils.to_decimal(proto.ev_multiplier, :nullable) || Decimal.new("0.0"),
       model_code: proto.model_code || "",
       last_liquidity: proto.last_liquidity || 0,
       pending_price_revision: proto.is_price_revision_pending || false,
@@ -93,42 +93,9 @@ defmodule IbEx.Client.Proto.Mapper.Execution do
 
   # --- Private helpers ---
 
-  defp to_integer(val) when is_integer(val), do: val
-  defp to_integer(val) when is_binary(val), do: String.to_integer(val)
-  defp to_integer(nil), do: nil
-
-  defp to_double(%Decimal{} = val), do: Decimal.to_float(val)
-  defp to_double(val) when is_float(val), do: val
-  defp to_double(val) when is_integer(val), do: val / 1
-  defp to_double(nil), do: nil
-
-  defp float_or_int_to_string(nil), do: nil
-  defp float_or_int_to_string(0), do: "0"
-  defp float_or_int_to_string(val) when is_float(val), do: Float.to_string(val)
-  defp float_or_int_to_string(val) when is_integer(val), do: Integer.to_string(val)
-
-  defp decimal_or_float_to_double(%Decimal{} = d), do: Decimal.to_float(d)
-  defp decimal_or_float_to_double(val) when is_float(val), do: val
-  defp decimal_or_float_to_double(val) when is_integer(val), do: val / 1
-  defp decimal_or_float_to_double(nil), do: nil
-
-  defp string_to_float(nil), do: nil
-  defp string_to_float(""), do: nil
-
-  defp string_to_float(str) when is_binary(str) do
-    case Float.parse(str) do
-      {val, _} -> val
-      :error -> nil
-    end
-  end
-
   defp bool_to_liquidation(nil), do: 0
   defp bool_to_liquidation(true), do: 1
   defp bool_to_liquidation(false), do: 0
-
-  defp double_to_decimal_or_default(nil), do: Decimal.new("0.0")
-  defp double_to_decimal_or_default(val) when is_float(val), do: Decimal.from_float(val)
-  defp double_to_decimal_or_default(val) when is_integer(val), do: Decimal.new(val)
 
   defp timestamp_to_string(%DateTime{} = dt), do: DateTime.to_string(dt)
   defp timestamp_to_string(%NaiveDateTime{} = dt), do: NaiveDateTime.to_string(dt)

@@ -24,7 +24,7 @@ defmodule IbEx.Client.Proto.Mapper.Contract do
   alias IbEx.Client.Proto.Protobuf.ComboLeg, as: ProtoComboLeg
   alias IbEx.Client.Proto.Protobuf.DeltaNeutralContract, as: ProtoDeltaNeutral
 
-  alias IbEx.Client.Proto.Mapper.Helpers
+  alias IbEx.Client.Utils
 
   @doc """
   Converts a domain Contract to a proto Contract.
@@ -32,13 +32,13 @@ defmodule IbEx.Client.Proto.Mapper.Contract do
   @spec to_proto(DomainContract.t()) :: ProtoContract.t()
   def to_proto(%DomainContract{} = contract) do
     %ProtoContract{
-      con_id: Helpers.conid_to_int(contract.conid),
+      con_id: Utils.to_integer(contract.conid, :nullable),
       symbol: contract.symbol,
       sec_type: contract.security_type,
       last_trade_date_or_contract_month: contract.last_trade_date_or_contract_month,
-      strike: Helpers.strike_to_double(contract.strike),
+      strike: Utils.to_float(contract.strike, :nullable),
       right: contract.right,
-      multiplier: multiplier_to_double(contract.multiplier),
+      multiplier: Utils.to_float(contract.multiplier, :nullable),
       exchange: contract.exchange,
       primary_exch: contract.primary_exchange,
       currency: contract.currency,
@@ -61,13 +61,13 @@ defmodule IbEx.Client.Proto.Mapper.Contract do
   @spec from_proto(ProtoContract.t()) :: DomainContract.t()
   def from_proto(%ProtoContract{} = proto) do
     %DomainContract{
-      conid: Helpers.conid_to_string(proto.con_id),
+      conid: Utils.to_string_value(proto.con_id, :nullable),
       symbol: proto.symbol || "",
       security_type: proto.sec_type || "",
       last_trade_date_or_contract_month: proto.last_trade_date_or_contract_month || "",
-      strike: Helpers.strike_to_string(proto.strike) || "0.0",
+      strike: Utils.to_string_value(proto.strike, :nullable) || "0.0",
       right: proto.right || "",
-      multiplier: multiplier_to_string(proto.multiplier),
+      multiplier: Utils.to_string_value(proto.multiplier, :nullable) || "",
       exchange: proto.exchange || "SMART",
       primary_exchange: proto.primary_exch || "",
       currency: proto.currency || "",
@@ -121,9 +121,9 @@ defmodule IbEx.Client.Proto.Mapper.Contract do
 
   defp delta_neutral_to_proto(%DomainDeltaNeutral{} = dn) do
     %ProtoDeltaNeutral{
-      con_id: Helpers.conid_to_int(dn.conid),
-      delta: Helpers.decimal_to_double(dn.delta),
-      price: Helpers.decimal_to_double(dn.price)
+      con_id: Utils.to_integer(dn.conid, :nullable),
+      delta: Utils.to_float(dn.delta, :nullable),
+      price: Utils.to_float(dn.price, :nullable)
     }
   end
 
@@ -132,26 +132,9 @@ defmodule IbEx.Client.Proto.Mapper.Contract do
 
   defp delta_neutral_from_proto(%ProtoDeltaNeutral{} = proto) do
     %DomainDeltaNeutral{
-      conid: Helpers.conid_to_string(proto.con_id),
-      delta: Helpers.double_to_decimal(proto.delta),
-      price: Helpers.double_to_decimal(proto.price)
+      conid: Utils.to_string_value(proto.con_id, :nullable),
+      delta: Utils.to_decimal(proto.delta, :nullable),
+      price: Utils.to_decimal(proto.price, :nullable)
     }
   end
-
-  # --- Multiplier helpers ---
-  # Domain stores multiplier as string, proto as double
-
-  defp multiplier_to_double(""), do: nil
-  defp multiplier_to_double(nil), do: nil
-
-  defp multiplier_to_double(str) when is_binary(str) do
-    case Float.parse(str) do
-      {val, _} -> val
-      :error -> nil
-    end
-  end
-
-  defp multiplier_to_string(nil), do: ""
-  defp multiplier_to_string(val) when is_float(val), do: Float.to_string(val)
-  defp multiplier_to_string(val) when is_integer(val), do: Integer.to_string(val)
 end

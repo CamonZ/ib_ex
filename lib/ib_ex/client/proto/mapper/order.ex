@@ -33,6 +33,7 @@ defmodule IbEx.Client.Proto.Mapper.Order do
   alias IbEx.Client.Proto.Protobuf.SoftDollarTier, as: ProtoSoftDollarTier
   alias IbEx.Client.Proto.Protobuf.OrderCondition, as: ProtoOrderCondition
   alias IbEx.Client.Proto.Mapper.Helpers
+  alias IbEx.Client.Utils
 
   @doc """
   Converts a domain Order to a proto Order.
@@ -51,12 +52,12 @@ defmodule IbEx.Client.Proto.Mapper.Order do
 
       # Main order fields
       action: order.action,
-      total_quantity: decimal_or_int_to_string(order.total_quantity),
+      total_quantity: Utils.to_string_value(order.total_quantity, :nullable),
       display_size: order.display_size,
       order_type: order.order_type,
-      lmt_price: Helpers.decimal_to_double(order.limit_price),
-      aux_price: Helpers.decimal_to_double(order.aux_price),
-      tif: to_string_or_nil(order.time_in_force),
+      lmt_price: Utils.to_float(order.limit_price, :nullable),
+      aux_price: Utils.to_float(order.aux_price, :nullable),
+      tif: Utils.to_string_value(order.time_in_force, :nullable),
       account: order.account,
       settling_firm: order.settling_firm,
 
@@ -70,15 +71,15 @@ defmodule IbEx.Client.Proto.Mapper.Order do
       hidden: order.hidden,
       outside_rth: order.outside_rth,
       sweep_to_fill: order.sweep_to_fill,
-      percent_offset: Helpers.decimal_to_double(order.percent_offset),
-      trailing_percent: Helpers.decimal_to_double(order.trailing_percent),
-      trail_stop_price: Helpers.decimal_to_double(order.trail_stop_price),
+      percent_offset: Utils.to_float(order.percent_offset, :nullable),
+      trailing_percent: Utils.to_float(order.trailing_percent, :nullable),
+      trail_stop_price: Utils.to_float(order.trail_stop_price, :nullable),
       min_qty: order.min_quantity,
       good_after_time: order.good_after_time,
       good_till_date: order.good_till_date,
       oca_group: order.oca_group_identifier,
       order_ref: order.order_ref,
-      rule80_a: to_string_or_nil(order.rule_80a),
+      rule80_a: Utils.to_string_value(order.rule_80a, :nullable),
       oca_type: order.oca_type,
       trigger_method: order.trigger_method,
       active_start_time: order.active_start_time,
@@ -136,20 +137,20 @@ defmodule IbEx.Client.Proto.Mapper.Order do
       what_if: order.what_if_info_and_commission,
       transmit: order.transmit,
       override_percentage_constraints: order.override_percentage_constraints,
-      open_close: to_string_or_nil(order.open_close),
+      open_close: Utils.to_string_value(order.open_close, :nullable),
       origin: order.origin,
 
       # Short sale (from ShortSaleParams)
       short_sale_slot: get_short_sale_field(order, :short_sale_slot),
       designated_location: get_short_sale_field(order, :designated_location),
       exempt_code: get_short_sale_field(order, :exempt_code),
-      discretionary_amt: Helpers.decimal_to_double(order.discretionary_amount),
+      discretionary_amt: Utils.to_float(order.discretionary_amount, :nullable),
       opt_out_smart_routing: order.opt_out_smart_routing,
-      starting_price: Helpers.decimal_to_double(order.starting_price),
-      stock_ref_price: Helpers.decimal_to_double(order.stock_reference_price),
-      delta: Helpers.decimal_to_double(order.delta),
-      stock_range_lower: Helpers.decimal_to_double(order.stock_range_lower),
-      stock_range_upper: Helpers.decimal_to_double(order.stock_range_upper),
+      starting_price: Utils.to_float(order.starting_price, :nullable),
+      stock_ref_price: Utils.to_float(order.stock_reference_price, :nullable),
+      delta: Utils.to_float(order.delta, :nullable),
+      stock_range_lower: Utils.to_float(order.stock_range_lower, :nullable),
+      stock_range_upper: Utils.to_float(order.stock_range_upper, :nullable),
       not_held: order.not_held,
 
       # Misc options (TagValueList -> map)
@@ -172,18 +173,18 @@ defmodule IbEx.Client.Proto.Mapper.Order do
 
       # Adjusted order fields (sentinel doubles)
       adjusted_order_type: order.adjusted_order_type,
-      trigger_price: Helpers.unset_double_to_proto(order.trigger_price),
-      adjusted_stop_price: Helpers.unset_double_to_proto(order.adjusted_stop_price),
-      adjusted_stop_limit_price: Helpers.unset_double_to_proto(order.adjusted_stop_limit_price),
-      adjusted_trailing_amount: Helpers.unset_double_to_proto(order.adjusted_trailing_amount),
+      trigger_price: Utils.to_float(order.trigger_price, :nullable),
+      adjusted_stop_price: Utils.to_float(order.adjusted_stop_price, :nullable),
+      adjusted_stop_limit_price: Utils.to_float(order.adjusted_stop_limit_price, :nullable),
+      adjusted_trailing_amount: Utils.to_float(order.adjusted_trailing_amount, :nullable),
       adjustable_trailing_unit: order.adjustable_trailing_unit,
-      lmt_price_offset: Helpers.unset_double_to_proto(order.limit_price_offset),
+      lmt_price_offset: Utils.to_float(order.limit_price_offset, :nullable),
       model_code: order.model_code,
       ext_operator: order.ext_operator,
 
       # Soft dollar tier (from SoftDollarTierParams)
       soft_dollar_tier: soft_dollar_tier_to_proto(order),
-      cash_qty: Helpers.unset_double_to_proto(order.cash_quantity),
+      cash_qty: Utils.to_float(order.cash_quantity, :nullable),
       mifid2_decision_maker: order.mifid2_decision_maker,
       mifid2_decision_algo: order.mifid2_decision_algo,
       mifid2_execution_trader: order.mifid2_execution_trader,
@@ -192,34 +193,34 @@ defmodule IbEx.Client.Proto.Mapper.Order do
       is_oms_container: order.is_oms_container,
       discretionary_up_to_limit_price: order.discretionary_up_to_limit_price,
       auto_cancel_date: order.auto_cancel_date,
-      filled_quantity: decimal_or_int_to_string(order.filled_quantity),
+      filled_quantity: Utils.to_string_value(order.filled_quantity, :nullable),
       ref_futures_con_id: order.ref_futures_con_id,
       auto_cancel_parent: order.auto_cancel_parent,
       shareholder: order.shareholder,
       imbalance_only: order.imbalance_only,
-      route_marketable_to_bbo: Helpers.bool_or_value_to_int(order.route_marketable_to_bbo),
+      route_marketable_to_bbo: Utils.to_bool(order.route_marketable_to_bbo, :nullable) |> bool_to_int(),
       parent_perm_id: order.parent_perm_id,
       use_price_mgmt_algo: use_price_mgmt_algo_to_proto(order.use_price_management_algo),
-      duration: Helpers.unset_int_to_proto(order.duration),
-      post_to_ats: Helpers.unset_int_to_proto(order.post_to_ats),
+      duration: Utils.to_integer(order.duration, :nullable),
+      post_to_ats: Utils.to_integer(order.post_to_ats, :nullable),
       advanced_error_override: order.advanced_error_override,
       manual_order_time: order.manual_order_time,
       min_trade_qty: order.min_trade_quantity,
       min_compete_size: order.min_compete_size,
-      compete_against_best_offset: Helpers.decimal_to_double(order.compete_against_best_offset),
-      mid_offset_at_whole: Helpers.decimal_to_double(order.mid_offset_at_whole),
-      mid_offset_at_half: Helpers.decimal_to_double(order.mid_offset_at_half),
+      compete_against_best_offset: Utils.to_float(order.compete_against_best_offset, :nullable),
+      mid_offset_at_whole: Utils.to_float(order.mid_offset_at_whole, :nullable),
+      mid_offset_at_half: Utils.to_float(order.mid_offset_at_half, :nullable),
       customer_account: order.customer_account,
       professional_customer: order.professional_customer,
       bond_accrued_interest: order.bond_accrued_interest,
       include_overnight: order.include_overnight,
-      manual_order_indicator: Helpers.unset_int_to_proto(order.manual_order_indicator),
+      manual_order_indicator: Utils.to_integer(order.manual_order_indicator, :nullable),
       submitter: order.submitter,
       deactivate: order.deactivate,
       post_only: order.post_only,
       allow_pre_open: order.allow_pre_open,
       ignore_open_auction: order.ignore_open_auction,
-      seek_price_improvement: Helpers.bool_or_value_to_int(order.seek_price_improvement),
+      seek_price_improvement: Utils.to_bool(order.seek_price_improvement, :nullable) |> bool_to_int(),
       what_if_type: order.what_if_type
     }
   end
@@ -241,10 +242,10 @@ defmodule IbEx.Client.Proto.Mapper.Order do
 
       # Main order fields
       action: proto.action,
-      total_quantity: string_to_int_or_nil(proto.total_quantity),
+      total_quantity: Utils.to_integer(proto.total_quantity, :nullable),
       order_type: proto.order_type,
-      limit_price: Helpers.double_to_decimal(proto.lmt_price),
-      aux_price: Helpers.double_to_decimal(proto.aux_price),
+      limit_price: Utils.to_decimal(proto.lmt_price, :nullable),
+      aux_price: Utils.to_decimal(proto.aux_price, :nullable),
       time_in_force: proto.tif,
       account: proto.account,
       settling_firm: proto.settling_firm,
@@ -253,9 +254,9 @@ defmodule IbEx.Client.Proto.Mapper.Order do
       hidden: proto.hidden || false,
       outside_rth: proto.outside_rth || false,
       sweep_to_fill: proto.sweep_to_fill || false,
-      percent_offset: Helpers.double_to_decimal(proto.percent_offset),
-      trailing_percent: Helpers.double_to_decimal(proto.trailing_percent),
-      trail_stop_price: Helpers.double_to_decimal(proto.trail_stop_price),
+      percent_offset: Utils.to_decimal(proto.percent_offset, :nullable),
+      trailing_percent: Utils.to_decimal(proto.trailing_percent, :nullable),
+      trail_stop_price: Utils.to_decimal(proto.trail_stop_price, :nullable),
       min_quantity: proto.min_qty,
       good_after_time: proto.good_after_time,
       good_till_date: proto.good_till_date,
@@ -283,12 +284,12 @@ defmodule IbEx.Client.Proto.Mapper.Order do
         exempt_code: proto.exempt_code || -1
       },
       volatility_order_params: %{
-        volatility: Helpers.double_to_decimal(proto.volatility),
+        volatility: Utils.to_decimal(proto.volatility, :nullable),
         volatility_type: proto.volatility_type
       },
       delta_neutral_params: %{
         order_type: proto.delta_neutral_order_type,
-        aux_price: Helpers.double_to_decimal(proto.delta_neutral_aux_price),
+        aux_price: Utils.to_decimal(proto.delta_neutral_aux_price, :nullable),
         conid: proto.delta_neutral_con_id || 0,
         settling_firm: proto.delta_neutral_settling_firm,
         clearing_account: proto.delta_neutral_clearing_account,
@@ -301,10 +302,10 @@ defmodule IbEx.Client.Proto.Mapper.Order do
       scale_order_params: %{
         init_level_size: proto.scale_init_level_size,
         subs_level_size: proto.scale_subs_level_size,
-        price_increment: Helpers.double_to_decimal(proto.scale_price_increment),
-        price_adjust_value: Helpers.double_to_decimal(proto.scale_price_adjust_value),
+        price_increment: Utils.to_decimal(proto.scale_price_increment, :nullable),
+        price_adjust_value: Utils.to_decimal(proto.scale_price_adjust_value, :nullable),
         price_adjust_interval: proto.scale_price_adjust_interval,
-        profit_offset: Helpers.double_to_decimal(proto.scale_profit_offset),
+        profit_offset: Utils.to_decimal(proto.scale_profit_offset, :nullable),
         auto_reset: proto.scale_auto_reset || false,
         init_position: proto.scale_init_position,
         init_fill_quantity: proto.scale_init_fill_qty,
@@ -330,8 +331,8 @@ defmodule IbEx.Client.Proto.Mapper.Order do
       peg_to_bench_params: %{
         reference_contract_id: proto.reference_contract_id || 0,
         is_pegged_change_amount_decrease: proto.is_pegged_change_amount_decrease || false,
-        pegged_change_amount: Helpers.double_to_decimal(proto.pegged_change_amount) || Decimal.new("0.0"),
-        reference_change_amoung: Helpers.double_to_decimal(proto.reference_change_amount) || Decimal.new("0.0"),
+        pegged_change_amount: Utils.to_decimal(proto.pegged_change_amount, :nullable) || Decimal.new("0.0"),
+        reference_change_amoung: Utils.to_decimal(proto.reference_change_amount, :nullable) || Decimal.new("0.0"),
         reference_exchange_id: proto.reference_exchange_id
       },
       order_conditions_params: conditions_from_proto_map(proto),
@@ -339,13 +340,13 @@ defmodule IbEx.Client.Proto.Mapper.Order do
       model_code: proto.model_code,
       continuous_update: proto.continuous_update || false,
       reference_price_type: proto.reference_price_type,
-      discretionary_amount: Helpers.double_to_decimal(proto.discretionary_amt) || 0,
+      discretionary_amount: Utils.to_decimal(proto.discretionary_amt, :nullable) || 0,
       opt_out_smart_routing: proto.opt_out_smart_routing || false,
-      starting_price: Helpers.double_to_decimal(proto.starting_price),
-      stock_reference_price: Helpers.double_to_decimal(proto.stock_ref_price),
-      delta: Helpers.double_to_decimal(proto.delta),
-      stock_range_lower: Helpers.double_to_decimal(proto.stock_range_lower),
-      stock_range_upper: Helpers.double_to_decimal(proto.stock_range_upper),
+      starting_price: Utils.to_decimal(proto.starting_price, :nullable),
+      stock_reference_price: Utils.to_decimal(proto.stock_ref_price, :nullable),
+      delta: Utils.to_decimal(proto.delta, :nullable),
+      stock_range_lower: Utils.to_decimal(proto.stock_range_lower, :nullable),
+      stock_range_upper: Utils.to_decimal(proto.stock_range_upper, :nullable),
       not_held: proto.not_held || false,
       what_if_info_and_commission: proto.what_if || false,
       override_percentage_constraints: proto.override_percentage_constraints || false,
@@ -356,14 +357,14 @@ defmodule IbEx.Client.Proto.Mapper.Order do
 
       # Adjusted order fields (nil -> sentinel)
       adjusted_order_type: proto.adjusted_order_type,
-      trigger_price: Helpers.proto_to_unset_double(proto.trigger_price),
-      adjusted_stop_price: Helpers.proto_to_unset_double(proto.adjusted_stop_price),
-      adjusted_stop_limit_price: Helpers.proto_to_unset_double(proto.adjusted_stop_limit_price),
-      adjusted_trailing_amount: Helpers.proto_to_unset_double(proto.adjusted_trailing_amount),
+      trigger_price: Utils.to_decimal(proto.trigger_price, :nullable) || :unset_double,
+      adjusted_stop_price: Utils.to_decimal(proto.adjusted_stop_price, :nullable) || :unset_double,
+      adjusted_stop_limit_price: Utils.to_decimal(proto.adjusted_stop_limit_price, :nullable) || :unset_double,
+      adjusted_trailing_amount: Utils.to_decimal(proto.adjusted_trailing_amount, :nullable) || :unset_double,
       adjustable_trailing_unit: proto.adjustable_trailing_unit || 0,
-      limit_price_offset: Helpers.proto_to_unset_double(proto.lmt_price_offset),
+      limit_price_offset: Utils.to_decimal(proto.lmt_price_offset, :nullable) || :unset_double,
       ext_operator: proto.ext_operator,
-      cash_quantity: Helpers.proto_to_unset_double(proto.cash_qty),
+      cash_quantity: Utils.to_decimal(proto.cash_qty, :nullable) || :unset_double,
       mifid2_decision_maker: proto.mifid2_decision_maker,
       mifid2_decision_algo: proto.mifid2_decision_algo,
       mifid2_execution_trader: proto.mifid2_execution_trader,
@@ -372,20 +373,20 @@ defmodule IbEx.Client.Proto.Mapper.Order do
       is_oms_container: proto.is_oms_container || false,
       discretionary_up_to_limit_price: proto.discretionary_up_to_limit_price || false,
       use_price_management_algo: use_price_mgmt_algo_from_proto(proto.use_price_mgmt_algo),
-      duration: Helpers.proto_to_unset_int(proto.duration),
-      post_to_ats: Helpers.proto_to_unset_int(proto.post_to_ats),
+      duration: Utils.to_integer(proto.duration, :nullable) || :unset_integer,
+      post_to_ats: Utils.to_integer(proto.post_to_ats, :nullable) || :unset_integer,
       auto_cancel_parent: proto.auto_cancel_parent || false,
       advanced_error_override: proto.advanced_error_override,
       manual_order_time: proto.manual_order_time,
       min_trade_quantity: proto.min_trade_qty,
       min_compete_size: proto.min_compete_size,
-      compete_against_best_offset: Helpers.double_to_decimal(proto.compete_against_best_offset),
-      mid_offset_at_whole: Helpers.double_to_decimal(proto.mid_offset_at_whole),
-      mid_offset_at_half: Helpers.double_to_decimal(proto.mid_offset_at_half),
+      compete_against_best_offset: Utils.to_decimal(proto.compete_against_best_offset, :nullable),
+      mid_offset_at_whole: Utils.to_decimal(proto.mid_offset_at_whole, :nullable),
+      mid_offset_at_half: Utils.to_decimal(proto.mid_offset_at_half, :nullable),
       customer_account: proto.customer_account,
       professional_customer: proto.professional_customer || false,
       external_user_id: nil,
-      manual_order_indicator: Helpers.proto_to_unset_int(proto.manual_order_indicator),
+      manual_order_indicator: Utils.to_integer(proto.manual_order_indicator, :nullable) || :unset_integer,
       bond_accrued_interest: proto.bond_accrued_interest,
       include_overnight: proto.include_overnight || false,
       submitter: proto.submitter,
@@ -396,11 +397,11 @@ defmodule IbEx.Client.Proto.Mapper.Order do
       seek_price_improvement: proto.seek_price_improvement != 0 && proto.seek_price_improvement != nil,
       what_if_type: proto.what_if_type,
       auto_cancel_date: proto.auto_cancel_date,
-      filled_quantity: string_to_decimal_or_nil(proto.filled_quantity),
+      filled_quantity: Utils.to_decimal(proto.filled_quantity, :nullable),
       ref_futures_con_id: proto.ref_futures_con_id,
       shareholder: proto.shareholder,
       imbalance_only: proto.imbalance_only || false,
-      route_marketable_to_bbo: Helpers.int_to_bool_or_value(proto.route_marketable_to_bbo) || false,
+      route_marketable_to_bbo: Utils.to_bool(proto.route_marketable_to_bbo, :nullable) || false,
       parent_perm_id: proto.parent_perm_id
     })
   end
@@ -418,7 +419,7 @@ defmodule IbEx.Client.Proto.Mapper.Order do
   defp get_short_sale_field(_, _), do: nil
 
   defp get_volatility_field(%DomainOrder{volatility_order_params: %VolatilityOrderParams{} = vop}, :volatility),
-    do: Helpers.decimal_to_double(vop.volatility)
+    do: Utils.to_float(vop.volatility, :nullable)
 
   defp get_volatility_field(%DomainOrder{volatility_order_params: %VolatilityOrderParams{} = vop}, field),
     do: Map.get(vop, field)
@@ -431,7 +432,7 @@ defmodule IbEx.Client.Proto.Mapper.Order do
   defp get_dn_field(_, _), do: nil
 
   defp get_dn_double_field(%DomainOrder{delta_neutral_params: %DeltaNeutralParams{} = dn}, field),
-    do: Helpers.decimal_to_double(Map.get(dn, field))
+    do: Utils.to_float(Map.get(dn, field), :nullable)
 
   defp get_dn_double_field(_, _), do: nil
 
@@ -441,7 +442,7 @@ defmodule IbEx.Client.Proto.Mapper.Order do
   defp get_scale_field(_, _), do: nil
 
   defp get_scale_double_field(%DomainOrder{scale_order_params: %ScaleOrderParams{} = sp}, field),
-    do: Helpers.decimal_to_double(Map.get(sp, field))
+    do: Utils.to_float(Map.get(sp, field), :nullable)
 
   defp get_scale_double_field(_, _), do: nil
 
@@ -461,7 +462,7 @@ defmodule IbEx.Client.Proto.Mapper.Order do
   defp get_peg_bench_field(_, _), do: nil
 
   defp get_peg_bench_double_field(%DomainOrder{peg_to_bench_params: %PegToBenchmarkOrderParams{} = pb}, field),
-    do: Helpers.decimal_to_double(Map.get(pb, field))
+    do: Utils.to_float(Map.get(pb, field), :nullable)
 
   defp get_peg_bench_double_field(_, _), do: nil
 
@@ -530,7 +531,7 @@ defmodule IbEx.Client.Proto.Mapper.Order do
   defp soft_dollar_tier_to_proto(%DomainOrder{soft_dollar_tier_params: %SoftDollarTierParams{} = sdt}) do
     %ProtoSoftDollarTier{
       name: sdt.name,
-      value: decimal_or_value_to_string(sdt.value),
+      value: Utils.to_string_value(sdt.value, :nullable),
       display_name: sdt.display_name
     }
   end
@@ -558,26 +559,12 @@ defmodule IbEx.Client.Proto.Mapper.Order do
   defp use_price_mgmt_algo_from_proto(1), do: true
   defp use_price_mgmt_algo_from_proto(_), do: nil
 
-  # --- Type conversion helpers ---
+  # --- bool_to_int helper for route_marketable_to_bbo / seek_price_improvement ---
 
-  defp to_string_or_nil(nil), do: nil
-  defp to_string_or_nil(val) when is_atom(val), do: Atom.to_string(val)
-  defp to_string_or_nil(val) when is_binary(val), do: val
+  defp bool_to_int(nil), do: nil
+  defp bool_to_int(true), do: 1
+  defp bool_to_int(false), do: 0
 
-  defp decimal_or_int_to_string(nil), do: nil
-  defp decimal_or_int_to_string(%Decimal{} = d), do: Decimal.to_string(d, :normal)
-  defp decimal_or_int_to_string(val) when is_integer(val), do: Integer.to_string(val)
-  defp decimal_or_int_to_string(val) when is_binary(val), do: val
-
-  defp decimal_or_value_to_string(nil), do: nil
-  defp decimal_or_value_to_string(%Decimal{} = d), do: Decimal.to_string(d, :normal)
-  defp decimal_or_value_to_string(val) when is_binary(val), do: val
-
-  defp string_to_int_or_nil(nil), do: nil
-  defp string_to_int_or_nil(""), do: nil
-  defp string_to_int_or_nil(str) when is_binary(str), do: String.to_integer(str)
-
-  defp string_to_decimal_or_nil(nil), do: nil
-  defp string_to_decimal_or_nil(""), do: nil
-  defp string_to_decimal_or_nil(str) when is_binary(str), do: Decimal.new(str)
+  # removed: to_string_or_nil, decimal_or_int_to_string, decimal_or_value_to_string,
+  #          string_to_int_or_nil, string_to_decimal_or_nil — replaced by Utils functions
 end

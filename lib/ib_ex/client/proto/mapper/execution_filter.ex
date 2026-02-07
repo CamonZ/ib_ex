@@ -13,6 +13,7 @@ defmodule IbEx.Client.Proto.Mapper.ExecutionFilter do
 
   alias IbEx.Client.Types.ExecutionsFilter, as: DomainFilter
   alias IbEx.Client.Proto.Protobuf.ExecutionFilter, as: ProtoFilter
+  alias IbEx.Client.Utils
 
   @doc """
   Converts a domain ExecutionsFilter to a proto ExecutionFilter.
@@ -20,7 +21,7 @@ defmodule IbEx.Client.Proto.Mapper.ExecutionFilter do
   @spec to_proto(DomainFilter.t()) :: ProtoFilter.t()
   def to_proto(%DomainFilter{} = filter) do
     %ProtoFilter{
-      client_id: string_to_int(filter.client_id),
+      client_id: Utils.to_integer(filter.client_id, :nullable),
       acct_code: filter.account_id,
       time: filter.time,
       symbol: filter.symbol,
@@ -38,7 +39,7 @@ defmodule IbEx.Client.Proto.Mapper.ExecutionFilter do
   @spec from_proto(ProtoFilter.t()) :: DomainFilter.t()
   def from_proto(%ProtoFilter{} = proto) do
     %DomainFilter{
-      client_id: int_to_string(proto.client_id),
+      client_id: Utils.to_string_value(proto.client_id, :nullable),
       account_id: proto.acct_code,
       time: proto.time,
       symbol: proto.symbol,
@@ -51,13 +52,6 @@ defmodule IbEx.Client.Proto.Mapper.ExecutionFilter do
   end
 
   # --- Private helpers ---
-
-  defp string_to_int(nil), do: nil
-  defp string_to_int(val) when is_binary(val), do: String.to_integer(val)
-  defp string_to_int(val) when is_integer(val), do: val
-
-  defp int_to_string(nil), do: nil
-  defp int_to_string(val) when is_integer(val), do: Integer.to_string(val)
 
   defp dates_to_ints(nil), do: []
   defp dates_to_ints([]), do: []
