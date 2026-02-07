@@ -24,6 +24,7 @@ defmodule IbEx.MixProject do
     [
       {:timex, "~> 3.7"},
       {:decimal, "~> 2.1"},
+      {:protobuf, "~> 0.16"},
       {:dialyxir, "~> 1.4", only: [:dev], runtime: false},
       {:ex_doc, "~> 0.34.0", only: [:dev], runtime: false}
     ]
