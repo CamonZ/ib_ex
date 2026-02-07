@@ -5,6 +5,16 @@ defmodule IbEx.Client.Messages.Misc.ManagedAccounts do
 
   defstruct version: nil, accounts: nil
 
+  def from_protobuf(payload) when is_binary(payload) do
+    proto = IbEx.Client.Proto.Protobuf.ManagedAccounts.decode(payload)
+
+    {:ok, %__MODULE__{accounts: proto.accounts_list}}
+  rescue
+    err ->
+      Logger.warning("Error decoding ManagedAccounts protobuf: #{inspect(err)}")
+      {:error, :decode_error}
+  end
+
   def from_fields([version, accounts]) do
     msg = %__MODULE__{
       version: String.to_integer(version),

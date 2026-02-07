@@ -84,8 +84,20 @@ defmodule IbEx.Client.Messages.Requests do
     "user_info" => 104
   }
 
+  @protobuf_offset 200
+
   @spec message_id_for(atom()) :: {:ok, non_neg_integer()} | :error
   def message_id_for(atom) do
     Map.fetch(@message_ids, atom)
+  end
+
+  @spec encode_request(struct()) :: {:ok, binary()} | :error
+  def encode_request(%module{} = request) do
+    with {:ok, msg_id} <- message_id_for(module) do
+      wire_id = msg_id + @protobuf_offset
+      payload = module.to_protobuf(request)
+
+      {:ok, <<wire_id::big-integer-size(32), payload::binary>>}
+    end
   end
 end

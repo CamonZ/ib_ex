@@ -7,6 +7,16 @@ defmodule IbEx.Client.Messages.Ids.NextValidId do
 
   defstruct version: nil, next_valid_id: nil
 
+  def from_protobuf(payload) when is_binary(payload) do
+    proto = IbEx.Client.Proto.Protobuf.NextValidId.decode(payload)
+
+    {:ok, %__MODULE__{next_valid_id: proto.order_id}}
+  rescue
+    err ->
+      Logger.warning("Error decoding NextValidId protobuf: #{inspect(err)}")
+      {:error, :decode_error}
+  end
+
   def from_fields([version_str, id_str]) do
     with {version, _} <- Integer.parse(version_str),
          {id, _} <- Integer.parse(id_str) do

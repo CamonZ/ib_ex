@@ -33,6 +33,20 @@ defmodule IbEx.Client.Messages.StartApi.Request do
     end
   end
 
+  def to_protobuf(%__MODULE__{} = msg) do
+    optional_caps =
+      case msg.optional_capabilities do
+        [caps] when is_binary(caps) -> caps
+        _ -> nil
+      end
+
+    %IbEx.Client.Proto.Protobuf.StartApiRequest{
+      client_id: msg.client_id,
+      optional_capabilities: optional_caps
+    }
+    |> Protobuf.encode()
+  end
+
   defimpl String.Chars, for: __MODULE__ do
     alias IbEx.Client.Messages.Base
 

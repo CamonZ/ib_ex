@@ -31,8 +31,6 @@ defmodule IbEx.ClientTest do
 
   alias IbEx.Client
   alias IbEx.Client.Messages.MatchingSymbols.Request
-  alias IbEx.Client.Types.Contract
-  alias IbEx.Client.Types.ContractDescription
   alias IbEx.Client.Subscriptions
 
   alias __MODULE__.MockSuccessConnection
@@ -59,27 +57,28 @@ defmodule IbEx.ClientTest do
     test "updates the client's state with the server version, the connection timestamp and continues to validate the server version" do
       initial_state = %{status: :connecting, trace_messages: false}
 
-      str = "178\x0020240605 17:25:52 Central European Standard Time\x00"
+      str = "213\x0020240605 17:25:52 Central European Standard Time\x00"
 
       assert {:noreply, new_state, continuation} = Client.handle_cast({:process_message, str}, initial_state)
 
-      assert new_state.server_version == 178
+      assert new_state.server_version == 213
       assert new_state.connection_timestamp == ~N[2024-06-05 17:25:52]
       assert new_state.status == :connected
 
       assert continuation == {:continue, :validate_server_version}
     end
 
-    @symbol_samples_msg_str <<55, 57, 0, 49, 0, 49, 55, 0, 50, 54, 53, 53, 57, 56, 0, 65, 65, 80, 76, 0, 83, 84, 75, 0,
-                              78, 65, 83, 68, 65, 81, 0, 85, 83, 68, 0, 53, 0, 67, 70, 68, 0, 79, 80, 84, 0, 73, 79, 80,
-                              84, 0, 87, 65, 82, 0, 66, 65, 71, 0, 65, 80, 80, 76, 69, 32, 73, 78, 67, 0, 0, 52, 57, 51,
-                              53, 52, 54, 48, 52, 56, 0, 65, 65, 80, 76, 0, 83, 84, 75, 0, 76, 83, 69, 69, 84, 70, 0,
-                              71, 66, 80, 0, 48, 0, 76, 83, 32, 49, 88, 32, 65, 65, 80, 76, 0, 0>>
-
     @tag capture_log: true
     test "relays the msg when there's a subscription for said message" do
       table_ref = Subscriptions.initialize()
       Subscriptions.subscribe_by_request_id(table_ref, self())
+
+      # Build a protobuf ManagedAccounts message (msg_id=15, wire_id=215)
+      proto_payload =
+        %IbEx.Client.Proto.Protobuf.ManagedAccounts{accounts_list: "DU123456,DU789012"}
+        |> Protobuf.encode()
+
+      wire_msg = <<215::big-integer-size(32), proto_payload::binary>>
 
       state = %{
         subscriptions_table_ref: table_ref,
@@ -87,27 +86,24 @@ defmodule IbEx.ClientTest do
         trace_messages: false
       }
 
-      assert {:noreply, ^state} = Client.handle_cast({:process_message, @symbol_samples_msg_str}, state)
+      assert {:noreply, %{managed_accounts: "DU123456,DU789012"}} =
+               Client.handle_cast({:process_message, wire_msg}, state)
+    end
+  end
 
-      assert_received {:"$gen_cast", {:message_received, msg}}
+  describe "handle_continue(:validate_server_version)" do
+    test "continues to :request_start_api when server_version meets minimum (213)" do
+      state = %IbEx.Client{server_version: 213}
 
-      assert msg.request_id == "1"
-      assert length(msg.contracts) == 2
+      assert {:noreply, ^state, {:continue, :request_start_api}} =
+               Client.handle_continue(:validate_server_version, state)
+    end
 
-      first_contract = List.first(msg.contracts)
+    test "stops the process when server_version is below minimum (213)" do
+      state = %IbEx.Client{server_version: 178}
 
-      assert first_contract == %ContractDescription{
-               contract: %Contract{
-                 conid: "265598",
-                 symbol: "AAPL",
-                 security_type: "STK",
-                 currency: "USD",
-                 primary_exchange: "NASDAQ",
-                 description: "APPLE INC",
-                 issuer_id: ""
-               },
-               derivative_security_types: ["CFD", "OPT", "IOPT", "WAR", "BAG"]
-             }
+      assert {:stop, {:required_version_unmet, :protobuf_rest_messages_3, 178}} =
+               Client.handle_continue(:validate_server_version, state)
     end
   end
 

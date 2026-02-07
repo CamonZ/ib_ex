@@ -20,6 +20,20 @@ defmodule IbEx.Client.Messages.MatchingSymbols.Request do
     end
   end
 
+  def to_protobuf(%__MODULE__{} = msg) do
+    req_id =
+      case msg.request_id do
+        id when is_integer(id) -> id
+        id when is_binary(id) -> String.to_integer(id)
+      end
+
+    %IbEx.Client.Proto.Protobuf.MatchingSymbolsRequest{
+      req_id: req_id,
+      pattern: msg.pattern
+    }
+    |> Protobuf.encode()
+  end
+
   defimpl String.Chars, for: __MODULE__ do
     alias IbEx.Client.Messages.Base
 

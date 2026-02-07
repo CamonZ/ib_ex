@@ -108,7 +108,7 @@ defmodule IbEx.Client do
   def handle_continue(:init_connection, state) do
     {:ok, msg} = Messages.InitConnection.Request.new()
 
-    Connection.send_message(state.connection, msg)
+    Connection.send_message(state.connection, to_string(msg))
     Connection.set_packet_mode_on(state.connection)
 
     {:noreply, %{state | status: :connecting}}
@@ -117,7 +117,7 @@ defmodule IbEx.Client do
       {:stop, {:error_initializing_connection, err}}
   end
 
-  @min_version_tag :pending_price_revision
+  @min_version_tag :protobuf_rest_messages_3
 
   def handle_continue(:validate_server_version, state) do
     case validate_server_version_for(@min_version_tag, state) do
@@ -136,7 +136,8 @@ defmodule IbEx.Client do
     ]
 
     {:ok, start_api_msg} = Messages.StartApi.Request.new(msg_opts)
-    Connection.send_message(state.connection, start_api_msg)
+    {:ok, encoded} = Messages.Requests.encode_request(start_api_msg)
+    Connection.send_message(state.connection, encoded)
 
     {:noreply, state}
   rescue
@@ -182,7 +183,8 @@ defmodule IbEx.Client do
           Logger.info(Traceable.to_s(msg))
         end
 
-        Connection.send_message(state.connection, msg)
+        {:ok, encoded} = Messages.Requests.encode_request(msg)
+        Connection.send_message(state.connection, encoded)
 
       _ ->
         Logger.error("Error sending out message: #{request}")
