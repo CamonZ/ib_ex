@@ -4,6 +4,26 @@ defmodule IbEx.Client.Messages.ErrorInfo.Base do
 
   require Logger
 
+  def from_protobuf(payload) when is_binary(payload) do
+    proto = IbEx.Client.Proto.Protobuf.ErrorMessage.decode(payload)
+
+    msg = %{
+      id: proto.id,
+      code: proto.error_code,
+      message: proto.error_msg
+    }
+
+    if proto.id == -1 do
+      {:ok, struct(Info, msg)}
+    else
+      {:ok, struct(Error, msg)}
+    end
+  rescue
+    err ->
+      Logger.warning("Error decoding ErrorMessage protobuf: #{inspect(err)}")
+      {:error, :decode_error}
+  end
+
   def from_fieds([version_str, msg] = fields) do
     case Integer.parse(version_str) do
       {version, _} ->

@@ -69,8 +69,8 @@ defmodule IbEx.Client.Connection do
   end
 
   @impl true
-  def handle_call({:send_message, msg}, _from, state) do
-    Socket.send_message(state.socket, to_string(msg))
+  def handle_call({:send_message, data}, _from, state) do
+    Socket.send_message(state.socket, data)
 
     {:reply, :ok, state}
   end

@@ -127,11 +127,37 @@ defmodule IbEx.Client.Constants.ServerVersions do
     professional_customer: 184,
     bond_accrued_interest: 185,
     ineligibility_reasons: 186,
-    rfq_fields: 187
+    rfq_fields: 187,
+    bond_trading_hours: 188,
+    include_overnight: 189,
+    undo_rfq_fields: 190,
+    perm_id_as_long: 191,
+    cme_tagging_fields: 192,
+    cme_tagging_fields_in_open_order: 193,
+    error_time: 194,
+    full_order_preview_fields: 195,
+    historical_data_end: 196,
+    current_time_in_millis: 197,
+    submitter: 198,
+    imbalance_only: 199,
+    parametrized_days_of_executions: 200,
+    protobuf: 201,
+    zero_strike: 202,
+    protobuf_place_order: 203,
+    protobuf_completed_order: 204,
+    protobuf_contract_data: 205,
+    protobuf_market_data: 206,
+    protobuf_accounts_positions: 207,
+    protobuf_historical_data: 208,
+    protobuf_news_data: 209,
+    protobuf_scan_data: 210,
+    protobuf_rest_messages_1: 211,
+    protobuf_rest_messages_2: 212,
+    protobuf_rest_messages_3: 213
   ]
 
   @min_client_ver 100
-  @max_client_ver :rfq_fields
+  @max_client_ver :protobuf_rest_messages_3
 
   def version_for(key) do
     Keyword.fetch(@versions, key)
