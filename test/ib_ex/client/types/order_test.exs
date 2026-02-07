@@ -120,7 +120,32 @@ defmodule IbEx.Client.Types.OrderTest do
                compete_against_best_offset: nil,
                mid_offset_at_whole: nil,
                mid_offset_at_half: nil,
-               customer_account: nil
+               customer_account: nil,
+               professional_customer: false,
+               external_user_id: nil,
+               manual_order_indicator: :unset_integer,
+               bond_accrued_interest: nil,
+               include_overnight: false,
+               submitter: nil,
+               post_only: false,
+               allow_pre_open: false,
+               ignore_open_auction: false,
+               deactivate: false,
+               seek_price_improvement: false,
+               what_if_type: nil,
+               sl_order_id: nil,
+               sl_order_type: nil,
+               pt_order_id: nil,
+               pt_order_type: nil,
+               filled_quantity: nil,
+               ref_futures_con_id: nil,
+               shareholder: nil,
+               imbalance_only: false,
+               route_marketable_to_bbo: false,
+               parent_perm_id: nil,
+               auto_cancel_date: nil,
+               active_start_time: nil,
+               active_stop_time: nil
              }
     end
   end

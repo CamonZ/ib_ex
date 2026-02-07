@@ -42,7 +42,7 @@ defmodule IbEx.Client.Messages.Executions.RequestTest do
                --> Executions.Request{
                  message_id: 7,
                  request_id: 90001,
-                 filter: %IbEx.Client.Types.ExecutionsFilter{client_id: 123, account_id: nil, time: nil, symbol: nil, security_type: nil, exchange: nil, side: nil}
+                 filter: %IbEx.Client.Types.ExecutionsFilter{client_id: 123, account_id: nil, time: nil, symbol: nil, security_type: nil, exchange: nil, side: nil, last_n_days: nil, specific_dates: nil}
                }
                """
     end

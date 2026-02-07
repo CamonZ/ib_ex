@@ -59,5 +59,40 @@ defmodule IbEx.Client.Types.ExecutionTest do
       invalid_fields = List.duplicate("invalid", 19)
       assert {:error, :invalid_args} == Execution.from_execution_data(invalid_fields)
     end
+
+    test "new fields default to nil" do
+      fields = [
+        "order123",
+        "exec123",
+        "20231204 22:39:34 Europe/Madrid",
+        "acc123",
+        "NYSE",
+        "BUY",
+        "100",
+        "61.54",
+        "727593489",
+        "0",
+        "0",
+        "100",
+        "61.54",
+        "ref123",
+        "rule1",
+        "2.0",
+        "modelABC",
+        "1",
+        "0"
+      ]
+
+      assert {:ok, execution} = Execution.from_execution_data(fields)
+
+      assert execution.submitter == nil
+      assert execution.opt_exercise_or_lapse_type == nil
+    end
+  end
+
+  describe "option_exercise_types/0" do
+    test "returns the list of option exercise type atoms" do
+      assert Execution.option_exercise_types() == [:none, :exercise, :lapse]
+    end
   end
 end

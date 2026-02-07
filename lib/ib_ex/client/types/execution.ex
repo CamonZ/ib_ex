@@ -3,6 +3,8 @@ defmodule IbEx.Client.Types.Execution do
   Represents a trade by the user
   """
 
+  import IbEx.Client.Utils, only: [list_to_union_type: 1]
+
   defstruct execution_id: "",
             timestamp: "",
             account_id: "",
@@ -21,7 +23,14 @@ defmodule IbEx.Client.Types.Execution do
             ev_multiplier: Decimal.new("0.0"),
             model_code: "",
             last_liquidity: 0,
-            pending_price_revision: false
+            pending_price_revision: false,
+            submitter: nil,
+            opt_exercise_or_lapse_type: nil
+
+  @option_exercise_types ~w(none exercise lapse)a
+  @type option_exercise_type :: unquote(list_to_union_type(@option_exercise_types))
+
+  def option_exercise_types, do: @option_exercise_types
 
   @type t :: %__MODULE__{
           execution_id: String.t(),
@@ -42,7 +51,9 @@ defmodule IbEx.Client.Types.Execution do
           ev_multiplier: float(),
           model_code: String.t(),
           last_liquidity: non_neg_integer(),
-          pending_price_revision: boolean()
+          pending_price_revision: boolean(),
+          submitter: binary() | nil,
+          opt_exercise_or_lapse_type: option_exercise_type() | nil
         }
 
   alias IbEx.Client.Utils
