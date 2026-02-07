@@ -30,7 +30,6 @@ defmodule IbEx.ClientTest do
   end
 
   alias IbEx.Client
-  alias IbEx.Client.Messages.MatchingSymbols.Request
   alias IbEx.Client.Subscriptions
 
   alias __MODULE__.MockSuccessConnection
@@ -109,7 +108,7 @@ defmodule IbEx.ClientTest do
 
   describe "handle_cast/2 when sending an outgoing message" do
     test "subscribes the message's responses to the subscriptions mapping" do
-      assert {:ok, msg} = Request.new("AAPL")
+      msg = %IbEx.Client.Proto.Protobuf.MatchingSymbolsRequest{pattern: "AAPL"}
 
       assert {:ok, state} = Client.init(connection_handler: MockSuccessConnection)
       assert {:noreply, ^state} = Client.handle_cast({:send_request, self(), msg}, state)

@@ -2,7 +2,6 @@ defmodule IbEx.Client.Types.MarketDepthDescriptionTest do
   use ExUnit.Case, async: true
 
   alias IbEx.Client.Types.MarketDepthDescription
-  alias IbEx.Client.Protocols.Traceable
 
   describe "from_market_depth_exchanges/1" do
     test "creates a MarketDepthDescription with valid fields" do
@@ -18,20 +17,6 @@ defmodule IbEx.Client.Types.MarketDepthDescriptionTest do
 
     test "returns an error with invalid fields" do
       assert {:error, :invalid_args} == MarketDepthDescription.from_market_depth_exchanges(["NYSE"])
-    end
-  end
-
-  describe "Traceable" do
-    test "to_s/1 returns the inspected struct" do
-      description = %MarketDepthDescription{
-        exchange: "NYSE",
-        security_type: "STK",
-        listing_exchange: "NASD",
-        service_data_type: "DataType1",
-        aggregate_group: "1"
-      }
-
-      assert Traceable.to_s(description) == "%MarketDepthDescription{exchange: NYSE, security_type: STK}"
     end
   end
 end
