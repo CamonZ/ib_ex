@@ -327,11 +327,110 @@ vtb transition-to <id> review                  # Submit for review
 vtb transition-to <id> done                    # Mark complete
 ```
 
-### Within-Workflow Movement
+### Step Lifecycle (within a workflow)
+
+The step lifecycle commands manage a task's progression **within** its assigned workflow. These are distinct from `transition-to`, which moves tasks **between** workflows.
+
+| Command | Purpose |
+|---------|---------|
+| `start-step` | Marks the current step as actively being worked on |
+| `complete-step` | Marks step done and automatically transitions to the next step |
+| `reject-step` | Sends a task back to a target step (e.g., during review) with optional feedback |
+
+#### `start-step` — Begin work on the current step
+
+Signals that work has actively begun on a task's current workflow step. Call this before doing any work on the step.
 
 ```bash
-vtb workflow advance <id>     # Next step in current workflow
-vtb workflow retreat <id>     # Previous step in current workflow
+vtb start-step <id>
+```
+
+**Arguments:**
+- `<id>` — Task ID (case-insensitive)
+
+**Behavior:**
+- Marks the task's current step as "in progress"
+- The task must already be assigned to a workflow and positioned at a step
+- Idempotent — calling it again on an already-started step is a no-op
+
+**Example:**
+```bash
+# Task is in implementation workflow at the "coding" step
+vtb start-step <ticket-id>     # Marks "coding" as in progress
+# ... do the work ...
+vtb complete-step <ticket-id>  # Finish "coding", advance to next step
+```
+
+#### `complete-step` — Finish the current step and advance
+
+Marks the current step as done and automatically transitions the task to the next step in the workflow (ordered by step `order`).
+
+```bash
+vtb complete-step <id>
+```
+
+**Arguments:**
+- `<id>` — Task ID (case-insensitive)
+
+**Behavior:**
+- Completes the current step
+- Automatically advances to the next step in order
+- If the completed step is marked as `final`, the workflow itself is considered complete
+- If the workflow has `auto-advance` enabled, subsequent steps may continue automatically
+- The task should have been started with `start-step` first
+
+**Example:**
+```bash
+# Workflow: coding (order 0) → testing (order 1) → docs (order 2, final)
+vtb start-step <id>       # Begin coding
+vtb complete-step <id>    # Complete coding → auto-advances to testing
+vtb start-step <id>       # Begin testing
+vtb complete-step <id>    # Complete testing → auto-advances to docs
+vtb start-step <id>       # Begin docs
+vtb complete-step <id>    # Complete docs (final step) → workflow complete
+```
+
+#### `reject-step` — Send a task back to a different step
+
+Rejects the current step and transitions the task to a target step. Typically used during review to send work back for revision. Supports an optional feedback message explaining what needs to change.
+
+```bash
+vtb reject-step <id> <target-step-id>
+vtb reject-step <id> <target-step-id> -f "Feedback message"
+```
+
+**Arguments:**
+- `<id>` — Task ID (case-insensitive)
+- `<target-step-id>` — The step ID to transition back to (e.g., a previous step for rework)
+
+**Options:**
+- `-f`, `--feedback <message>` — Explanation of why the step was rejected and what needs to change
+
+**Behavior:**
+- Marks the current step as rejected
+- Moves the task to the specified target step
+- The feedback message is recorded and visible when viewing the task, giving the next worker context on what to fix
+- The target step does not need to be a previous step — it can be any valid step in the workflow
+
+**Example:**
+```bash
+# Reviewer finds issues during the "review" step
+vtb reject-step <id> coding -f "Missing error handling for invalid contracts"
+
+# Task is now back at "coding" step with feedback attached
+vtb start-step <id>       # Resume work on coding
+# ... fix the issues ...
+vtb complete-step <id>    # Back to review again
+```
+
+#### Typical Step Lifecycle Flow
+
+```
+start-step → (do work) → complete-step → start-step → (do work) → complete-step → ...
+                                              ↑                          |
+                                              |                          |
+                                              +--- reject-step ←--------+
+                                                   (with feedback)
 ```
 
 ### Workflow Transitions (between workflows)
@@ -355,7 +454,7 @@ vtb workflow transition delete <from-workflow> <to-workflow>
 ### Key Rules
 
 - **`transition-to`** is for cross-workflow moves
-- **`workflow advance/retreat`** is for within-workflow moves
+- **`start-step` / `complete-step` / `reject-step`** is for within-workflow step lifecycle
 - **Never use `vtb update`** for workflow/step changes — always use `transition-to`
 - Transitions are validated against workflow rules
 - Use `--skip-validation` only as an escape hatch
@@ -501,11 +600,15 @@ vtb workflow assign <ticket-id> implementation
 
 # 4. Work
 vtb transition-to <ticket-id> implementation:coding
+vtb start-step <ticket-id>
 vtb step-done <ticket-id> 1
 vtb step-done <ticket-id> 2
+vtb complete-step <ticket-id>
 
 # 5. Review and complete
 vtb transition-to <ticket-id> review
+vtb start-step <ticket-id>
+vtb complete-step <ticket-id>            # or reject-step if rework needed
 vtb transition-to <ticket-id> done
 
 # 6. Move to next
