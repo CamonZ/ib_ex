@@ -1,7 +1,7 @@
 defmodule IbEx.Client.Types.OrderConditionsParamsTest do
   use ExUnit.Case, async: true
 
-  alias IbEx.Client.Types.Order.OrderCondition
+  alias IbEx.Client.Types.Order.Condition.Price
   alias IbEx.Client.Types.Order.OrderConditionsParams
 
   describe "new/0" do
@@ -43,7 +43,7 @@ defmodule IbEx.Client.Types.OrderConditionsParamsTest do
 
     test "serializes for conditions != []" do
       params = %{
-        conditions: [OrderCondition.new()],
+        conditions: [Price.new()],
         conditions_cancel_order: true,
         conditions_ignore_rth: true
       }

@@ -52,6 +52,31 @@ defmodule IbEx.Client.Types.ExecutionsFilterTest do
       assert is_nil(filter.security_type)
       assert is_nil(filter.exchange)
       assert is_nil(filter.side)
+      assert is_nil(filter.last_n_days)
+      assert is_nil(filter.specific_dates)
+    end
+
+    test "creates an ExecutionsFilter with last_n_days" do
+      opts = [client_id: 123, last_n_days: 7]
+
+      {:ok, filter} = ExecutionsFilter.new(opts)
+
+      assert filter.client_id == 123
+      assert filter.last_n_days == 7
+      assert is_nil(filter.specific_dates)
+    end
+
+    test "creates an ExecutionsFilter with specific_dates" do
+      opts = [
+        account_id: "ABC123",
+        specific_dates: ["20250110", "20250111", "20250112"]
+      ]
+
+      {:ok, filter} = ExecutionsFilter.new(opts)
+
+      assert filter.account_id == "ABC123"
+      assert filter.specific_dates == ["20250110", "20250111", "20250112"]
+      assert is_nil(filter.last_n_days)
     end
   end
 end

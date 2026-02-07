@@ -3,7 +3,6 @@ defmodule IbEx.Client.Types.Order.OrderConditionsParams do
   Serializes list of OrderCondition structs for Order serialization. 
   """
   alias IbEx.Client.Types.Order.OrderCondition
-  import IbEx.Client.Utils, only: [list_to_union_type: 1]
 
   defstruct conditions: [], conditions_cancel_order: false, conditions_ignore_rth: false
 
@@ -47,45 +46,55 @@ end
 
 defmodule IbEx.Client.Types.Order.OrderCondition do
   @moduledoc """
-  Implements the following OrderCondition types:
+  Behaviour for order condition types.
 
-    :price
-    :time
-    :margin
-    :execution
-    :volume
-    :percent_hange
+  Defines the contract that all condition types must implement.
+  Condition types determine when an order should be activated based on
+  price, time, margin, execution, volume, or percent change criteria.
 
+  Each condition also carries a `conjunction` field (`:and` or `:or`)
+  that defines how it combines with other conditions in a list.
+
+  ## Condition Types
+
+    * `:price` - Activates based on a contract's price
+    * `:time` - Activates based on time
+    * `:margin` - Activates based on margin cushion percentage
+    * `:execution` - Activates when an execution on a specified instrument occurs
+    * `:volume` - Activates based on a contract's volume
+    * `:percent_change` - Activates based on a contract's percent change
   """
+
   import IbEx.Client.Utils, only: [list_to_union_type: 1]
-  defstruct type: nil
 
   @condition_types ~w(price time margin execution volume percent_change)a
-  @type condition_types :: unquote(list_to_union_type(@condition_types))
+  @type condition_type :: unquote(list_to_union_type(@condition_types))
 
-  @type t :: %__MODULE__{
-          type: condition_types()
-        }
+  @type conjunction :: :and | :or
 
-  def new(args) when is_list(args) do
-    args
-    |> Enum.into(%{})
-    |> new()
-  end
+  @type t ::
+          IbEx.Client.Types.Order.Condition.Price.t()
+          | IbEx.Client.Types.Order.Condition.Time.t()
+          | IbEx.Client.Types.Order.Condition.Margin.t()
+          | IbEx.Client.Types.Order.Condition.Execution.t()
+          | IbEx.Client.Types.Order.Condition.Volume.t()
+          | IbEx.Client.Types.Order.Condition.PercentChange.t()
 
-  def new(args) when is_map(args) do
-    struct(__MODULE__, args)
-  end
+  @doc "Returns the condition type atom"
+  @callback type() :: condition_type()
 
-  def new(), do: new(%{})
+  @doc "Converts the condition struct into a protocol buffer representation"
+  @callback to_proto(struct()) :: map()
+
+  @doc "Builds a condition struct from a protocol buffer representation"
+  @callback from_proto(map()) :: struct()
+
+  @doc "Returns the list of valid condition type atoms"
+  def condition_types, do: @condition_types
 
   # TODO: implement
-  @spec serialize(__MODULE__.t()) :: list()
-  def serialize(%__MODULE__{type: :price}) do
-    []
-  end
-
-  def serialize(%__MODULE__{}) do
+  @spec serialize(t()) :: list()
+  def serialize(%{__struct__: _module}) do
     []
   end
 end

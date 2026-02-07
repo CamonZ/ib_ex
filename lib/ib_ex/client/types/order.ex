@@ -117,7 +117,29 @@ defmodule IbEx.Client.Types.Order do
             customer_account: nil,
             professional_customer: false,
             external_user_id: nil,
-            manual_order_indicator: :unset_integer
+            manual_order_indicator: :unset_integer,
+            bond_accrued_interest: nil,
+            include_overnight: false,
+            submitter: nil,
+            post_only: false,
+            allow_pre_open: false,
+            ignore_open_auction: false,
+            deactivate: false,
+            seek_price_improvement: false,
+            what_if_type: nil,
+            sl_order_id: nil,
+            sl_order_type: nil,
+            pt_order_id: nil,
+            pt_order_type: nil,
+            filled_quantity: nil,
+            ref_futures_con_id: nil,
+            shareholder: nil,
+            imbalance_only: false,
+            route_marketable_to_bbo: false,
+            parent_perm_id: nil,
+            auto_cancel_date: nil,
+            active_start_time: nil,
+            active_stop_time: nil
 
   @times_in_force ~w(
    DAY GTC IOC GTD OPG FOK DTC
@@ -244,7 +266,29 @@ defmodule IbEx.Client.Types.Order do
           customer_account: binary(),
           professional_customer: boolean(),
           external_user_id: binary(),
-          manual_order_indicator: non_neg_integer()
+          manual_order_indicator: non_neg_integer(),
+          bond_accrued_interest: binary() | nil,
+          include_overnight: boolean(),
+          submitter: binary() | nil,
+          post_only: boolean(),
+          allow_pre_open: boolean(),
+          ignore_open_auction: boolean(),
+          deactivate: boolean(),
+          seek_price_improvement: boolean(),
+          what_if_type: non_neg_integer() | nil,
+          sl_order_id: non_neg_integer() | nil,
+          sl_order_type: binary() | nil,
+          pt_order_id: non_neg_integer() | nil,
+          pt_order_type: binary() | nil,
+          filled_quantity: Decimal.t() | nil,
+          ref_futures_con_id: non_neg_integer() | nil,
+          shareholder: binary() | nil,
+          imbalance_only: boolean(),
+          route_marketable_to_bbo: boolean(),
+          parent_perm_id: non_neg_integer() | nil,
+          auto_cancel_date: binary() | nil,
+          active_start_time: binary() | nil,
+          active_stop_time: binary() | nil
         }
 
   def new(attrs) when is_list(attrs) do
