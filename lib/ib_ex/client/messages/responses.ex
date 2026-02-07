@@ -1,143 +1,162 @@
 defmodule IbEx.Client.Messages.Responses do
   alias IbEx.Client.Messages
-  alias IbEx.Client.Protocols.Traceable
+  alias IbEx.Client.Proto.Protobuf, as: Proto
+  alias IbEx.Client.Types
 
   require Logger
 
   @protobuf_offset 200
 
-  @ids_to_message_type %{
-    1 => Messages.MarketData.TickPrice,
-    2 => Messages.MarketData.TickSize,
-    3 => Messages.Orders.Status,
-    4 => Messages.ErrorInfo.Base,
-    5 => Messages.Orders.OpenOrder,
-    6 => Messages.AccountData.AccountDetail,
-    7 => "portfolio_value",
-    8 => Messages.AccountData.AccountUpdateTime,
-    9 => Messages.Ids.NextValidId,
-    10 => "contract_data",
-    11 => Messages.Executions.ExecutionData,
-    12 => Messages.MarketDepth.L2DataSingle,
-    13 => Messages.MarketDepth.L2DataMultiple,
-    14 => Messages.News.Bulletins,
-    15 => Messages.Misc.ManagedAccounts,
-    16 => "receive_fa",
-    17 => "historical_data",
-    18 => "bond_contract_data",
-    19 => "scanner_parameters",
-    20 => "scanner_data",
-    21 => "tick_option_computation",
-    45 => Messages.MarketData.TickGeneric,
-    46 => Messages.MarketData.TickString,
-    47 => "tick_efp",
-    49 => Messages.CurrentTime.Response,
-    50 => "real_time_bars",
-    51 => "fundamental_data",
-    52 => "contract_data_end",
-    53 => "open_order_end",
-    54 => Messages.AccountData.AccountDownloadEnd,
-    55 => Messages.Executions.ExecutionDataEnd,
-    56 => "deta_neutral_validation",
-    57 => "tick_snapshot_end",
-    58 => Messages.MarketData.MarketDataType,
-    59 => Messages.Executions.CommissionReport,
-    61 => "position_data",
-    62 => "position_end",
-    63 => "account_summary",
-    64 => "account_summary_end",
-    65 => "verify_message_api",
-    66 => "verify_completed",
-    67 => "display_group_list",
-    68 => "display_group_updated",
-    69 => "verify_and_auth_message_api",
-    70 => "verify_and_auth_completed",
-    71 => "position_multi",
-    72 => "position_multi_end",
-    73 => "account_update_multi",
-    74 => "account_update_multi_end",
-    75 => Messages.MarketData.OptionChain,
-    76 => Messages.MarketData.OptionChainEnd,
-    77 => "soft_dollar_tiers",
-    78 => "family_codes",
-    79 => Messages.MatchingSymbols.SymbolSamples,
-    80 => Messages.MarketDepth.Exchanges,
-    81 => Messages.MarketData.TickRequestParams,
-    82 => "smart_components",
-    83 => Messages.News.ArticleData,
-    84 => Messages.MarketData.TickNews,
-    85 => Messages.News.Providers,
-    86 => Messages.News.HistoricalNews,
-    87 => Messages.News.HistoricalNewsEnd,
-    88 => "head_timestamp",
-    89 => "histogram_data",
-    90 => "historical_data_update",
-    91 => "reroute_mkt_data_req",
-    92 => "reroute_mkt_depth_req",
-    93 => "market_rule",
-    94 => Messages.Pnl.AllPositionsUpdate,
-    95 => Messages.Pnl.SinglePositionUpdate,
-    96 => "historical_ticks",
-    97 => "historical_ticks_bid_ask",
-    98 => Messages.HistoricalTicks.Last,
-    99 => Messages.TickByTickData.TickByTick,
-    100 => "order_bound",
-    101 => "completed_orders",
-    102 => "completed_orders_end",
-    103 => "replace_fa_end",
-    104 => "wsh_meta_data",
-    105 => "wsh_event_data",
-    106 => "historical_schedule",
-    107 => "user_info"
+  @decoders %{
+    1 => Proto.TickPrice,
+    2 => Proto.TickSize,
+    3 => Proto.OrderStatus,
+    # 4 => ErrorMessage handled separately (Error/Info dispatch)
+    5 => Proto.OpenOrder,
+    6 => Proto.AccountValue,
+    7 => Proto.PortfolioValue,
+    8 => Proto.AccountUpdateTime,
+    9 => Proto.NextValidId,
+    10 => Proto.ContractData,
+    11 => Proto.ExecutionDetails,
+    12 => Proto.MarketDepth,
+    13 => Proto.MarketDepthL2,
+    14 => Proto.NewsBulletin,
+    15 => Proto.ManagedAccounts,
+    16 => Proto.ReceiveFA,
+    17 => Proto.HistoricalData,
+    18 => Proto.ContractData,
+    19 => Proto.ScannerParameters,
+    20 => Proto.ScannerData,
+    21 => Proto.TickOptionComputation,
+    45 => Proto.TickGeneric,
+    46 => Proto.TickString,
+    # 47 => tick_efp: Exchange for Physicals financing rate data (basis points, implied futures, hold days).
+    #       Niche instrument type with no proto definition or protobuf handler in canonical TWS API.
+    49 => Proto.CurrentTime,
+    50 => Proto.RealTimeBarTick,
+    51 => Proto.FundamentalsData,
+    52 => Proto.ContractDataEnd,
+    53 => Proto.OpenOrdersEnd,
+    54 => Proto.AccountDataEnd,
+    55 => Proto.ExecutionDetailsEnd,
+    56 => Proto.DeltaNeutralContract,
+    57 => Proto.TickSnapshotEnd,
+    58 => Proto.MarketDataType,
+    59 => Proto.CommissionAndFeesReport,
+    61 => Proto.Position,
+    62 => Proto.PositionEnd,
+    63 => Proto.AccountSummary,
+    64 => Proto.AccountSummaryEnd,
+    65 => Proto.VerifyMessageApi,
+    66 => Proto.VerifyCompleted,
+    67 => Proto.DisplayGroupList,
+    68 => Proto.DisplayGroupUpdated,
+    # 69 => verify_and_auth_message_api: Part of a restricted authentication challenge-response flow
+    # 70 => verify_and_auth_completed:   marked "not generally available" in TWS API docs.
+    #       No proto definition or protobuf handler in canonical TWS API. Standard auth uses StartApi.
+    71 => Proto.PositionMulti,
+    72 => Proto.PositionMultiEnd,
+    73 => Proto.AccountUpdateMulti,
+    74 => Proto.AccountUpdateMultiEnd,
+    75 => Proto.SecDefOptParameter,
+    76 => Proto.SecDefOptParameterEnd,
+    77 => Proto.SoftDollarTiers,
+    78 => Proto.FamilyCodes,
+    79 => Proto.SymbolSamples,
+    80 => Proto.MarketDepthExchanges,
+    81 => Proto.TickReqParams,
+    82 => Proto.SmartComponents,
+    83 => Proto.NewsArticle,
+    84 => Proto.TickNews,
+    85 => Proto.NewsProviders,
+    86 => Proto.HistoricalNews,
+    87 => Proto.HistoricalNewsEnd,
+    88 => Proto.HeadTimestamp,
+    89 => Proto.HistogramData,
+    90 => Proto.HistoricalDataUpdate,
+    91 => Proto.RerouteMarketDataRequest,
+    92 => Proto.RerouteMarketDepthRequest,
+    93 => Proto.MarketRule,
+    94 => Proto.PnL,
+    95 => Proto.PnLSingle,
+    96 => Proto.HistoricalTicks,
+    97 => Proto.HistoricalTicksBidAsk,
+    98 => Proto.HistoricalTicksLast,
+    99 => Proto.TickByTickData,
+    100 => Proto.OrderBound,
+    101 => Proto.CompletedOrder,
+    102 => Proto.CompletedOrdersEnd,
+    103 => Proto.ReplaceFAEnd,
+    104 => Proto.WshMetaData,
+    105 => Proto.WshEventData,
+    106 => Proto.HistoricalSchedule,
+    107 => Proto.UserInfo,
+    108 => Proto.HistoricalDataEnd,
+    109 => Proto.CurrentTimeInMillis,
+    110 => Proto.ConfigResponse
   }
 
-  @spec parse(binary(), atom(), boolean()) :: {:ok, any()} | {:error, :unexpected_error} | {:error, :not_implemented}
-  def parse(str, :connecting, trace_messages) do
+  @spec parse(binary(), atom(), boolean()) :: {:ok, any()} | {:error, :unexpected_error}
+  def parse(str, :connecting, _trace_messages) do
     fields =
       str
       |> String.split("\x00")
       |> Enum.slice(0..-2//1)
 
-    {:ok, msg} = Messages.InitConnection.Response.from_fields(fields)
-
-    if trace_messages do
-      Logger.info(Traceable.to_s(msg))
-    end
-
-    {:ok, msg}
+    Messages.InitConnection.Response.from_fields(fields)
   end
 
-  def parse(<<raw_msg_id::big-integer-size(32), payload::binary>>, _, trace_messages) do
+  def parse(<<raw_msg_id::big-integer-size(32), payload::binary>>, _, _trace_messages) do
     msg_id = raw_msg_id - @protobuf_offset
 
-    with {:ok, type} <- Map.fetch(@ids_to_message_type, msg_id),
-         {:ok, type} <- validate_implemented(type),
-         {:ok, msg} <- type.from_protobuf(payload) do
-      if trace_messages do
-        Logger.info(Traceable.to_s(msg))
-      end
+    case decode(msg_id, payload) do
+      {:ok, _msg} = ok ->
+        ok
 
-      {:ok, msg}
-    else
-      {:error, {:not_implemented, type}} ->
-        Logger.warning("<-- Not implemented: msg_id=#{msg_id} type=#{type}")
-        {:error, :not_implemented}
-
-      err ->
+      {:error, reason} ->
         Logger.warning(
           "Protobuf frame: msg_id=#{msg_id} raw=#{raw_msg_id} payload=#{inspect(payload, limit: :infinity)}"
         )
 
-        Logger.error("Unexpected Error: #{inspect(err)}")
+        Logger.error("Unexpected Error: #{inspect(reason)}")
         {:error, :unexpected_error}
     end
   end
 
-  defp validate_implemented(type) when is_binary(type) do
-    {:error, {:not_implemented, type}}
+  # ErrorMessage (msg_id=4): dispatch to Error or Info based on id == -1
+  defp decode(4, payload) do
+    proto = Proto.ErrorMessage.decode(payload)
+
+    fields = %{
+      id: proto.id,
+      code: proto.error_code,
+      message: proto.error_msg
+    }
+
+    if proto.id == -1 do
+      {:ok, struct(Types.Info, fields)}
+    else
+      {:ok, struct(Types.Error, fields)}
+    end
+  rescue
+    err ->
+      Logger.warning("Error decoding ErrorMessage protobuf: #{inspect(err)}")
+      {:error, :decode_error}
   end
 
-  defp validate_implemented(type) when is_atom(type) do
-    {:ok, type}
+  # Generic decoder for all other message types
+  defp decode(msg_id, payload) when is_map_key(@decoders, msg_id) do
+    module = Map.fetch!(@decoders, msg_id)
+    {:ok, module.decode(payload)}
+  rescue
+    err ->
+      Logger.warning("Error decoding msg_id=#{msg_id} protobuf: #{inspect(err)}")
+      {:error, :decode_error}
+  end
+
+  # Unknown message ID
+  defp decode(_msg_id, _payload) do
+    {:error, :unknown_message_id}
   end
 end

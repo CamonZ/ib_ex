@@ -41,7 +41,6 @@ defmodule IbEx.Client do
   alias IbEx.Client.Messages
   alias IbEx.Client.Messages.Responses
   alias IbEx.Client.Protocols.Subscribable
-  alias IbEx.Client.Protocols.Traceable
   alias IbEx.Client.Subscriptions
 
   require Logger
@@ -56,26 +55,6 @@ defmodule IbEx.Client do
 
   def send_request(pid, request) do
     GenServer.cast(pid, {:send_request, self(), request})
-  end
-
-  def request_historical_ticks(pid, opts) do
-    case Messages.HistoricalTicks.Request.new(opts) do
-      {:ok, msg} ->
-        send_request(pid, msg)
-
-      error ->
-        error
-    end
-  end
-
-  def server_time(pid) do
-    case Messages.CurrentTime.Request.new() do
-      {:ok, msg} ->
-        send_request(pid, msg)
-
-      other ->
-        other
-    end
   end
 
   def start_link(opts \\ []) do
@@ -130,12 +109,11 @@ defmodule IbEx.Client do
   end
 
   def handle_continue(:request_start_api, state) do
-    msg_opts = [
+    start_api_msg = %IbEx.Client.Proto.Protobuf.StartApiRequest{
       client_id: state.client_id,
       optional_capabilities: optional_capabilities(state)
-    ]
+    }
 
-    {:ok, start_api_msg} = Messages.StartApi.Request.new(msg_opts)
     {:ok, encoded} = Messages.Requests.encode_request(start_api_msg)
     Connection.send_message(state.connection, encoded)
 
@@ -161,11 +139,11 @@ defmodule IbEx.Client do
 
         {:noreply, Map.merge(state, update), {:continue, :validate_server_version}}
 
-      {:ok, %Messages.Misc.ManagedAccounts{} = msg} ->
-        {:noreply, Map.put(state, :managed_accounts, msg.accounts)}
+      {:ok, %IbEx.Client.Proto.Protobuf.ManagedAccounts{} = msg} ->
+        {:noreply, Map.put(state, :managed_accounts, msg.accounts_list)}
 
-      {:ok, %Messages.Ids.NextValidId{} = msg} ->
-        {:noreply, Map.put(state, :next_valid_id, msg.next_valid_id)}
+      {:ok, %IbEx.Client.Proto.Protobuf.NextValidId{} = msg} ->
+        {:noreply, Map.put(state, :next_valid_id, msg.order_id)}
 
       {:ok, msg} ->
         relay_message(msg, state.subscriptions_table_ref)
@@ -180,7 +158,7 @@ defmodule IbEx.Client do
     case Subscribable.subscribe(request, subscriber_pid, state.subscriptions_table_ref) do
       {:ok, msg} ->
         if state.trace_messages do
-          Logger.info(Traceable.to_s(msg))
+          Logger.info(inspect(msg))
         end
 
         {:ok, encoded} = Messages.Requests.encode_request(msg)

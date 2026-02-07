@@ -28,8 +28,8 @@ defmodule IbEx.Client.Messages.ResponsesTest do
 
       assert {:ok, msg} = Responses.parse(wire_msg, :connected, false)
 
-      assert %IbEx.Client.Messages.Misc.ManagedAccounts{} = msg
-      assert msg.accounts == "DU123456"
+      assert %IbEx.Client.Proto.Protobuf.ManagedAccounts{} = msg
+      assert msg.accounts_list == "DU123456"
     end
 
     test "parses NextValidId protobuf message" do
@@ -42,8 +42,8 @@ defmodule IbEx.Client.Messages.ResponsesTest do
 
       assert {:ok, msg} = Responses.parse(wire_msg, :connected, false)
 
-      assert %IbEx.Client.Messages.Ids.NextValidId{} = msg
-      assert msg.next_valid_id == 42
+      assert %IbEx.Client.Proto.Protobuf.NextValidId{} = msg
+      assert msg.order_id == 42
     end
 
     test "parses ErrorMessage protobuf as Error when id != -1" do
@@ -59,7 +59,7 @@ defmodule IbEx.Client.Messages.ResponsesTest do
 
       assert {:ok, msg} = Responses.parse(wire_msg, :connected, false)
 
-      assert %IbEx.Client.Messages.ErrorInfo.Error{} = msg
+      assert %IbEx.Client.Types.Error{} = msg
       assert msg.id == 1
       assert msg.code == 200
       assert msg.message == "No security definition has been found"
@@ -78,23 +78,39 @@ defmodule IbEx.Client.Messages.ResponsesTest do
 
       assert {:ok, msg} = Responses.parse(wire_msg, :connected, false)
 
-      assert %IbEx.Client.Messages.ErrorInfo.Info{} = msg
+      assert %IbEx.Client.Types.Info{} = msg
       assert msg.id == -1
       assert msg.code == 2104
       assert msg.message == "Market data farm connection is OK"
     end
 
-    @tag capture_log: true
-    test "returns :not_implemented for unimplemented message types" do
-      # msg_id=7 is "portfolio_value" (a string, not a module)
-      wire_msg = <<7 + @protobuf_offset::big-integer-size(32), "some_payload">>
+    test "decodes BondContractData (msg_id=18) as ContractData proto" do
+      proto_payload =
+        %IbEx.Client.Proto.Protobuf.ContractData{req_id: 5}
+        |> Protobuf.encode()
 
-      assert {:error, :not_implemented} = Responses.parse(wire_msg, :connected, false)
+      wire_msg = <<18 + @protobuf_offset::big-integer-size(32), proto_payload::binary>>
+
+      assert {:ok, msg} = Responses.parse(wire_msg, :connected, false)
+      assert %IbEx.Client.Proto.Protobuf.ContractData{} = msg
+      assert msg.req_id == 5
+    end
+
+    test "decodes PortfolioValue protobuf message via generic decoder" do
+      # msg_id=7, wire_id=7+200=207
+      proto_payload =
+        %IbEx.Client.Proto.Protobuf.PortfolioValue{}
+        |> Protobuf.encode()
+
+      wire_msg = <<7 + @protobuf_offset::big-integer-size(32), proto_payload::binary>>
+
+      assert {:ok, msg} = Responses.parse(wire_msg, :connected, false)
+      assert %IbEx.Client.Proto.Protobuf.PortfolioValue{} = msg
     end
 
     @tag capture_log: true
     test "returns :unexpected_error for unknown msg_ids" do
-      # msg_id=999 is not in the lookup table
+      # msg_id=999 is not in any lookup table
       wire_msg = <<999 + @protobuf_offset::big-integer-size(32), "some_payload">>
 
       assert {:error, :unexpected_error} = Responses.parse(wire_msg, :connected, false)

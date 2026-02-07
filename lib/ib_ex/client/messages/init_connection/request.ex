@@ -8,7 +8,6 @@ defmodule IbEx.Client.Messages.InitConnection.Request do
   defstruct prefix: @prefix, version: nil
 
   alias IbEx.Client.Constants.ServerVersions
-  alias IbEx.Client.Protocols.Traceable
 
   def new do
     {:ok, %__MODULE__{version: ServerVersions.client_version()}}
@@ -18,12 +17,6 @@ defmodule IbEx.Client.Messages.InitConnection.Request do
     def to_string(msg) do
       packed_version = String.slice(:erlang.term_to_binary(msg.version), 2..-1//1)
       Enum.join([msg.prefix, packed_version], "\x00")
-    end
-  end
-
-  defimpl Traceable, for: __MODULE__ do
-    def to_s(msg) do
-      "--> API, #{msg.version}"
     end
   end
 end
