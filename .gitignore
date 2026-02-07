@@ -25,3 +25,4 @@ ib_ex-*.tar
 .samples/**/*
 /.claude
 /scratch
+/priv/proto
