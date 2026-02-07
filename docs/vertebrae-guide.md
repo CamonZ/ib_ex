@@ -26,11 +26,11 @@ Tasks don't have a standalone status. Instead, a task's position is defined by i
 
 Use `vtb transition-to` to move tasks between workflows and steps:
 ```bash
-vtb transition-to <id> implementation           # Assign to workflow (first step)
-vtb transition-to <id> implementation:coding    # Specific workflow:step
+vtb transition-to <id> <workflow-id>                # Assign to workflow (first step)
+vtb transition-to <id> <workflow-id>:<step-id>      # Specific workflow:step
 ```
 
-Workflows and steps are project-specific — use `vtb workflow list` to see what's configured.
+Workflows and steps are identified by UUIDs. Use `vtb workflow list` and `vtb step list <workflow-id>` to discover the IDs for your project.
 
 ### Priorities
 
@@ -198,11 +198,11 @@ Triage validates that a ticket is properly documented before it can be transitio
 # Check what's missing
 vtb show <id>
 
-# Triage the ticket (validates sections)
-vtb transition-to <id> todo
+# Triage the ticket (validates sections — use workflow UUID from vtb workflow list)
+vtb transition-to <id> <todo-workflow-id>
 
 # Force past warnings (not recommended)
-vtb transition-to <id> todo --force
+vtb transition-to <id> <todo-workflow-id> --force
 ```
 
 ### Complete Triage Workflow
@@ -228,9 +228,9 @@ vtb section <id> failure_test "Empty search returns all tasks"
 vtb section <id> current_behavior "Search returns no results for task IDs"
 vtb section <id> context "Users cannot navigate by task ID"
 
-# 5. Verify and triage
+# 5. Verify and triage (use workflow UUID from vtb workflow list)
 vtb show <id>
-vtb transition-to <id> todo
+vtb transition-to <id> <todo-workflow-id>
 ```
 
 ---
@@ -243,13 +243,13 @@ Workflows define the stages a task progresses through.
 
 ```bash
 # Basic workflow with steps (format: name:model)
-vtb workflow add "Implementation" --step coding:sonnet --step testing:haiku --step docs:haiku
+vtb workflow add "Implementation" --step Coding:sonnet --step Testing:haiku --step Docs:haiku
 
 # With description and auto-advance
 vtb workflow add "Code Review" \
   -d "Review and approval process" \
-  --step review:sonnet \
-  --step approved:haiku \
+  --step Review:sonnet \
+  --step Approved:haiku \
   --auto-advance
 ```
 
@@ -272,24 +272,26 @@ vtb workflow unassign <task-id>                # Remove workflow
 
 ### Managing Steps
 
+All step commands use UUIDs. Use `vtb workflow list` and `vtb step list <workflow-id>` to discover IDs.
+
 ```bash
 # Add a step to an existing workflow
-vtb step add "Testing" -w implementation \
+vtb step add "Testing" -w <workflow-id> \
   --goal "Verify implementation" \
   --model sonnet \
   --order 1
 
 # Add a final step (marks workflow complete)
-vtb step add "Approved" -w review --final
+vtb step add "Approved" -w <workflow-id> --final
 
-# Add step with transition restrictions
-vtb step add "Needs Work" -w review --transition-to coding
+# Add step with transition restrictions (--transition-to takes a step UUID)
+vtb step add "Needs Work" -w <workflow-id> --transition-to <step-id>
 
 # List, show, update, delete steps
-vtb step list -w implementation
-vtb step show coding
-vtb step update coding --goal "New goal" --model opus
-vtb step delete old-step
+vtb step list <workflow-id>
+vtb step show <step-id>
+vtb step update <step-id> --goal "New goal" --model opus
+vtb step delete <step-id>
 ```
 
 ### Step Properties
@@ -310,32 +312,41 @@ vtb step delete old-step
 
 ### Cross-Workflow Transitions (`transition-to`)
 
-Use `transition-to` to move tasks **across** workflows or to specific steps:
+Use `transition-to` to move tasks **across** workflows or to specific steps. Both workflow and step arguments are UUIDs — use `vtb workflow list` and `vtb step list <workflow-id>` to discover them.
 
 ```bash
 # Move to a workflow (starts at first step)
-vtb transition-to <id> implementation
+vtb transition-to <id> <workflow-id>
 
 # Move to a specific step within a workflow
-vtb transition-to <id> implementation:coding
+vtb transition-to <id> <workflow-id>:<step-id>
 
-# Common lifecycle transitions
-vtb transition-to <id> todo                    # Triage ticket for work
-vtb transition-to <id> implementation          # Start implementation
-vtb transition-to <id> implementation:testing  # Move to testing step
-vtb transition-to <id> review                  # Submit for review
-vtb transition-to <id> done                    # Mark complete
+# Common lifecycle transitions (using UUIDs from your project)
+vtb transition-to <id> <backlog-workflow-id>                         # Triage ticket for work
+vtb transition-to <id> <implementation-workflow-id>                  # Start implementation
+vtb transition-to <id> <implementation-workflow-id>:<testing-step-id> # Move to testing step
+vtb transition-to <id> <review-workflow-id>                          # Submit for review
+vtb transition-to <id> <done-workflow-id>                            # Mark complete
 ```
 
 ### Step Lifecycle (within a workflow)
 
-The step lifecycle commands manage a task's progression **within** its assigned workflow. These are distinct from `transition-to`, which moves tasks **between** workflows.
+Steps exist within a workflow. Before working on a task, determine which workflow it's in and which step it's currently at:
+
+```bash
+vtb step list <workflow-id>       # List all steps in the workflow (with order)
+vtb show <task-id>                # See the task's current workflow and step
+```
+
+The step lifecycle commands manage a task's progression through these steps:
 
 | Command | Purpose |
 |---------|---------|
 | `start-step` | Marks the current step as actively being worked on |
-| `complete-step` | Marks step done and automatically transitions to the next step |
-| `reject-step` | Sends a task back to a target step (e.g., during review) with optional feedback |
+| `complete-step` | Marks the current step as done |
+| `reject-step` | Rejects the current step and moves to a target step with optional feedback |
+
+After completing a step, use `transition-to` to move the task to the next step.
 
 #### `start-step` — Begin work on the current step
 
@@ -353,17 +364,9 @@ vtb start-step <id>
 - The task must already be assigned to a workflow and positioned at a step
 - Idempotent — calling it again on an already-started step is a no-op
 
-**Example:**
-```bash
-# Task is in implementation workflow at the "coding" step
-vtb start-step <ticket-id>     # Marks "coding" as in progress
-# ... do the work ...
-vtb complete-step <ticket-id>  # Finish "coding", advance to next step
-```
+#### `complete-step` — Mark the current step as done
 
-#### `complete-step` — Finish the current step and advance
-
-Marks the current step as done and automatically transitions the task to the next step in the workflow (ordered by step `order`).
+Marks the current step as completed. This does **not** automatically advance to the next step — use `transition-to` afterwards to move the task forward.
 
 ```bash
 vtb complete-step <id>
@@ -373,22 +376,9 @@ vtb complete-step <id>
 - `<id>` — Task ID (case-insensitive)
 
 **Behavior:**
-- Completes the current step
-- Automatically advances to the next step in order
-- If the completed step is marked as `final`, the workflow itself is considered complete
-- If the workflow has `auto-advance` enabled, subsequent steps may continue automatically
+- Marks the current step as completed
 - The task should have been started with `start-step` first
-
-**Example:**
-```bash
-# Workflow: coding (order 0) → testing (order 1) → docs (order 2, final)
-vtb start-step <id>       # Begin coding
-vtb complete-step <id>    # Complete coding → auto-advances to testing
-vtb start-step <id>       # Begin testing
-vtb complete-step <id>    # Complete testing → auto-advances to docs
-vtb start-step <id>       # Begin docs
-vtb complete-step <id>    # Complete docs (final step) → workflow complete
-```
+- After completing, check which steps the task can transition to and use `transition-to` to advance
 
 #### `reject-step` — Send a task back to a different step
 
@@ -401,7 +391,7 @@ vtb reject-step <id> <target-step-id> -f "Feedback message"
 
 **Arguments:**
 - `<id>` — Task ID (case-insensitive)
-- `<target-step-id>` — The step ID to transition back to (e.g., a previous step for rework)
+- `<target-step-id>` — The step ID to transition to (e.g., a previous step for rework)
 
 **Options:**
 - `-f`, `--feedback <message>` — Explanation of why the step was rejected and what needs to change
@@ -412,25 +402,70 @@ vtb reject-step <id> <target-step-id> -f "Feedback message"
 - The feedback message is recorded and visible when viewing the task, giving the next worker context on what to fix
 - The target step does not need to be a previous step — it can be any valid step in the workflow
 
-**Example:**
+#### Working Through a Workflow
+
+Given a workflow (e.g. Implementation `<wf>`) with steps: Coding `<coding>` (order 0) → Testing `<testing>` (order 1) → Review `<review>` (order 2, final):
+
 ```bash
-# Reviewer finds issues during the "review" step
-vtb reject-step <id> coding -f "Missing error handling for invalid contracts"
+# 1. Determine the task's current position
+vtb show <id>                              # Check current workflow and step
+vtb step list <wf>                         # List all steps in the workflow
 
-# Task is now back at "coding" step with feedback attached
-vtb start-step <id>       # Resume work on coding
+# 2. Work on the current step (Coding)
+vtb start-step <id>                        # Mark Coding as in progress
+# ... do the coding work ...
+vtb complete-step <id>                     # Mark Coding as done
+
+# 3. Transition to the next step
+vtb transition-to <id> <wf>:<testing>      # Move to Testing
+
+# 4. Work on the next step (Testing)
+vtb start-step <id>                        # Mark Testing as in progress
+# ... write and run tests ...
+vtb complete-step <id>                     # Mark Testing as done
+
+# 5. Transition to the final step
+vtb transition-to <id> <wf>:<review>       # Move to Review
+
+# 6. Work on the final step (Review)
+vtb start-step <id>                        # Mark Review as in progress
+# ... review the work ...
+vtb complete-step <id>                     # Mark Review as done (final step → workflow complete)
+```
+
+#### Handling Rejections
+
+When a step fails review, use `reject-step` to send it back with feedback. The `<target-step-id>` is the UUID of the step to return to:
+
+```bash
+# Reviewer finds issues during the Review step
+vtb reject-step <id> <coding> -f "Missing error handling for invalid contracts"
+
+# Task is now back at Coding step with feedback attached
+vtb start-step <id>                        # Resume work on Coding
 # ... fix the issues ...
-vtb complete-step <id>    # Back to review again
+vtb complete-step <id>                     # Mark Coding as done again
+vtb transition-to <id> <wf>:<testing>      # Re-advance through the workflow
 ```
 
-#### Typical Step Lifecycle Flow
+#### Step Lifecycle Summary
 
 ```
-start-step → (do work) → complete-step → start-step → (do work) → complete-step → ...
-                                              ↑                          |
-                                              |                          |
-                                              +--- reject-step ←--------+
-                                                   (with feedback)
+For each step in the workflow:
+  1. vtb show <id>                              — confirm current step
+  2. vtb start-step <id>                        — mark step as in progress
+  3. (do the work for this step)
+  4. vtb complete-step <id>                     — mark step as done
+  5. vtb transition-to <id> <wf-id>:<step-id>   — move to the next step
+
+All workflow and step arguments are UUIDs.
+Use vtb workflow list and vtb step list <wf-id> to discover them.
+
+Repeat until the final step is completed.
+
+On rejection:
+  vtb reject-step <id> <target-step-id> -f "..."  — send back to a previous step
+  (restart the cycle from that step)
 ```
 
 ### Workflow Transitions (between workflows)
@@ -545,9 +580,9 @@ vtb unref <id> --all
 ```bash
 vtb list                              # All tasks (tree view)
 vtb list --flat                       # Flat table view
-vtb list --workflow implementation    # By workflow
-vtb list --step coding                # By current step
-vtb list -w impl --step coding        # Combine workflow and step
+vtb list --workflow <workflow-id>     # By workflow
+vtb list --step <step-id>             # By current step
+vtb list -w <wf-id> --step <step-id>  # Combine workflow and step
 vtb list --level ticket               # By level
 vtb list --priority high              # By priority
 vtb list --tag backend                # By tag
@@ -572,7 +607,7 @@ vtb ready                             # Highest-level items ready for work or tr
 ### Checking Current Work
 
 ```bash
-vtb list --workflow implementation    # What's in implementation
+vtb list --workflow <workflow-id>     # What's in a workflow
 vtb blockers <id>                     # What's blocking a task
 ```
 
@@ -593,27 +628,34 @@ vtb section <ticket-id> testing_criterion "UNIT: ..."
 vtb section <ticket-id> testing_criterion "INTEGRATION: ..."
 vtb section <ticket-id> constraint "..."
 vtb section <ticket-id> constraint "..."
-vtb transition-to <ticket-id> todo
+vtb transition-to <ticket-id> <backlog-wf-id>          # Triage to backlog/todo
 
-# 3. Set up workflow
-vtb workflow assign <ticket-id> implementation
+# 3. Discover workflow and step UUIDs, then assign
+vtb workflow list                                       # Find workflow UUIDs
+vtb step list <impl-wf-id>                              # Find step UUIDs within it
+vtb workflow assign <ticket-id> <impl-wf-id>
 
-# 4. Work
-vtb transition-to <ticket-id> implementation:coding
+# 4. Work through steps (Coding → Testing → ...)
+vtb transition-to <ticket-id> <impl-wf-id>:<coding-step-id>
 vtb start-step <ticket-id>
 vtb step-done <ticket-id> 1
 vtb step-done <ticket-id> 2
 vtb complete-step <ticket-id>
+vtb transition-to <ticket-id> <impl-wf-id>:<testing-step-id>
+
+vtb start-step <ticket-id>
+# ... run tests ...
+vtb complete-step <ticket-id>
 
 # 5. Review and complete
-vtb transition-to <ticket-id> review
+vtb transition-to <ticket-id> <review-wf-id>
 vtb start-step <ticket-id>
 vtb complete-step <ticket-id>            # or reject-step if rework needed
-vtb transition-to <ticket-id> done
+vtb transition-to <ticket-id> <done-wf-id>
 
 # 6. Move to next
 vtb ready
-vtb transition-to <next-id> implementation
+vtb transition-to <next-id> <impl-wf-id>
 ```
 
 ---
