@@ -12,15 +12,6 @@ defmodule IbEx.Client.Messages.StartApi.RequestTest do
       assert request.message_id == 71
       assert request.optional_capabilities == []
       assert request.client_id == 0
-      assert request.version == 2
-    end
-  end
-
-  describe "String.Chars" do
-    test "to_string/1 returns the binary representation of the message" do
-      {:ok, msg} = Request.new([])
-
-      assert to_string(msg) == <<55, 49, 0, 50, 0, 48, 0>>
     end
   end
 
@@ -65,7 +56,7 @@ defmodule IbEx.Client.Messages.StartApi.RequestTest do
     test "to_s/1 returns a human-readable version of the message" do
       {:ok, msg} = Request.new([])
 
-      assert Traceable.to_s(msg) == "--> StartAPI{id: 71, version: 2, client_id: 0, opt_capabilities: []}"
+      assert Traceable.to_s(msg) == "--> StartAPI{id: 71, client_id: 0, opt_capabilities: []}"
     end
   end
 end

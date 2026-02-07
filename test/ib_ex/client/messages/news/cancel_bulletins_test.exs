@@ -9,14 +9,6 @@ defmodule IbEx.Client.Messages.News.CancelBulletinsTest do
       assert {:ok, msg} = CancelBulletins.new()
 
       assert msg.message_id == 13
-      assert msg.version == 1
-    end
-  end
-
-  describe "String.Chars implementation" do
-    test "converts the message to a binary for serialization" do
-      msg = %CancelBulletins{message_id: 13}
-      assert to_string(msg) == <<49, 51, 0, 49, 0>>
     end
   end
 

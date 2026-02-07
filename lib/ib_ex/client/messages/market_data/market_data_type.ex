@@ -13,30 +13,6 @@ defmodule IbEx.Client.Messages.MarketData.MarketDataType do
           data_type: atom()
         }
 
-  @spec from_fields(list(String.t())) :: {:ok, t()} | {:error, :invalid_args}
-  def from_fields([_, request_id, data_type_str]) do
-    {
-      :ok,
-      %__MODULE__{
-        request_id: request_id,
-        data_type: parse_market_data_type(data_type_str)
-      }
-    }
-  end
-
-  def from_fields(_) do
-    {:error, :invalid_args}
-  end
-
-  defp parse_market_data_type(data_type_str) do
-    case data_type_str do
-      "1" -> :live
-      "2" -> :frozen
-      "3" -> :delayed
-      "4" -> :delayed_frozen
-    end
-  end
-
   def atom_to_integer(data_type_atom) do
     case data_type_atom do
       :live -> 1

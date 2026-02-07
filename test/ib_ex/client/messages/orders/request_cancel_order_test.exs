@@ -14,7 +14,6 @@ defmodule IbEx.Client.Messages.Orders.RequestCancelOrderTest do
 
       assert msg == %RequestCancelOrder{
                message_id: 4,
-               version: 1,
                order_id: order_id,
                order_cancel_params: %OrderCancel{
                  manual_order_cancel_time: nil,
@@ -35,7 +34,6 @@ defmodule IbEx.Client.Messages.Orders.RequestCancelOrderTest do
 
       assert msg == %RequestCancelOrder{
                message_id: 4,
-               version: 1,
                order_id: order_id,
                order_cancel_params: %OrderCancel{
                  manual_order_cancel_time: manual_order_cancel_time,
@@ -44,13 +42,6 @@ defmodule IbEx.Client.Messages.Orders.RequestCancelOrderTest do
                  manual_order_indicator: :unset_integer
                }
              }
-    end
-  end
-
-  describe "String.Chars implementation" do
-    test "converts the mesasge to a serializable binary" do
-      msg = %RequestCancelOrder{message_id: 4, version: 1, order_id: 1000}
-      assert to_string(msg) == <<52, 0, 49, 0, 49, 48, 48, 48, 0, 0, 0, 0, 50, 49, 52, 55, 52, 56, 51, 54, 52, 55, 0>>
     end
   end
 

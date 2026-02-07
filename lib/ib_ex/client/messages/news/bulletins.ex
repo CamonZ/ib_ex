@@ -18,30 +18,6 @@ defmodule IbEx.Client.Messages.News.Bulletins do
 
   alias IbEx.Client.Protocols.Traceable
 
-  def from_fields([type, message, exchange]) do
-    {
-      :ok,
-      %__MODULE__{
-        type: parse_type(type),
-        message: message,
-        exchange: exchange
-      }
-    }
-  end
-
-  def from_fields(_) do
-    {:error, :invalid_args}
-  end
-
-  defp parse_type(type_str) do
-    case type_str do
-      "1" -> "regular_news"
-      "2" -> "exchange_not_available"
-      "3" -> "exchange_available"
-      _ -> "other"
-    end
-  end
-
   defimpl Traceable, for: __MODULE__ do
     def to_s(msg) do
       """

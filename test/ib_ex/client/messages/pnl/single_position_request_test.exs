@@ -19,22 +19,6 @@ defmodule IbEx.Client.Messages.Pnl.SinglePositionRequestTest do
     end
   end
 
-  describe "String.Chars implementation" do
-    test "to_string/1 returns the correct string representation" do
-      msg = %SinglePositionRequest{
-        message_id: 94,
-        request_id: @request_id,
-        account: @account_id,
-        conid: @apple_conid,
-        model_code: ""
-      }
-
-      assert to_string(msg) ==
-               <<57, 52, 0, 55, 48, 48, 48, 49, 0, 71, 85, 49, 50, 51, 52, 53, 54, 55, 56, 0, 0, 50, 54, 53, 53, 57, 56,
-                 0>>
-    end
-  end
-
   describe "Traceable" do
     test "to_s/1 returns the correct string representation" do
       msg = %SinglePositionRequest{

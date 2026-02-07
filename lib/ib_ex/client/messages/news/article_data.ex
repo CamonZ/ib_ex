@@ -7,28 +7,12 @@ defmodule IbEx.Client.Messages.News.ArticleData do
 
   defstruct request_id: nil, article: nil
 
-  alias IbEx.Client.Types.NewsArticle
   alias IbEx.Client.Protocols.Traceable
 
   @type t :: %__MODULE__{
           request_id: String.t(),
-          article: NewsArticle.t()
+          article: IbEx.Client.Types.NewsArticle.t()
         }
-
-  @spec from_fields(list(String.t())) :: {:ok, t()} | {:error, :invalid_args}
-  def from_fields([request_id | rest]) do
-    case NewsArticle.from_article_data(rest) do
-      {:ok, article} ->
-        {:ok, %__MODULE__{request_id: request_id, article: article}}
-
-      _ ->
-        {:error, :invalid_args}
-    end
-  end
-
-  def from_fields(_) do
-    {:error, :invalid_args}
-  end
 
   defimpl Traceable, for: __MODULE__ do
     def to_s(msg) do

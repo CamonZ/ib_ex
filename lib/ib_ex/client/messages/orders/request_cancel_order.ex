@@ -9,13 +9,10 @@ defmodule IbEx.Client.Messages.Orders.RequestCancelOrder do
   alias IbEx.Client.Types.OrderCancel
   alias IbEx.Client.Protocols.Traceable
 
-  @version 1
-
-  defstruct message_id: nil, version: @version, order_id: nil, request_id: nil, order_cancel_params: OrderCancel.new()
+  defstruct message_id: nil, order_id: nil, request_id: nil, order_cancel_params: OrderCancel.new()
 
   @type t :: %__MODULE__{
           message_id: non_neg_integer(),
-          version: non_neg_integer(),
           order_id: non_neg_integer(),
           request_id: non_neg_integer(),
           order_cancel_params: OrderCancel.t()
@@ -43,21 +40,6 @@ defmodule IbEx.Client.Messages.Orders.RequestCancelOrder do
 
       :error ->
         {:error, :not_implemented}
-    end
-  end
-
-  defimpl String.Chars, for: __MODULE__ do
-    alias IbEx.Client.Messages.Base
-
-    def to_string(msg) do
-      fields =
-        [
-          msg.message_id,
-          msg.version,
-          msg.order_id
-        ] ++ OrderCancel.serialize(msg.order_cancel_params)
-
-      Base.build(fields)
     end
   end
 

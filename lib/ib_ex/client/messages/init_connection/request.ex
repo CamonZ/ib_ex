@@ -15,10 +15,9 @@ defmodule IbEx.Client.Messages.InitConnection.Request do
   end
 
   defimpl String.Chars, for: __MODULE__ do
-    alias IbEx.Client.Connection.Frame
-
     def to_string(msg) do
-      Enum.join([msg.prefix, Frame.pack(msg.version)], "\x00")
+      packed_version = String.slice(:erlang.term_to_binary(msg.version), 2..-1//1)
+      Enum.join([msg.prefix, packed_version], "\x00")
     end
   end
 

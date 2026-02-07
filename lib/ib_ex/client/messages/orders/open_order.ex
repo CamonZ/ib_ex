@@ -1,18 +1,8 @@
 defmodule IbEx.Client.Messages.Orders.OpenOrder do
-  defstruct version: 155,
-            order: nil
+  defstruct order: nil
 
-  alias IbEx.Client.Messages.Orders.Decoder
   alias IbEx.Client.Protocols.Traceable
   alias IbEx.Client.Types.Contract
-
-  def from_fields(fields) when is_list(fields) do
-    {:ok, %__MODULE__{order: Decoder.parse(fields)}}
-  end
-
-  def from_fields(fields) do
-    {:error, {:invalid_args, fields}}
-  end
 
   defimpl Traceable, for: __MODULE__ do
     def to_s(msg) do

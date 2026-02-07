@@ -12,14 +12,6 @@ defmodule IbEx.Client.Messages.CurrentTime.RequestTest do
       assert {:ok, %Request{} = request} = Request.new()
 
       assert request.id == 49
-      assert request.version == 1
-    end
-  end
-
-  describe "String.Chars" do
-    test "to_string/1 returns the binary representation of the message" do
-      {:ok, msg} = Request.new()
-      assert to_string(msg) == <<52, 57, 0, 49, 0>>
     end
   end
 
@@ -27,7 +19,7 @@ defmodule IbEx.Client.Messages.CurrentTime.RequestTest do
     test "to_s/1 returns a human-readable version of the message" do
       {:ok, msg} = Request.new()
 
-      assert Traceable.to_s(msg) == "--> %CurrentTime{id: 49, version: 1}"
+      assert Traceable.to_s(msg) == "--> %CurrentTime{id: 49}"
     end
   end
 

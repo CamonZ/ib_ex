@@ -10,12 +10,6 @@ defmodule IbEx.Client.Messages.News.RequestProvidersTest do
     end
   end
 
-  describe "String.Chars implementation" do
-    test "converts RequestProviders struct to string" do
-      assert to_string(%RequestProviders{message_id: 85}) == <<56, 53, 0>>
-    end
-  end
-
   describe "Traceable" do
     test "to_s/1 returns a human-readable version of the message" do
       request_providers = %RequestProviders{message_id: 1}

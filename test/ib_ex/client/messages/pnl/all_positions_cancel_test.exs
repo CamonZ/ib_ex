@@ -23,11 +23,4 @@ defmodule IbEx.Client.Messages.Pnl.AllPositionsCancelTest do
                """
     end
   end
-
-  describe "String.Chars " do
-    test "returns the binary representation of the message" do
-      {:ok, msg} = AllPositionsCancel.new("19001")
-      assert to_string(msg) == <<57, 51, 0, 49, 57, 48, 48, 49, 0>>
-    end
-  end
 end

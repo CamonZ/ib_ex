@@ -14,16 +14,8 @@ defmodule IbEx.Client.Messages.AccountData.RequestTest do
     test "returns an AccountData Request struct" do
       {:ok, %Request{} = request} = Request.new(true)
       assert request.message_id == 6
-      assert request.version == 1
       assert request.subscribe == true
       assert is_nil(request.account_code)
-    end
-  end
-
-  describe "String.Chars" do
-    test "to_string/1 returns the binary representation of the message" do
-      {:ok, msg} = Request.new(true)
-      assert to_string(msg) == <<54, 0, 49, 0, 49, 0, 0>>
     end
   end
 

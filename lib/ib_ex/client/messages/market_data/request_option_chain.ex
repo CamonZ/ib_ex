@@ -40,22 +40,6 @@ defmodule IbEx.Client.Messages.MarketData.RequestOptionChain do
     end
   end
 
-  defimpl String.Chars, for: __MODULE__ do
-    alias IbEx.Client.Messages.Base
-
-    def to_string(msg) do
-      [
-        msg.message_id,
-        msg.request_id,
-        msg.underlying_symbol,
-        msg.fut_fop_exchange,
-        msg.underlying_sec_type,
-        msg.underlying_conid
-      ]
-      |> Base.build()
-    end
-  end
-
   defimpl Traceable, for: __MODULE__ do
     def to_s(msg) do
       """

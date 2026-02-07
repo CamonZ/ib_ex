@@ -14,13 +14,6 @@ defmodule IbEx.Client.Messages.MarketDepth.RequestExchangesTest do
     end
   end
 
-  describe "String.Chars implementation" do
-    test "converts the message to a binary correctly" do
-      request = %RequestExchanges{message_id: 82}
-      assert to_string(request) == <<56, 50, 0>>
-    end
-  end
-
   describe "Traceable" do
     test "to_s/1 returns a human-readable version of the message" do
       assert Traceable.to_s(%RequestExchanges{}) == "--> RequestExchanges{}"

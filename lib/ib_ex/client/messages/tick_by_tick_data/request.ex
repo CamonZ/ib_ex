@@ -14,7 +14,6 @@ defmodule IbEx.Client.Messages.TickByTickData.Request do
   * ignore_size (???, To be determined)
   """
 
-  alias IbEx.Client.Messages.Base
   alias IbEx.Client.Messages.Requests
   alias IbEx.Client.Types.Contract
   alias IbEx.Client.Protocols.Traceable
@@ -70,19 +69,6 @@ defmodule IbEx.Client.Messages.TickByTickData.Request do
 
   defp validate_number_of_ticks(number_of_ticks) do
     {:number_of_ticks, is_integer(number_of_ticks) and number_of_ticks >= 0}
-  end
-
-  defimpl String.Chars, for: __MODULE__ do
-    alias IbEx.Client.Messages.Base
-
-    def to_string(msg) do
-      fields =
-        [msg.message_id, msg.request_id] ++
-          Contract.serialize(msg.contract, false) ++
-          [msg.tick_type, msg.number_of_ticks, msg.ignore_size]
-
-      Base.build(fields)
-    end
   end
 
   defimpl Traceable, for: __MODULE__ do

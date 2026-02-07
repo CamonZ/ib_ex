@@ -13,21 +13,6 @@ defmodule IbEx.Client.Messages.MarketData.TickNews do
           headline: NewsHeadline.t()
         }
 
-  @spec from_fields(list(String.t())) :: {:ok, t()} | {:error, :invalid_args}
-  def from_fields([request_id | rest]) do
-    case NewsHeadline.from_news_tick(rest) do
-      {:ok, headline} ->
-        {:ok, %__MODULE__{request_id: request_id, headline: headline}}
-
-      _ ->
-        {:error, :invalid_args}
-    end
-  end
-
-  def from_fields(_) do
-    {:error, :invalid_args}
-  end
-
   defimpl Traceable, for: __MODULE__ do
     def to_s(msg) do
       """

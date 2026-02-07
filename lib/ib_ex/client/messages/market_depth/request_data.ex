@@ -15,10 +15,7 @@ defmodule IbEx.Client.Messages.MarketDepth.RequestData do
   alias IbEx.Client.Protocols.Subscribable
   alias IbEx.Client.Protocols.Traceable
 
-  @version 5
-
   defstruct message_id: nil,
-            version: @version,
             request_id: "",
             contract: nil,
             num_rows: nil,
@@ -27,7 +24,6 @@ defmodule IbEx.Client.Messages.MarketDepth.RequestData do
 
   @type t :: %__MODULE__{
           message_id: non_neg_integer(),
-          version: non_neg_integer(),
           request_id: non_neg_integer(),
           contract: Contract.t(),
           num_rows: non_neg_integer(),
@@ -51,22 +47,6 @@ defmodule IbEx.Client.Messages.MarketDepth.RequestData do
 
       :error ->
         {:error, :not_implemented}
-    end
-  end
-
-  defimpl String.Chars, for: __MODULE__ do
-    alias IbEx.Client.Messages.Base
-
-    def to_string(msg) do
-      fields = [
-        msg.message_id,
-        msg.version,
-        msg.request_id
-      ]
-
-      fields = fields ++ Contract.serialize(msg.contract, false) ++ [msg.num_rows, msg.smart_depth?, ""]
-
-      Base.build(fields)
     end
   end
 

@@ -18,24 +18,7 @@ defmodule IbEx.Client.Messages.MarketData.TickRequestParams do
           snapshot_permissions: non_neg_integer() | nil
         }
 
-  alias IbEx.Client.Utils
   alias IbEx.Client.Protocols.Traceable
-
-  @spec from_fields(list(String.t())) :: {:ok, t()} | {:error, :invalid_args}
-  def from_fields([request_id, min_tick_str, bbo_exchange_str, snapshot_perms_str]) do
-    msg = %__MODULE__{
-      request_id: request_id,
-      min_tick: Utils.to_float(min_tick_str),
-      bbo_exchange: bbo_exchange_str,
-      snapshot_permissions: Utils.to_integer(snapshot_perms_str)
-    }
-
-    {:ok, msg}
-  end
-
-  def from_fields(_) do
-    {:error, :invalid_args}
-  end
 
   defimpl Traceable, for: __MODULE__ do
     def to_s(msg) do

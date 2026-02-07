@@ -64,26 +64,6 @@ defmodule IbEx.Client.Messages.MarketData.RequestHistoricalDataTest do
     end
   end
 
-  describe "String.Chars implementation" do
-    test "converts the message to a serializable string" do
-      msg = %RequestHistoricalData{
-        request_id: 123,
-        contract: @contract,
-        end_date_time: nil,
-        duration: {1, :week},
-        bar_size: {1, :hour},
-        what_to_show: :trades,
-        use_rth: false,
-        keep_up_to_date: false
-      }
-
-      assert Kernel.to_string(msg) ==
-               <<0, 49, 50, 51, 0, 51, 52, 52, 56, 48, 57, 49, 48, 54, 0, 77, 82, 78, 65, 0, 83, 84, 75, 0, 0, 48, 46,
-                 48, 0, 0, 0, 83, 77, 65, 82, 84, 0, 73, 83, 76, 65, 78, 68, 0, 85, 83, 68, 0, 0, 0, 48, 0, 0, 0, 0, 48,
-                 0, 116, 114, 97, 100, 101, 115, 0, 48, 0, 48, 0, 0>>
-    end
-  end
-
   describe "Traceable" do
     test "to_s/1 returns a human-readable version of the struct" do
       msg = %RequestHistoricalData{

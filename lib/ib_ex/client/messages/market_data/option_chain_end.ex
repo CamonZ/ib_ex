@@ -10,15 +10,6 @@ defmodule IbEx.Client.Messages.MarketData.OptionChainEnd do
           request_id: String.t()
         }
 
-  @spec from_fields(list(String.t())) :: {:ok, t()} | {:error, :invalid_args}
-  def from_fields([request_id]) do
-    {:ok, %__MODULE__{request_id: request_id}}
-  end
-
-  def from_fields(_) do
-    {:error, :invalid_args}
-  end
-
   defimpl Traceable, for: __MODULE__ do
     def to_s(msg) do
       """

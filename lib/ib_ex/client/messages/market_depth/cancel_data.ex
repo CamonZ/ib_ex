@@ -7,16 +7,12 @@ defmodule IbEx.Client.Messages.MarketDepth.CancelData do
   * Is Smart Depth
   """
 
-  @version 1
-
   defstruct message_id: nil,
-            version: @version,
             request_id: nil,
             smart_depth?: true
 
   @type t :: %__MODULE__{
           message_id: non_neg_integer(),
-          version: non_neg_integer(),
           request_id: non_neg_integer(),
           smart_depth?: boolean()
         }
@@ -39,21 +35,6 @@ defmodule IbEx.Client.Messages.MarketDepth.CancelData do
 
       :error ->
         {:error, :not_implemented}
-    end
-  end
-
-  defimpl String.Chars, for: __MODULE__ do
-    alias IbEx.Client.Messages.Base
-
-    def to_string(msg) do
-      fields = [
-        msg.message_id,
-        msg.version,
-        msg.request_id,
-        msg.smart_depth?
-      ]
-
-      Base.build(fields)
     end
   end
 

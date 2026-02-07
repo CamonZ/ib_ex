@@ -16,17 +16,6 @@ defmodule IbEx.Client.Messages.MarketData.RequestMarketDataTypeTest do
     end
   end
 
-  describe "String.Chars implementation" do
-    test "converts the message to a serializable string" do
-      msg = %RequestMarketDataType{
-        message_id: 59,
-        market_data_type: 3
-      }
-
-      assert to_string(msg) == <<53, 57, 0, 49, 0, 51, 0>>
-    end
-  end
-
   describe "Traceable" do
     test "to_s/1 returns a human-readable version of the struct" do
       msg = %RequestMarketDataType{

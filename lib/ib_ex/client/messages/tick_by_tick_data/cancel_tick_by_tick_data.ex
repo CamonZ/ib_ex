@@ -3,7 +3,6 @@ defmodule IbEx.Client.Messages.TickByTickData.CancelTickByTickData do
   Represents a request to cancel tick by tick data stream identified by its request id.
   """
 
-  alias IbEx.Client.Messages.Base
   alias IbEx.Client.Messages.Requests
   alias IbEx.Client.Protocols.Traceable
   alias IbEx.Client.Protocols.Subscribable
@@ -28,12 +27,6 @@ defmodule IbEx.Client.Messages.TickByTickData.CancelTickByTickData do
 
   def new(_) do
     {:error, :invalid_args}
-  end
-
-  defimpl String.Chars, for: __MODULE__ do
-    def to_string(msg) do
-      Base.build([msg.message_id, msg.request_id])
-    end
   end
 
   defimpl Traceable, for: __MODULE__ do
