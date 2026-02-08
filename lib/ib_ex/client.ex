@@ -38,12 +38,15 @@ defmodule IbEx.Client do
 
   alias IbEx.Client.Connection
   alias IbEx.Client.Constants
+  alias IbEx.Client.Conversations
   alias IbEx.Client.Messages
   alias IbEx.Client.Messages.Responses
-  alias IbEx.Client.Protocols.Subscribable
   alias IbEx.Client.Subscriptions
+  alias IbEx.Client.Types
 
   require Logger
+
+  @default_timeout 5_000
 
   def connection_opened(pid) do
     GenServer.cast(pid, :connection_opened)
@@ -53,8 +56,9 @@ defmodule IbEx.Client do
     GenServer.cast(pid, {:process_message, str})
   end
 
-  def send_request(pid, request) do
-    GenServer.cast(pid, {:send_request, self(), request})
+  def request(pid, proto_msg, opts \\ []) do
+    timeout = Keyword.get(opts, :timeout, @default_timeout)
+    GenServer.call(pid, {:request, proto_msg, opts}, timeout)
   end
 
   def start_link(opts \\ []) do
@@ -146,7 +150,7 @@ defmodule IbEx.Client do
         {:noreply, Map.put(state, :next_valid_id, msg.order_id)}
 
       {:ok, msg} ->
-        relay_message(msg, state.subscriptions_table_ref)
+        dispatch_message(msg, state.subscriptions_table_ref)
         {:noreply, state}
 
       _ ->
@@ -154,18 +158,27 @@ defmodule IbEx.Client do
     end
   end
 
-  def handle_cast({:send_request, subscriber_pid, request}, state) do
-    case Subscribable.subscribe(request, subscriber_pid, state.subscriptions_table_ref) do
-      {:ok, msg} ->
-        if state.trace_messages do
-          Logger.info(inspect(msg))
-        end
+  def handle_call({:request, %message_type{} = proto_msg, opts}, from, state) do
+    timeout = Keyword.get(opts, :timeout, @default_timeout)
 
-        {:ok, encoded} = Messages.Requests.encode_request(msg)
-        Connection.send_message(state.connection, encoded)
+    with {:ok, _shape} <- Conversations.conversation_for(message_type),
+         {:ok, req_id} <- register_conversation(state.subscriptions_table_ref, from, timeout, message_type) do
+      send_to_tws(state, %{proto_msg | req_id: req_id})
+      {:noreply, state}
+    else
+      :error -> {:reply, {:error, :unknown_conversation}, state}
+    end
+  end
+
+  def handle_info({:request_timeout, key}, state) do
+    table_ref = state.subscriptions_table_ref
+
+    case Subscriptions.lookup(table_ref, key) do
+      {:ok, %{type: :request, from: from}} ->
+        GenServer.reply(from, {:error, :timeout})
+        Subscriptions.remove_subscription(table_ref, key)
 
       _ ->
-        Logger.error("Error sending out message: #{request}")
         :ok
     end
 
@@ -192,8 +205,77 @@ defmodule IbEx.Client do
     end
   end
 
-  defp relay_message(msg, table_ref) do
-    case Subscribable.lookup(msg, table_ref) do
+  defp register_conversation(table_ref, from, timeout, request_module) do
+    req_id = Subscriptions.allocate_request_id(table_ref)
+    key = to_string(req_id)
+    timer_ref = Process.send_after(self(), {:request_timeout, key}, timeout)
+    Subscriptions.register_request(table_ref, req_id, from, timer_ref, request_module)
+    {:ok, req_id}
+  end
+
+  defp send_to_tws(state, msg) do
+    case Messages.Requests.encode_request(msg) do
+      {:ok, encoded} -> Connection.send_message(state.connection, encoded)
+      _ -> Logger.error("Error encoding request: #{inspect(msg)}")
+    end
+  end
+
+  defp dispatch_message(%Types.Error{id: id} = error, table_ref) when id > 0 do
+    key = to_string(id)
+
+    case Subscriptions.lookup(table_ref, key) do
+      {:ok, %{type: :request} = entry} ->
+        complete_conversation(table_ref, key, entry, {:error, error})
+
+      _ ->
+        :ok
+    end
+  end
+
+  defp dispatch_message(%module{} = msg, table_ref) do
+    case Map.get(msg, :req_id) do
+      nil -> dispatch_by_module(module, msg, table_ref)
+      req_id -> dispatch_by_req_id(to_string(req_id), msg, module, table_ref)
+    end
+  end
+
+  defp dispatch_message(_msg, _table_ref), do: :ok
+
+  defp dispatch_by_req_id(key, msg, module, table_ref) do
+    case Subscriptions.lookup(table_ref, key) do
+      {:ok, %{type: :request} = entry} ->
+        handle_conversation_response(table_ref, key, msg, module, entry)
+
+      _ ->
+        :ok
+    end
+  end
+
+  defp handle_conversation_response(table_ref, key, msg, module, entry) do
+    {:ok, shape} = Conversations.conversation_for(entry.request_module)
+
+    case shape.type do
+      :request_response ->
+        complete_conversation(table_ref, key, entry, {:ok, msg})
+
+      :bounded_stream ->
+        if Conversations.end_marker?(module) do
+          {:ok, buffer} = Subscriptions.complete_request(table_ref, key)
+          complete_conversation(table_ref, key, entry, {:ok, buffer})
+        else
+          Subscriptions.append_response(table_ref, key, msg)
+        end
+    end
+  end
+
+  defp complete_conversation(table_ref, key, %{from: from, timer_ref: timer_ref}, reply) do
+    Process.cancel_timer(timer_ref)
+    GenServer.reply(from, reply)
+    Subscriptions.remove_subscription(table_ref, key)
+  end
+
+  defp dispatch_by_module(module, msg, table_ref) do
+    case Subscriptions.lookup(table_ref, module) do
       {:ok, pid} when is_pid(pid) ->
         GenServer.cast(pid, {:message_received, msg})
 

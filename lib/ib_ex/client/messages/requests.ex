@@ -106,14 +106,3 @@ defmodule IbEx.Client.Messages.Requests do
     end
   end
 end
-
-defimpl IbEx.Client.Protocols.Subscribable, for: IbEx.Client.Proto.Protobuf.MatchingSymbolsRequest do
-  alias IbEx.Client.Subscriptions
-
-  def subscribe(msg, pid, table_ref) do
-    request_id = Subscriptions.subscribe_by_request_id(table_ref, pid)
-    {:ok, %{msg | req_id: request_id}}
-  end
-
-  def lookup(_, _), do: {:error, :lookup_not_necessary}
-end

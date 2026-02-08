@@ -34,22 +34,12 @@ defmodule IbEx.Client.Subscriptions do
   end
 
   # ---------------------------------------------------------------------------
-  # Legacy subscription helpers (kept for backward compatibility)
+  # Legacy subscription helpers
   # ---------------------------------------------------------------------------
-
-  def subscribe_by_request_id(table_ref, pid) do
-    next_request_id = allocate_request_id(table_ref)
-    :ets.insert(table_ref, {to_string(next_request_id), pid})
-    next_request_id
-  end
 
   def subscribe_by_modules(table_ref, modules, pid) when is_list(modules) do
     Enum.each(modules, &:ets.insert(table_ref, {&1, pid}))
     :ok
-  end
-
-  def subscribe_by_custom_id(table_ref, custom_id, pid) do
-    :ets.insert(table_ref, {to_string(custom_id), pid})
   end
 
   # ---------------------------------------------------------------------------
@@ -59,20 +49,19 @@ defmodule IbEx.Client.Subscriptions do
   @doc """
   Registers a bounded-stream request entry in ETS.
 
-  Stores a map with `type: :request`, the caller pid, the GenServer `from` reference,
-  an empty accumulation buffer, an optional timer reference, and the request module.
+  Stores a map with `type: :request`, the GenServer `from` reference,
+  an empty accumulation buffer, a timer reference, and the request module.
   """
-  def register_request(table_ref, request_id, caller, from, timer_ref, request_module) do
+  def register_request(table_ref, req_id, from, timer_ref, request_module) do
     entry = %{
       type: :request,
-      caller: caller,
       from: from,
       buffer: [],
       timer_ref: timer_ref,
       request_module: request_module
     }
 
-    :ets.insert(table_ref, {to_string(request_id), entry})
+    :ets.insert(table_ref, {to_string(req_id), entry})
     :ok
   end
 
