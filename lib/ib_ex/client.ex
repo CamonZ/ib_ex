@@ -61,6 +61,14 @@ defmodule IbEx.Client do
     GenServer.call(pid, {:request, proto_msg, opts}, timeout)
   end
 
+  def subscribe(pid, proto_msg, opts \\ []) do
+    GenServer.call(pid, {:subscribe, self(), proto_msg, opts})
+  end
+
+  def unsubscribe(pid, subscription_ref) do
+    GenServer.call(pid, {:unsubscribe, subscription_ref})
+  end
+
   def start_link(opts \\ []) do
     GenServer.start_link(__MODULE__, opts)
   end
@@ -170,6 +178,36 @@ defmodule IbEx.Client do
     end
   end
 
+  def handle_call({:subscribe, subscriber, %message_type{} = proto_msg, _opts}, _from, state) do
+    table_ref = state.subscriptions_table_ref
+
+    with {:ok, %{type: :stream}} <- Conversations.conversation_for(message_type) do
+      req_id = Subscriptions.allocate_request_id(table_ref)
+      subscription_ref = make_ref()
+      monitor_ref = Process.monitor(subscriber)
+
+      Subscriptions.register_stream(table_ref, req_id, subscriber, monitor_ref, subscription_ref, message_type)
+      send_to_tws(state, %{proto_msg | req_id: req_id})
+
+      {:reply, {:ok, subscription_ref}, state}
+    else
+      _ -> {:reply, {:error, :unknown_conversation}, state}
+    end
+  end
+
+  def handle_call({:unsubscribe, subscription_ref}, _from, state) do
+    table_ref = state.subscriptions_table_ref
+
+    case Subscriptions.lookup_by_subscription_ref(table_ref, subscription_ref) do
+      {:ok, key, entry} ->
+        cancel_stream(state, table_ref, key, entry)
+        {:reply, :ok, state}
+
+      {:error, :missing_subscription} ->
+        {:reply, {:error, :not_found}, state}
+    end
+  end
+
   def handle_info({:request_timeout, key}, state) do
     table_ref = state.subscriptions_table_ref
 
@@ -179,6 +217,20 @@ defmodule IbEx.Client do
         Subscriptions.remove_subscription(table_ref, key)
 
       _ ->
+        :ok
+    end
+
+    {:noreply, state}
+  end
+
+  def handle_info({:DOWN, monitor_ref, :process, _pid, _reason}, state) do
+    table_ref = state.subscriptions_table_ref
+
+    case Subscriptions.lookup_by_monitor_ref(table_ref, monitor_ref) do
+      {:ok, key, entry} ->
+        cancel_stream(state, table_ref, key, entry)
+
+      {:error, :missing_subscription} ->
         :ok
     end
 
@@ -220,12 +272,30 @@ defmodule IbEx.Client do
     end
   end
 
+  defp cancel_stream(state, table_ref, key, %{monitor_ref: monitor_ref, request_module: request_module}) do
+    Process.demonitor(monitor_ref, [:flush])
+
+    case Conversations.cancel_request_for(request_module) do
+      {:ok, cancel_module} ->
+        req_id = String.to_integer(key)
+        send_to_tws(state, struct!(cancel_module, req_id: req_id))
+
+      :error ->
+        :ok
+    end
+
+    Subscriptions.remove_subscription(table_ref, key)
+  end
+
   defp dispatch_message(%Types.Error{id: id} = error, table_ref) when id > 0 do
     key = to_string(id)
 
     case Subscriptions.lookup(table_ref, key) do
       {:ok, %{type: :request} = entry} ->
         complete_conversation(table_ref, key, entry, {:error, error})
+
+      {:ok, %{type: :stream, subscriber: subscriber, subscription_ref: ref}} ->
+        send(subscriber, {:ib_ex, ref, {:error, error}})
 
       _ ->
         :ok
@@ -245,6 +315,9 @@ defmodule IbEx.Client do
     case Subscriptions.lookup(table_ref, key) do
       {:ok, %{type: :request} = entry} ->
         handle_conversation_response(table_ref, key, msg, module, entry)
+
+      {:ok, %{type: :stream, subscriber: subscriber, subscription_ref: ref}} ->
+        send(subscriber, {:ib_ex, ref, msg})
 
       _ ->
         :ok

@@ -23,6 +23,12 @@ defmodule IbEx.Client.Conversations do
       type: :request_response,
       correlation: :req_id,
       responses: [Proto.SymbolSamples]
+    },
+    Proto.MarketDataRequest => %{
+      type: :stream,
+      correlation: :req_id,
+      responses: [Proto.TickPrice, Proto.TickSize],
+      cancel_request: Proto.CancelMarketData
     }
   }
 
