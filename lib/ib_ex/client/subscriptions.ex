@@ -192,6 +192,32 @@ defmodule IbEx.Client.Subscriptions do
     end
   end
 
+  @doc """
+  Looks up a stream subscription entry by its monitor reference.
+
+  Returns `{:ok, key, entry}` on success or `{:error, :missing_subscription}` if no
+  entry matches.
+  """
+  def lookup_by_monitor_ref(table_ref, monitor_ref) do
+    result =
+      :ets.foldl(
+        fn
+          {key, %{type: :stream, monitor_ref: ^monitor_ref} = entry}, _acc ->
+            {:found, key, entry}
+
+          _other, acc ->
+            acc
+        end,
+        :not_found,
+        table_ref
+      )
+
+    case result do
+      {:found, key, entry} -> {:ok, key, entry}
+      :not_found -> {:error, :missing_subscription}
+    end
+  end
+
   def reverse_lookup(table_ref, pid) do
     spec = {List.to_atom(~c"$1"), pid}
 
