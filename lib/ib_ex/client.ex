@@ -69,6 +69,10 @@ defmodule IbEx.Client do
     GenServer.call(pid, {:unsubscribe, subscription_ref})
   end
 
+  def command(pid, proto_msg) do
+    GenServer.call(pid, {:command, proto_msg})
+  end
+
   def start_link(opts \\ []) do
     GenServer.start_link(__MODULE__, opts)
   end
@@ -205,6 +209,11 @@ defmodule IbEx.Client do
       {:error, :missing_subscription} ->
         {:reply, {:error, :not_found}, state}
     end
+  end
+
+  def handle_call({:command, proto_msg}, _from, state) do
+    send_to_tws(state, proto_msg)
+    {:reply, :ok, state}
   end
 
   def handle_info({:request_timeout, key}, state) do
