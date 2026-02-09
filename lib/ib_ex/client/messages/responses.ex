@@ -97,6 +97,12 @@ defmodule IbEx.Client.Messages.Responses do
     110 => Proto.ConfigResponse
   }
 
+  @doc """
+  Returns all response proto modules registered in the decoders map.
+  """
+  @spec decoder_modules() :: [module()]
+  def decoder_modules, do: Map.values(@decoders) |> Enum.uniq()
+
   @spec parse(binary(), atom(), boolean()) :: {:ok, any()} | {:error, :unexpected_error}
   def parse(str, :connecting, _trace_messages) do
     fields =
