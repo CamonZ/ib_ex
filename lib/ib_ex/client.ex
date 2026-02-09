@@ -169,29 +169,28 @@ defmodule IbEx.Client do
   def handle_call({:request, %message_type{} = proto_msg, opts}, from, state) do
     timeout = Keyword.get(opts, :timeout, @default_timeout)
 
-    with {:ok, _shape} <- Conversations.conversation_for(message_type),
-         {:ok, req_id} <- register_conversation(state.subscriptions_table_ref, from, timeout, message_type) do
-      send_to_tws(state, %{proto_msg | req_id: req_id})
-      {:noreply, state}
-    else
-      :error -> {:reply, {:error, :unknown_conversation}, state}
+    case Conversations.register_request(state.subscriptions_table_ref, message_type, from, timeout, self()) do
+      {:ok, _key, req_id} when is_integer(req_id) ->
+        send_to_tws(state, %{proto_msg | req_id: req_id})
+        {:noreply, state}
+
+      {:ok, _key, nil} ->
+        send_to_tws(state, proto_msg)
+        {:noreply, state}
+
+      :error ->
+        {:reply, {:error, :unknown_conversation}, state}
     end
   end
 
   def handle_call({:subscribe, subscriber, %message_type{} = proto_msg, _opts}, _from, state) do
-    table_ref = state.subscriptions_table_ref
+    case Conversations.register_stream(state.subscriptions_table_ref, message_type, subscriber) do
+      {:ok, req_id, subscription_ref} ->
+        send_to_tws(state, %{proto_msg | req_id: req_id})
+        {:reply, {:ok, subscription_ref}, state}
 
-    with {:ok, %{type: :stream}} <- Conversations.conversation_for(message_type) do
-      req_id = Subscriptions.allocate_request_id(table_ref)
-      subscription_ref = make_ref()
-      monitor_ref = Process.monitor(subscriber)
-
-      Subscriptions.register_stream(table_ref, req_id, subscriber, monitor_ref, subscription_ref, message_type)
-      send_to_tws(state, %{proto_msg | req_id: req_id})
-
-      {:reply, {:ok, subscription_ref}, state}
-    else
-      _ -> {:reply, {:error, :unknown_conversation}, state}
+      :error ->
+        {:reply, {:error, :unknown_conversation}, state}
     end
   end
 
@@ -257,14 +256,6 @@ defmodule IbEx.Client do
     end
   end
 
-  defp register_conversation(table_ref, from, timeout, request_module) do
-    req_id = Subscriptions.allocate_request_id(table_ref)
-    key = to_string(req_id)
-    timer_ref = Process.send_after(self(), {:request_timeout, key}, timeout)
-    Subscriptions.register_request(table_ref, req_id, from, timer_ref, request_module)
-    {:ok, req_id}
-  end
-
   defp send_to_tws(state, msg) do
     case Messages.Requests.encode_request(msg) do
       {:ok, encoded} -> Connection.send_message(state.connection, encoded)
@@ -277,7 +268,7 @@ defmodule IbEx.Client do
 
     case Conversations.cancel_request_for(request_module) do
       {:ok, cancel_module} ->
-        req_id = String.to_integer(key)
+        {:request_id, req_id} = key
         send_to_tws(state, struct!(cancel_module, req_id: req_id))
 
       :error ->
@@ -288,7 +279,7 @@ defmodule IbEx.Client do
   end
 
   defp dispatch_message(%Types.Error{id: id} = error, table_ref) when id > 0 do
-    key = to_string(id)
+    key = {:request_id, id}
 
     case Subscriptions.lookup(table_ref, key) do
       {:ok, %{type: :request} = entry} ->
@@ -305,7 +296,7 @@ defmodule IbEx.Client do
   defp dispatch_message(%module{} = msg, table_ref) do
     case Map.get(msg, :req_id) do
       nil -> dispatch_by_module(module, msg, table_ref)
-      req_id -> dispatch_by_req_id(to_string(req_id), msg, module, table_ref)
+      req_id -> dispatch_by_req_id({:request_id, req_id}, msg, module, table_ref)
     end
   end
 
@@ -348,12 +339,31 @@ defmodule IbEx.Client do
   end
 
   defp dispatch_by_module(module, msg, table_ref) do
-    case Subscriptions.lookup(table_ref, module) do
-      {:ok, pid} when is_pid(pid) ->
-        GenServer.cast(pid, {:message_received, msg})
+    case find_global_conversation(module, table_ref) do
+      {:ok, key, entry} ->
+        handle_conversation_response(table_ref, key, msg, module, entry)
 
-      _ ->
-        :ok
+      :not_found ->
+        case Subscriptions.lookup(table_ref, module) do
+          {:ok, pid} when is_pid(pid) ->
+            GenServer.cast(pid, {:message_received, msg})
+
+          _ ->
+            :ok
+        end
     end
+  end
+
+  defp find_global_conversation(response_module, table_ref) do
+    request_modules = Conversations.requests_for_response(response_module)
+
+    Enum.find_value(request_modules, :not_found, fn request_module ->
+      key = {:global, request_module}
+
+      case Subscriptions.lookup(table_ref, key) do
+        {:ok, %{type: :request} = entry} -> {:ok, key, entry}
+        _ -> nil
+      end
+    end)
   end
 end

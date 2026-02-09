@@ -96,6 +96,12 @@ defmodule IbEx.Client.Messages.Requests do
     Map.fetch(@message_ids, atom)
   end
 
+  @doc """
+  Returns all request proto modules registered in the message_ids map.
+  """
+  @spec request_modules() :: [module()]
+  def request_modules, do: Map.keys(@message_ids)
+
   @spec encode_request(struct()) :: {:ok, binary()} | :error
   def encode_request(%module{} = request) do
     with {:ok, msg_id} <- message_id_for(module) do

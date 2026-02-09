@@ -6,8 +6,16 @@ defmodule IbEx.Client.Subscriptions do
 
   Supports two entry shapes:
 
-  * **Request entries** – bounded stream accumulation with a buffer, caller info, and optional timer.
-  * **Stream entries** – long-lived subscriptions with a subscriber pid, monitor ref, and opaque subscription ref.
+  * **Request entries** -- bounded stream accumulation with a buffer, caller info, and optional timer.
+  * **Stream entries** -- long-lived subscriptions with a subscriber pid, monitor ref, and opaque subscription ref.
+
+  ## Key Shapes
+
+  ETS keys use consistently shaped tagged tuples:
+
+  * `{:request_id, integer()}` -- for req_id-correlated conversations and streams
+  * `{:global, module()}` -- for global-correlated conversations (no req_id)
+  * `{:order_id, integer()}` -- for order lifecycle conversations (future use)
   """
 
   # ---------------------------------------------------------------------------
@@ -51,8 +59,10 @@ defmodule IbEx.Client.Subscriptions do
 
   Stores a map with `type: :request`, the GenServer `from` reference,
   an empty accumulation buffer, a timer reference, and the request module.
+
+  The ETS key is the tagged tuple passed as `key` (e.g. `{:request_id, 1}` or `{:global, Module}`).
   """
-  def register_request(table_ref, req_id, from, timer_ref, request_module) do
+  def register_request(table_ref, key, from, timer_ref, request_module) when is_tuple(key) do
     entry = %{
       type: :request,
       from: from,
@@ -61,7 +71,7 @@ defmodule IbEx.Client.Subscriptions do
       request_module: request_module
     }
 
-    :ets.insert(table_ref, {to_string(req_id), entry})
+    :ets.insert(table_ref, {key, entry})
     :ok
   end
 
@@ -70,8 +80,10 @@ defmodule IbEx.Client.Subscriptions do
 
   Stores a map with `type: :stream`, the subscriber pid, a monitor reference,
   an opaque subscription reference, and the request module.
+
+  The ETS key is the tagged tuple passed as `key` (e.g. `{:request_id, 1}`).
   """
-  def register_stream(table_ref, request_id, subscriber, monitor_ref, subscription_ref, request_module) do
+  def register_stream(table_ref, key, subscriber, monitor_ref, subscription_ref, request_module) when is_tuple(key) do
     entry = %{
       type: :stream,
       subscriber: subscriber,
@@ -80,7 +92,7 @@ defmodule IbEx.Client.Subscriptions do
       request_module: request_module
     }
 
-    :ets.insert(table_ref, {to_string(request_id), entry})
+    :ets.insert(table_ref, {key, entry})
     :ok
   end
 
@@ -94,9 +106,7 @@ defmodule IbEx.Client.Subscriptions do
   Returns `{:ok, updated_entry}` on success or `{:error, :missing_subscription}` if the key
   is not found.
   """
-  def append_response(table_ref, request_id, response) do
-    key = to_string(request_id)
-
+  def append_response(table_ref, key, response) when is_tuple(key) do
     case :ets.lookup(table_ref, key) do
       [{^key, %{type: :request, buffer: buffer} = entry}] ->
         updated_entry = %{entry | buffer: buffer ++ [response]}
@@ -119,9 +129,7 @@ defmodule IbEx.Client.Subscriptions do
   Returns `{:ok, buffer}` on success or `{:error, :missing_subscription}` if the key
   is not found.
   """
-  def complete_request(table_ref, request_id) do
-    key = to_string(request_id)
-
+  def complete_request(table_ref, key) when is_tuple(key) do
     case :ets.lookup(table_ref, key) do
       [{^key, %{type: :request, buffer: buffer}}] ->
         :ets.delete(table_ref, key)
@@ -139,8 +147,8 @@ defmodule IbEx.Client.Subscriptions do
   @doc """
   Removes any subscription entry by its key.
   """
-  def remove_subscription(table_ref, key) do
-    :ets.delete(table_ref, to_string(key))
+  def remove_subscription(table_ref, key) when is_tuple(key) do
+    :ets.delete(table_ref, key)
     :ok
   end
 

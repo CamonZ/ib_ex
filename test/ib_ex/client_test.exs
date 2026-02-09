@@ -136,9 +136,9 @@ defmodule IbEx.ClientTest do
 
       assert {:noreply, ^state} = Client.handle_call({:request, proto_msg, []}, from, state)
 
-      # Verify ETS entry was created with req_id "1"
+      # Verify ETS entry was created with req_id {:request_id, 1}
       assert {:ok, %{type: :request, request_module: IbEx.Client.Proto.Protobuf.MatchingSymbolsRequest}} =
-               Subscriptions.lookup(table_ref, "1")
+               Subscriptions.lookup(table_ref, {:request_id, 1})
 
       # Simulate receiving a SymbolSamples response with req_id=1
       response = %IbEx.Client.Proto.Protobuf.SymbolSamples{req_id: 1, contract_descriptions: []}
@@ -152,7 +152,7 @@ defmodule IbEx.ClientTest do
       assert_receive {_ref, {:ok, %IbEx.Client.Proto.Protobuf.SymbolSamples{req_id: 1}}}
 
       # ETS entry should be cleaned up
-      assert {:error, :missing_subscription} = Subscriptions.lookup(table_ref, "1")
+      assert {:error, :missing_subscription} = Subscriptions.lookup(table_ref, {:request_id, 1})
     end
   end
 
@@ -171,7 +171,7 @@ defmodule IbEx.ClientTest do
 
       # Verify ETS entry
       assert {:ok, %{type: :request, request_module: IbEx.Client.Proto.Protobuf.ContractDataRequest}} =
-               Subscriptions.lookup(table_ref, "1")
+               Subscriptions.lookup(table_ref, {:request_id, 1})
 
       # Simulate receiving two ContractData responses (msg_id=10, wire_id=210)
       contract_data_1 = %IbEx.Client.Proto.Protobuf.ContractData{req_id: 1}
@@ -202,7 +202,7 @@ defmodule IbEx.ClientTest do
       assert Enum.all?(buffer, &match?(%IbEx.Client.Proto.Protobuf.ContractData{req_id: 1}, &1))
 
       # ETS entry should be cleaned up
-      assert {:error, :missing_subscription} = Subscriptions.lookup(table_ref, "1")
+      assert {:error, :missing_subscription} = Subscriptions.lookup(table_ref, {:request_id, 1})
     end
   end
 
@@ -217,7 +217,7 @@ defmodule IbEx.ClientTest do
       assert {:noreply, ^state} = Client.handle_call({:request, proto_msg, []}, from, state)
 
       # Verify ETS entry exists
-      assert {:ok, %{type: :request}} = Subscriptions.lookup(table_ref, "1")
+      assert {:ok, %{type: :request}} = Subscriptions.lookup(table_ref, {:request_id, 1})
 
       # Simulate receiving an ErrorMessage with id=1 (msg_id=4, wire_id=204)
       error_proto = %IbEx.Client.Proto.Protobuf.ErrorMessage{id: 1, error_code: 200, error_msg: "No security found"}
@@ -229,7 +229,7 @@ defmodule IbEx.ClientTest do
       assert_receive {_ref, {:error, %IbEx.Client.Types.Error{id: 1, code: 200, message: "No security found"}}}
 
       # ETS entry should be cleaned up
-      assert {:error, :missing_subscription} = Subscriptions.lookup(table_ref, "1")
+      assert {:error, :missing_subscription} = Subscriptions.lookup(table_ref, {:request_id, 1})
     end
   end
 
@@ -245,23 +245,23 @@ defmodule IbEx.ClientTest do
                Client.handle_call({:request, proto_msg, [timeout: 100]}, from, state)
 
       # Verify ETS entry exists
-      assert {:ok, %{type: :request}} = Subscriptions.lookup(table_ref, "1")
+      assert {:ok, %{type: :request}} = Subscriptions.lookup(table_ref, {:request_id, 1})
 
       # Simulate the timeout firing
-      assert {:noreply, ^state} = Client.handle_info({:request_timeout, "1"}, state)
+      assert {:noreply, ^state} = Client.handle_info({:request_timeout, {:request_id, 1}}, state)
 
       # Caller should receive {:error, :timeout}
       assert_receive {_ref, {:error, :timeout}}
 
       # ETS entry should be cleaned up
-      assert {:error, :missing_subscription} = Subscriptions.lookup(table_ref, "1")
+      assert {:error, :missing_subscription} = Subscriptions.lookup(table_ref, {:request_id, 1})
     end
 
     test "timeout is a no-op when conversation already completed" do
       {:ok, state} = Client.init(connection_handler: MockSuccessConnection)
 
-      # No ETS entry for key "999" -- already completed
-      assert {:noreply, ^state} = Client.handle_info({:request_timeout, "999"}, state)
+      # No ETS entry for key {:request_id, 999} -- already completed
+      assert {:noreply, ^state} = Client.handle_info({:request_timeout, {:request_id, 999}}, state)
     end
   end
 
@@ -279,8 +279,8 @@ defmodule IbEx.ClientTest do
 
       assert is_reference(subscription_ref)
 
-      # Verify ETS entry was created as a :stream type with req_id "1"
-      assert {:ok, entry} = Subscriptions.lookup(table_ref, "1")
+      # Verify ETS entry was created as a :stream type with key {:request_id, 1}
+      assert {:ok, entry} = Subscriptions.lookup(table_ref, {:request_id, 1})
       assert entry.type == :stream
       assert entry.subscriber == self()
       assert entry.subscription_ref == subscription_ref
@@ -346,7 +346,7 @@ defmodule IbEx.ClientTest do
       assert_receive {:ib_ex, ^subscription_ref, %IbEx.Client.Proto.Protobuf.TickPrice{price: 151.00}}
 
       # ETS entry should still exist
-      assert {:ok, %{type: :stream}} = Subscriptions.lookup(table_ref, "1")
+      assert {:ok, %{type: :stream}} = Subscriptions.lookup(table_ref, {:request_id, 1})
     end
 
     test "delivers error messages to stream subscribers" do
@@ -392,7 +392,8 @@ defmodule IbEx.ClientTest do
       assert_receive {:tws_sent, _subscribe_msg}
 
       # Verify ETS entry exists
-      assert {:ok, %{type: :stream, monitor_ref: monitor_ref}} = Subscriptions.lookup(table_ref, "1")
+      assert {:ok, %{type: :stream, monitor_ref: monitor_ref}} =
+               Subscriptions.lookup(table_ref, {:request_id, 1})
 
       # Unsubscribe
       assert {:reply, :ok, ^state} =
@@ -409,7 +410,7 @@ defmodule IbEx.ClientTest do
       assert decoded.req_id == 1
 
       # ETS entry should be cleaned up
-      assert {:error, :missing_subscription} = Subscriptions.lookup(table_ref, "1")
+      assert {:error, :missing_subscription} = Subscriptions.lookup(table_ref, {:request_id, 1})
 
       # Monitor should have been removed (verify by checking it's not a valid monitor)
       refute Process.read_timer(monitor_ref)
@@ -468,7 +469,8 @@ defmodule IbEx.ClientTest do
       assert_receive {:tws_sent, _subscribe_msg}
 
       # Verify ETS entry exists and grab the monitor ref
-      assert {:ok, %{type: :stream, monitor_ref: monitor_ref}} = Subscriptions.lookup(table_ref, "1")
+      assert {:ok, %{type: :stream, monitor_ref: monitor_ref}} =
+               Subscriptions.lookup(table_ref, {:request_id, 1})
 
       # Kill the subscriber and wait for confirmation
       Process.exit(subscriber, :kill)
@@ -494,7 +496,7 @@ defmodule IbEx.ClientTest do
       assert decoded.req_id == 1
 
       # ETS entry should be cleaned up
-      assert {:error, :missing_subscription} = Subscriptions.lookup(table_ref, "1")
+      assert {:error, :missing_subscription} = Subscriptions.lookup(table_ref, {:request_id, 1})
     end
 
     test "handle_info(:DOWN) is a no-op for unknown monitor refs" do
@@ -504,6 +506,101 @@ defmodule IbEx.ClientTest do
 
       assert {:noreply, ^state} =
                Client.handle_info({:DOWN, unknown_monitor, :process, self(), :normal}, state)
+    end
+  end
+
+  describe "request/3 global correlation :request_response path" do
+    test "returns {:ok, response} for CurrentTimeRequest (no req_id)" do
+      {:ok, state} = Client.init(connection_handler: MockSuccessConnection)
+      table_ref = state.subscriptions_table_ref
+
+      proto_msg = %IbEx.Client.Proto.Protobuf.CurrentTimeRequest{}
+      from = {self(), make_ref()}
+
+      assert {:noreply, ^state} = Client.handle_call({:request, proto_msg, []}, from, state)
+
+      # Verify ETS entry was created with global key
+      global_key = {:global, IbEx.Client.Proto.Protobuf.CurrentTimeRequest}
+
+      assert {:ok, %{type: :request, request_module: IbEx.Client.Proto.Protobuf.CurrentTimeRequest}} =
+               Subscriptions.lookup(table_ref, global_key)
+
+      # Simulate receiving a CurrentTime response (msg_id=49, wire_id=249) -- no req_id field
+      response = %IbEx.Client.Proto.Protobuf.CurrentTime{current_time: 1_700_000_000}
+      proto_payload = Protobuf.encode(response)
+      wire_msg = <<249::big-integer-size(32), proto_payload::binary>>
+
+      assert {:noreply, ^state} = Client.handle_cast({:process_message, wire_msg}, state)
+
+      # The caller should receive the reply
+      assert_receive {_ref, {:ok, %IbEx.Client.Proto.Protobuf.CurrentTime{current_time: 1_700_000_000}}}
+
+      # ETS entry should be cleaned up
+      assert {:error, :missing_subscription} = Subscriptions.lookup(table_ref, global_key)
+    end
+  end
+
+  describe "request/3 global correlation :bounded_stream path" do
+    test "accumulates OpenOrder responses and returns buffer on OpenOrdersEnd" do
+      {:ok, state} = Client.init(connection_handler: MockSuccessConnection)
+      table_ref = state.subscriptions_table_ref
+
+      proto_msg = %IbEx.Client.Proto.Protobuf.OpenOrdersRequest{}
+      from = {self(), make_ref()}
+
+      assert {:noreply, ^state} = Client.handle_call({:request, proto_msg, []}, from, state)
+
+      # Verify ETS entry was created with global key
+      global_key = {:global, IbEx.Client.Proto.Protobuf.OpenOrdersRequest}
+
+      assert {:ok, %{type: :request, request_module: IbEx.Client.Proto.Protobuf.OpenOrdersRequest}} =
+               Subscriptions.lookup(table_ref, global_key)
+
+      # Simulate receiving an OpenOrder response (msg_id=5, wire_id=205) -- no req_id field
+      open_order = %IbEx.Client.Proto.Protobuf.OpenOrder{order_id: 1}
+      wire_msg = <<205::big-integer-size(32), Protobuf.encode(open_order)::binary>>
+
+      assert {:noreply, ^state} = Client.handle_cast({:process_message, wire_msg}, state)
+
+      # Should not have replied yet
+      refute_receive {_ref, {:ok, _}}
+
+      # Simulate receiving OpenOrdersEnd (msg_id=53, wire_id=253) -- no req_id
+      end_marker = %IbEx.Client.Proto.Protobuf.OpenOrdersEnd{}
+      wire_end = <<253::big-integer-size(32), Protobuf.encode(end_marker)::binary>>
+
+      assert {:noreply, ^state} = Client.handle_cast({:process_message, wire_end}, state)
+
+      # Now the caller should receive the accumulated buffer
+      assert_receive {_ref, {:ok, buffer}}
+      assert length(buffer) == 1
+      assert [%IbEx.Client.Proto.Protobuf.OpenOrder{order_id: 1}] = buffer
+
+      # ETS entry should be cleaned up
+      assert {:error, :missing_subscription} = Subscriptions.lookup(table_ref, global_key)
+    end
+
+    test "global correlation timeout fires and cleans up" do
+      {:ok, state} = Client.init(connection_handler: MockSuccessConnection)
+      table_ref = state.subscriptions_table_ref
+
+      proto_msg = %IbEx.Client.Proto.Protobuf.OpenOrdersRequest{}
+      from = {self(), make_ref()}
+
+      assert {:noreply, ^state} =
+               Client.handle_call({:request, proto_msg, [timeout: 100]}, from, state)
+
+      global_key = {:global, IbEx.Client.Proto.Protobuf.OpenOrdersRequest}
+      assert {:ok, %{type: :request}} = Subscriptions.lookup(table_ref, global_key)
+
+      # Simulate the timeout firing
+      assert {:noreply, ^state} = Client.handle_info({:request_timeout, global_key}, state)
+
+      # Caller should receive {:error, :timeout}
+      assert_receive {_ref, {:error, :timeout}}
+
+      # ETS entry should be cleaned up
+      assert {:error, :missing_subscription} = Subscriptions.lookup(table_ref, global_key)
     end
   end
 end
