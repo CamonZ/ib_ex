@@ -136,10 +136,9 @@ defmodule IbEx.Client.Conversations do
       cancel_request: Proto.CancelHistoricalData
     },
     Proto.ScannerSubscriptionRequest => %{
-      type: :bounded_stream,
+      type: :stream,
       correlation: :req_id,
       responses: [Proto.ScannerData],
-      end_marker: nil,
       cancel_request: Proto.CancelScannerSubscription
     },
     Proto.AccountSummaryRequest => %{
