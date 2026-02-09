@@ -176,10 +176,9 @@ defmodule IbEx.Client.Conversations do
       end_marker: Proto.HistoricalNewsEnd
     },
     Proto.HistoricalTicksRequest => %{
-      type: :bounded_stream,
+      type: :stream,
       correlation: :req_id,
       responses: [Proto.HistoricalTicks, Proto.HistoricalTicksBidAsk, Proto.HistoricalTicksLast],
-      end_marker: nil,
       cancel_request: Proto.CancelHistoricalTicks
     },
     Proto.FAReplace => %{
