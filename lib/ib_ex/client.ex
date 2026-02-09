@@ -284,6 +284,9 @@ defmodule IbEx.Client do
 
           {:order_id, order_id} ->
             send_to_tws(state, struct!(cancel_module, order_id: order_id))
+
+          {:global, _request_module} ->
+            send_to_tws(state, struct!(cancel_module))
         end
 
       :error ->
@@ -295,6 +298,7 @@ defmodule IbEx.Client do
 
   defp set_correlation_id(message_type, proto_msg, id) do
     case Conversations.conversation_for(message_type) do
+      {:ok, %{correlation: :global}} -> proto_msg
       {:ok, %{correlation: :order_id}} -> %{proto_msg | order_id: id}
       _ -> %{proto_msg | req_id: id}
     end
@@ -378,7 +382,10 @@ defmodule IbEx.Client do
 
   defp dispatch_by_module(module, msg, table_ref) do
     case find_global_conversation(module, table_ref) do
-      {:ok, key, entry} ->
+      {:ok, _key, %{type: :stream, subscriber: subscriber, subscription_ref: ref}} ->
+        send(subscriber, {:ib_ex, ref, msg})
+
+      {:ok, key, %{type: :request} = entry} ->
         handle_conversation_response(table_ref, key, msg, module, entry)
 
       :not_found ->
@@ -399,7 +406,7 @@ defmodule IbEx.Client do
       key = {:global, request_module}
 
       case Subscriptions.lookup(table_ref, key) do
-        {:ok, %{type: :request} = entry} -> {:ok, key, entry}
+        {:ok, entry} -> {:ok, key, entry}
         _ -> nil
       end
     end)

@@ -527,13 +527,7 @@ defmodule IbEx.Client.Conversations do
   def register_stream(table_ref, request_module, subscriber) do
     case conversation_for(request_module) do
       {:ok, %{type: :stream, correlation: correlation}} ->
-        req_id = Subscriptions.allocate_request_id(table_ref)
-
-        key =
-          case correlation do
-            :order_id -> {:order_id, req_id}
-            _ -> {:request_id, req_id}
-          end
+        {key, req_id} = build_stream_key(correlation, table_ref, request_module)
 
         subscription_ref = make_ref()
         monitor_ref = Process.monitor(subscriber)
@@ -546,6 +540,20 @@ defmodule IbEx.Client.Conversations do
     end
   end
 
+  defp build_stream_key(:global, _table_ref, request_module) do
+    {{:global, request_module}, nil}
+  end
+
+  defp build_stream_key(:order_id, table_ref, _request_module) do
+    req_id = Subscriptions.allocate_request_id(table_ref)
+    {{:order_id, req_id}, req_id}
+  end
+
+  defp build_stream_key(_correlation, table_ref, _request_module) do
+    req_id = Subscriptions.allocate_request_id(table_ref)
+    {{:request_id, req_id}, req_id}
+  end
+
   defp build_key(:req_id, table_ref, _request_module) do
     req_id = Subscriptions.allocate_request_id(table_ref)
     {{:request_id, req_id}, req_id}
@@ -556,8 +564,8 @@ defmodule IbEx.Client.Conversations do
   end
 
   defp build_key(:order_id, table_ref, _request_module) do
-    order_id = Subscriptions.allocate_request_id(table_ref)
-    {{:order_id, order_id}, order_id}
+    req_id = Subscriptions.allocate_request_id(table_ref)
+    {{:order_id, req_id}, req_id}
   end
 
   defp end_markers do
