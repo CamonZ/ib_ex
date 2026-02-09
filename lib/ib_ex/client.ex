@@ -190,7 +190,8 @@ defmodule IbEx.Client do
   def handle_call({:subscribe, subscriber, %message_type{} = proto_msg, _opts}, _from, state) do
     case Conversations.register_stream(state.subscriptions_table_ref, message_type, subscriber) do
       {:ok, req_id, subscription_ref} ->
-        send_to_tws(state, %{proto_msg | req_id: req_id})
+        proto_msg = set_correlation_id(message_type, proto_msg, req_id)
+        send_to_tws(state, proto_msg)
         {:reply, {:ok, subscription_ref}, state}
 
       :error ->
@@ -277,14 +278,26 @@ defmodule IbEx.Client do
 
     case Conversations.cancel_request_for(request_module) do
       {:ok, cancel_module} ->
-        {:request_id, req_id} = key
-        send_to_tws(state, struct!(cancel_module, req_id: req_id))
+        case key do
+          {:request_id, req_id} ->
+            send_to_tws(state, struct!(cancel_module, req_id: req_id))
+
+          {:order_id, order_id} ->
+            send_to_tws(state, struct!(cancel_module, order_id: order_id))
+        end
 
       :error ->
         :ok
     end
 
     Subscriptions.remove_subscription(table_ref, key)
+  end
+
+  defp set_correlation_id(message_type, proto_msg, id) do
+    case Conversations.conversation_for(message_type) do
+      {:ok, %{correlation: :order_id}} -> %{proto_msg | order_id: id}
+      _ -> %{proto_msg | req_id: id}
+    end
   end
 
   defp dispatch_message(%Types.Error{id: id} = error, table_ref) when id > 0 do
@@ -304,8 +317,14 @@ defmodule IbEx.Client do
 
   defp dispatch_message(%module{} = msg, table_ref) do
     case Map.get(msg, :req_id) do
-      nil -> dispatch_by_module(module, msg, table_ref)
-      req_id -> dispatch_by_req_id({:request_id, req_id}, msg, module, table_ref)
+      nil ->
+        case Map.get(msg, :order_id) do
+          nil -> dispatch_by_module(module, msg, table_ref)
+          order_id -> dispatch_by_order_id({:order_id, order_id}, msg, module, table_ref)
+        end
+
+      req_id ->
+        dispatch_by_req_id({:request_id, req_id}, msg, module, table_ref)
     end
   end
 
@@ -321,6 +340,16 @@ defmodule IbEx.Client do
 
       _ ->
         :ok
+    end
+  end
+
+  defp dispatch_by_order_id(key, msg, module, table_ref) do
+    case Subscriptions.lookup(table_ref, key) do
+      {:ok, %{type: :stream, subscriber: subscriber, subscription_ref: ref}} ->
+        send(subscriber, {:ib_ex, ref, msg})
+
+      _ ->
+        dispatch_by_module(module, msg, table_ref)
     end
   end
 

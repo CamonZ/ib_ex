@@ -527,9 +527,15 @@ defmodule IbEx.Client.Conversations do
   @spec register_stream(reference(), module(), pid()) :: {:ok, non_neg_integer(), reference()} | :error
   def register_stream(table_ref, request_module, subscriber) do
     case conversation_for(request_module) do
-      {:ok, %{type: :stream}} ->
+      {:ok, %{type: :stream, correlation: correlation}} ->
         req_id = Subscriptions.allocate_request_id(table_ref)
-        key = {:request_id, req_id}
+
+        key =
+          case correlation do
+            :order_id -> {:order_id, req_id}
+            _ -> {:request_id, req_id}
+          end
+
         subscription_ref = make_ref()
         monitor_ref = Process.monitor(subscriber)
 
