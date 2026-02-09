@@ -5,6 +5,8 @@ defmodule IbEx.Client.Types.ContractDetails do
 
   alias IbEx.Client.Types.Contract
   alias IbEx.Client.Types.TagValue
+  alias IbEx.Client.Types.TradingSchedule
+  alias IbEx.Client.Types.TradingSession
 
   alias IbEx.Client.Types.ContractDetails.{
     BondDetails,
@@ -25,8 +27,8 @@ defmodule IbEx.Client.Types.ContractDetails do
             category: nil,
             subcategory: nil,
             time_zone_id: nil,
-            trading_hours: nil,
-            liquid_hours: nil,
+            trading_hours: [],
+            liquid_hours: [],
             ev_rule: nil,
             ev_multiplier: 0.0,
             agg_group: 0,
@@ -60,8 +62,8 @@ defmodule IbEx.Client.Types.ContractDetails do
           category: binary() | nil,
           subcategory: binary() | nil,
           time_zone_id: binary() | nil,
-          trading_hours: binary() | nil,
-          liquid_hours: binary() | nil,
+          trading_hours: list(TradingSession.t()),
+          liquid_hours: list(TradingSession.t()),
           ev_rule: binary() | nil,
           ev_multiplier: float(),
           agg_group: non_neg_integer(),
@@ -96,6 +98,8 @@ defmodule IbEx.Client.Types.ContractDetails do
       |> assign_params(:bond_details, BondDetails)
       |> assign_params(:fund_details, FundDetails)
       |> assign_params(:event_contract, EventContract)
+      |> parse_schedule(:trading_hours)
+      |> parse_schedule(:liquid_hours)
 
     struct(__MODULE__, attrs)
   end
@@ -117,6 +121,13 @@ defmodule IbEx.Client.Types.ContractDetails do
       value when is_binary(value) -> Map.put(attrs, key, String.split(value, ",", trim: true))
       value when is_list(value) -> Map.put(attrs, key, value)
       _ -> Map.put(attrs, key, [])
+    end
+  end
+
+  defp parse_schedule(attrs, key) do
+    case Map.get(attrs, key) do
+      value when is_binary(value) -> Map.put(attrs, key, TradingSchedule.parse(value))
+      _ -> attrs
     end
   end
 end
