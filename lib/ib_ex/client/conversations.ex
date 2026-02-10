@@ -325,9 +325,9 @@ defmodule IbEx.Client.Conversations do
     # lifecycle stream rather than through a separate conversation.
     # -----------------------------------------------------------------------
     Proto.CancelOrderRequest => %{
-      type: :command,
+      type: :request_response,
       correlation: :order_id,
-      responses: []
+      responses: [Proto.OrderStatus]
     },
     Proto.GlobalCancelRequest => %{
       type: :command,
@@ -508,6 +508,30 @@ defmodule IbEx.Client.Conversations do
         timer_ref = Process.send_after(client_pid, {:request_timeout, key}, timeout)
         Subscriptions.register_request(table_ref, key, from, timer_ref, request_module)
         {:ok, key, req_id}
+
+      :error ->
+        :error
+    end
+  end
+
+  @doc """
+  Registers a request conversation on an existing key.
+
+  Used when a caller needs to join a conversation that is already in progress
+  (e.g. CancelOrder joining a PlaceOrder order_id key). The key is provided
+  directly rather than being allocated.
+
+  Returns `{:ok, key}` on success or `:error` if the request module has no
+  registered conversation.
+  """
+  @spec register_request_on_existing_key(reference(), module(), tuple(), GenServer.from(), non_neg_integer(), pid()) ::
+          {:ok, tuple()} | :error
+  def register_request_on_existing_key(table_ref, request_module, key, from, timeout, client_pid) do
+    case conversation_for(request_module) do
+      {:ok, _shape} ->
+        timer_ref = Process.send_after(client_pid, {:request_timeout, key}, timeout)
+        Subscriptions.register_request(table_ref, key, from, timer_ref, request_module)
+        {:ok, key}
 
       :error ->
         :error

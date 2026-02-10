@@ -384,7 +384,7 @@ defmodule IbEx.Client.ConversationsTest do
       assert {:ok, entry} = Subscriptions.lookup(table_ref, key)
       assert entry.type == :request
       assert entry.from == from
-      assert entry.buffer == []
+      refute Map.has_key?(entry, :buffer)
       assert entry.request_module == Proto.MatchingSymbolsRequest
       assert is_reference(entry.timer_ref)
     end

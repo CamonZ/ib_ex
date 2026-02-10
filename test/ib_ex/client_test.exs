@@ -57,7 +57,7 @@ defmodule IbEx.ClientTest do
   alias IbEx.Client.Subscriptions
 
   describe "init/1" do
-    test "opens the connection to IBKR's TWS or Gateway and creates the message subscriptions table" do
+    test "opens the connection to IBKR's TWS or Gateway and creates the message subscriptions tables" do
       assert {:ok, state} = Client.init(connection_handler: MockSuccessConnection)
 
       assert is_pid(state.connection)
@@ -65,7 +65,10 @@ defmodule IbEx.ClientTest do
 
       refute is_nil(state.subscriptions_table_ref)
 
-      assert :ets.lookup(state.subscriptions_table_ref, :message_request_ids) == [message_request_ids: 1]
+      assert %{subscribers: subscribers, responses: responses} = state.subscriptions_table_ref
+      assert is_reference(subscribers)
+      assert is_reference(responses)
+      assert :ets.lookup(subscribers, :message_request_ids) == [message_request_ids: 1]
     end
 
     test "stops the server on failure to open the connection" do

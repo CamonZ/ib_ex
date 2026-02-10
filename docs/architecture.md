@@ -49,11 +49,11 @@ GenServer managing the raw TCP socket to TWS/Gateway. Default host `{127, 0, 0, 
 
 ### Subscriptions (`IbEx.Client.Subscriptions`)
 
-ETS table (`set`, `public`) mapping request IDs to subscriber PIDs. Three subscription modes:
+ETS table (`bag`, `public`) mapping request IDs to subscriber entries. Supports multiple entries per key for fan-out dispatch (e.g. PlaceOrder stream + CancelOrder request sharing the same order_id). Three subscription modes:
 
 1. **By request_id** (most common) - auto-allocated integer, used by most market data/order messages
 2. **By module atom** - for singleton responses (e.g., `InitConnection`)
-3. **By custom ID** - for special cases
+3. **By order_id** - for order lifecycle conversations with fan-out support
 
 ### Protocols
 

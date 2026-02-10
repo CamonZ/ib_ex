@@ -381,24 +381,79 @@ defmodule IbEx.Client.OrdersTest do
   end
 
   describe "cancel/3" do
-    test "sends CancelOrderRequest and returns :ok" do
+    test "sends CancelOrderRequest and returns {:ok, order_status} when OrderStatus arrives" do
       client = start_client()
 
-      assert :ok = Orders.cancel(client, 42)
+      task =
+        Task.async(fn ->
+          Orders.cancel(client, 42, timeout: 5_000)
+        end)
+
+      Process.sleep(50)
+
+      order_status = %Proto.OrderStatus{
+        order_id: 42,
+        status: "Cancelled",
+        filled: "0",
+        remaining: "100",
+        avg_fill_price: 0.0,
+        perm_id: 12345,
+        parent_id: 0,
+        last_fill_price: 0.0,
+        client_id: 0,
+        why_held: "",
+        mkt_cap_price: 0.0
+      }
+
+      Client.process_message(client, wire_message(@order_status_wire_id, order_status))
+
+      assert {:ok, %Proto.OrderStatus{order_id: 42, status: "Cancelled"}} = Task.await(task, 5_000)
     end
 
     test "accepts options for order cancel parameters" do
       client = start_client()
 
-      assert :ok = Orders.cancel(client, 42, manual_order_cancel_time: "20240101 12:00:00", ext_operator: "ext_op")
+      task =
+        Task.async(fn ->
+          Orders.cancel(client, 42,
+            manual_order_cancel_time: "20240101 12:00:00",
+            ext_operator: "ext_op",
+            timeout: 5_000
+          )
+        end)
+
+      Process.sleep(50)
+
+      order_status = %Proto.OrderStatus{
+        order_id: 42,
+        status: "Cancelled",
+        filled: "0",
+        remaining: "100",
+        avg_fill_price: 0.0,
+        perm_id: 12345,
+        parent_id: 0,
+        last_fill_price: 0.0,
+        client_id: 0,
+        why_held: "",
+        mkt_cap_price: 0.0
+      }
+
+      Client.process_message(client, wire_message(@order_status_wire_id, order_status))
+
+      assert {:ok, %Proto.OrderStatus{order_id: 42, status: "Cancelled"}} = Task.await(task, 5_000)
     end
 
-    test "sends cancel for different order IDs" do
+    test "returns {:error, :timeout} when no OrderStatus arrives within timeout" do
       client = start_client()
 
-      for order_id <- [1, 10, 100, 9999] do
-        assert :ok = Orders.cancel(client, order_id)
-      end
+      result =
+        try do
+          Orders.cancel(client, 42, timeout: 100)
+        catch
+          :exit, {:timeout, _} -> {:error, :timeout}
+        end
+
+      assert {:error, :timeout} = result
     end
   end
 

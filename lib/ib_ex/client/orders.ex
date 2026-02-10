@@ -158,26 +158,28 @@ defmodule IbEx.Client.Orders do
   @doc """
   Cancels a specific order by order_id.
 
-  Builds a `CancelOrderRequest` and sends it as a fire-and-forget command
-  through `Client.command/2`. Any resulting status updates (e.g. OrderStatus
-  with "Cancelled") are delivered through the order's existing PlaceOrder
-  lifecycle stream.
+  Builds a `CancelOrderRequest` and sends it through `Client.request/3` using
+  order_id correlation. The request registers on the existing order's
+  `{:order_id, order_id}` key and completes when an `OrderStatus` response
+  with cancelled status arrives. The same `OrderStatus` message is also
+  delivered to the order's `PlaceOrder` lifecycle stream subscriber.
 
-  Returns `:ok`.
+  Returns `{:ok, %Proto.OrderStatus{}}` on success, or `{:error, reason}` on failure/timeout.
 
   ## Options
 
   * `:manual_order_cancel_time` - Manual order cancel time string (default: `""`)
   * `:ext_operator` - External operator string (default: `""`)
   * `:manual_order_indicator` - Manual order indicator integer (default: `0`)
+  * `:timeout` - Request timeout in milliseconds (default: `5_000`)
 
   ## Examples
 
-      :ok = Orders.cancel(client, 42)
-      :ok = Orders.cancel(client, 42, manual_order_cancel_time: "20240101 12:00:00")
+      {:ok, status} = Orders.cancel(client, 42)
+      {:ok, status} = Orders.cancel(client, 42, manual_order_cancel_time: "20240101 12:00:00")
 
   """
-  @spec cancel(pid(), integer(), keyword()) :: :ok
+  @spec cancel(pid(), integer(), keyword()) :: {:ok, struct()} | {:error, any()}
   def cancel(client, order_id, opts \\ []) when is_integer(order_id) do
     order_cancel = %Proto.OrderCancel{
       manual_order_cancel_time: Keyword.get(opts, :manual_order_cancel_time, ""),
@@ -190,7 +192,7 @@ defmodule IbEx.Client.Orders do
       order_cancel: order_cancel
     }
 
-    Client.command(client, request)
+    Client.request(client, request, opts)
   end
 
   @doc """

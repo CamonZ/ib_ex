@@ -173,17 +173,24 @@ defmodule IbEx.Client do
   def handle_call({:request, %message_type{} = proto_msg, opts}, from, state) do
     timeout = Keyword.get(opts, :timeout, @default_timeout)
 
-    case Conversations.register_request(state.subscriptions_table_ref, message_type, from, timeout, self()) do
-      {:ok, _key, req_id} when is_integer(req_id) ->
-        send_to_tws(state, %{proto_msg | req_id: req_id})
-        {:noreply, state}
-
-      {:ok, _key, nil} ->
+    case join_existing_conversation(state, message_type, proto_msg, from, timeout) do
+      {:ok, _key} ->
         send_to_tws(state, proto_msg)
         {:noreply, state}
 
-      :error ->
-        {:reply, {:error, :unknown_conversation}, state}
+      :not_applicable ->
+        case Conversations.register_request(state.subscriptions_table_ref, message_type, from, timeout, self()) do
+          {:ok, _key, req_id} when is_integer(req_id) ->
+            send_to_tws(state, %{proto_msg | req_id: req_id})
+            {:noreply, state}
+
+          {:ok, _key, nil} ->
+            send_to_tws(state, proto_msg)
+            {:noreply, state}
+
+          :error ->
+            {:reply, {:error, :unknown_conversation}, state}
+        end
     end
   end
 
@@ -221,9 +228,9 @@ defmodule IbEx.Client do
     table_ref = state.subscriptions_table_ref
 
     case Subscriptions.lookup(table_ref, key) do
-      {:ok, %{type: :request, from: from}} ->
+      {:ok, %{type: :request, from: from} = entry} ->
         GenServer.reply(from, {:error, :timeout})
-        Subscriptions.remove_subscription(table_ref, key)
+        Subscriptions.remove_entry(table_ref, key, entry)
 
       _ ->
         :ok
@@ -273,7 +280,7 @@ defmodule IbEx.Client do
     end
   end
 
-  defp cancel_stream(state, table_ref, key, %{monitor_ref: monitor_ref, request_module: request_module}) do
+  defp cancel_stream(state, table_ref, key, %{monitor_ref: monitor_ref, request_module: request_module} = entry) do
     Process.demonitor(monitor_ref, [:flush])
 
     case Conversations.cancel_request_for(request_module) do
@@ -293,7 +300,34 @@ defmodule IbEx.Client do
         :ok
     end
 
-    Subscriptions.remove_subscription(table_ref, key)
+    Subscriptions.remove_entry(table_ref, key, entry)
+  end
+
+  # Checks if the request should join an existing conversation (e.g. CancelOrderRequest
+  # joining a PlaceOrder lifecycle on the same order_id key).
+  defp join_existing_conversation(state, message_type, proto_msg, from, timeout) do
+    case Conversations.conversation_for(message_type) do
+      {:ok, %{correlation: :order_id, type: type}} when type != :stream ->
+        order_id = Map.get(proto_msg, :order_id)
+
+        if order_id do
+          key = {:order_id, order_id}
+
+          Conversations.register_request_on_existing_key(
+            state.subscriptions_table_ref,
+            message_type,
+            key,
+            from,
+            timeout,
+            self()
+          )
+        else
+          :not_applicable
+        end
+
+      _ ->
+        :not_applicable
+    end
   end
 
   defp set_correlation_id(message_type, proto_msg, id) do
@@ -307,12 +341,15 @@ defmodule IbEx.Client do
   defp dispatch_message(%Types.Error{id: id} = error, table_ref) when id > 0 do
     key = {:request_id, id}
 
-    case Subscriptions.lookup(table_ref, key) do
-      {:ok, %{type: :request} = entry} ->
-        complete_conversation(table_ref, key, entry, {:error, error})
+    case Subscriptions.lookup_all(table_ref, key) do
+      {:ok, entries} ->
+        Enum.each(entries, fn
+          %{type: :request} = entry ->
+            complete_conversation(table_ref, key, entry, {:error, error})
 
-      {:ok, %{type: :stream, subscriber: subscriber, subscription_ref: ref}} ->
-        send(subscriber, {:ib_ex, ref, {:error, error}})
+          %{type: :stream, subscriber: subscriber, subscription_ref: ref} ->
+            send(subscriber, {:ib_ex, ref, {:error, error}})
+        end)
 
       _ ->
         :ok
@@ -348,9 +385,15 @@ defmodule IbEx.Client do
   end
 
   defp dispatch_by_order_id(key, msg, module, table_ref) do
-    case Subscriptions.lookup(table_ref, key) do
-      {:ok, %{type: :stream, subscriber: subscriber, subscription_ref: ref}} ->
-        send(subscriber, {:ib_ex, ref, msg})
+    case Subscriptions.lookup_all(table_ref, key) do
+      {:ok, entries} ->
+        Enum.each(entries, fn
+          %{type: :stream, subscriber: subscriber, subscription_ref: ref} ->
+            send(subscriber, {:ib_ex, ref, msg})
+
+          %{type: :request} = entry ->
+            handle_conversation_response(table_ref, key, msg, module, entry)
+        end)
 
       _ ->
         dispatch_by_module(module, msg, table_ref)
@@ -366,7 +409,7 @@ defmodule IbEx.Client do
 
       :bounded_stream ->
         if Conversations.end_marker?(module) do
-          {:ok, buffer} = Subscriptions.complete_request(table_ref, key)
+          {:ok, buffer} = Subscriptions.get_responses(table_ref, key)
           complete_conversation(table_ref, key, entry, {:ok, buffer})
         else
           Subscriptions.append_response(table_ref, key, msg)
@@ -374,10 +417,10 @@ defmodule IbEx.Client do
     end
   end
 
-  defp complete_conversation(table_ref, key, %{from: from, timer_ref: timer_ref}, reply) do
+  defp complete_conversation(table_ref, key, %{from: from, timer_ref: timer_ref} = entry, reply) do
     Process.cancel_timer(timer_ref)
     GenServer.reply(from, reply)
-    Subscriptions.remove_subscription(table_ref, key)
+    Subscriptions.remove_entry(table_ref, key, entry)
   end
 
   defp dispatch_by_module(module, msg, table_ref) do
