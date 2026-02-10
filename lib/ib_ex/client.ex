@@ -16,7 +16,7 @@ defmodule IbEx.Client do
   After the `InitConnection.Response` is received then we send the `StartApi.Request` message
   which the TWS server replies with:
   * Account number
-  * Next valid ID (presumably for order placement)
+  * Next valid ID (used as the order ID sequence for order placement)
   * Info messages regarding which data farms are connected
 
   """
@@ -71,6 +71,13 @@ defmodule IbEx.Client do
 
   def command(pid, proto_msg) do
     GenServer.call(pid, {:command, proto_msg})
+  end
+
+  @doc """
+  Returns the current next valid order ID tracked by the Client.
+  """
+  def next_valid_id(pid) do
+    GenServer.call(pid, :next_valid_id)
   end
 
   def start_link(opts \\ []) do
@@ -194,10 +201,13 @@ defmodule IbEx.Client do
   end
 
   def handle_call({:subscribe, subscriber, %message_type{} = proto_msg, _opts}, _from, state) do
-    case Conversations.register_stream(state.subscriptions_table_ref, message_type, subscriber) do
+    next_valid_id = order_id_for_correlation(message_type, state)
+
+    case Conversations.register_stream(state.subscriptions_table_ref, message_type, subscriber, next_valid_id) do
       {:ok, req_id, subscription_ref} ->
         proto_msg = set_correlation_id(message_type, proto_msg, req_id)
         send_to_tws(state, proto_msg)
+        maybe_request_next_valid_id(message_type, state)
         {:reply, {:ok, subscription_ref}, state}
 
       :error ->
@@ -221,6 +231,10 @@ defmodule IbEx.Client do
   def handle_call({:command, proto_msg}, _from, state) do
     send_to_tws(state, proto_msg)
     {:reply, :ok, state}
+  end
+
+  def handle_call(:next_valid_id, _from, state) do
+    {:reply, state.next_valid_id, state}
   end
 
   def handle_info({:request_timeout, key}, state) do
@@ -300,6 +314,23 @@ defmodule IbEx.Client do
     end
 
     Subscriptions.remove_subscription(table_ref, key)
+  end
+
+  defp order_id_for_correlation(message_type, state) do
+    case Conversations.conversation_for(message_type) do
+      {:ok, %{correlation: :order_id}} -> state.next_valid_id
+      _ -> nil
+    end
+  end
+
+  defp maybe_request_next_valid_id(message_type, state) do
+    case Conversations.conversation_for(message_type) do
+      {:ok, %{correlation: :order_id}} ->
+        send_to_tws(state, %IbEx.Client.Proto.Protobuf.IdsRequest{num_ids: 1})
+
+      _ ->
+        :ok
+    end
   end
 
   defp set_correlation_id(message_type, proto_msg, id) do

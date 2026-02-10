@@ -466,6 +466,42 @@ defmodule IbEx.Client.ConversationsTest do
       assert is_reference(entry.monitor_ref)
     end
 
+    test "registers an order_id stream with explicit next_valid_id", %{table_ref: table_ref} do
+      assert {:ok, order_id, subscription_ref} =
+               Conversations.register_stream(table_ref, Proto.PlaceOrderRequest, self(), 42)
+
+      assert order_id == 42
+      assert is_reference(subscription_ref)
+
+      assert {:ok, entry} = Subscriptions.lookup(table_ref, {:order_id, 42})
+      assert entry.type == :stream
+      assert entry.subscriber == self()
+      assert entry.subscription_ref == subscription_ref
+      assert entry.request_module == Proto.PlaceOrderRequest
+    end
+
+    test "order_id stream falls back to ETS counter when next_valid_id is nil", %{table_ref: table_ref} do
+      assert {:ok, order_id, subscription_ref} =
+               Conversations.register_stream(table_ref, Proto.PlaceOrderRequest, self(), nil)
+
+      assert order_id == 1
+      assert is_reference(subscription_ref)
+
+      assert {:ok, entry} = Subscriptions.lookup(table_ref, {:order_id, 1})
+      assert entry.type == :stream
+      assert entry.request_module == Proto.PlaceOrderRequest
+    end
+
+    test "next_valid_id is ignored for non-order_id correlated streams", %{table_ref: table_ref} do
+      assert {:ok, req_id, _subscription_ref} =
+               Conversations.register_stream(table_ref, Proto.MarketDataRequest, self(), 999)
+
+      # Should use ETS counter (1), not the passed next_valid_id (999)
+      assert req_id == 1
+      assert {:ok, _} = Subscriptions.lookup(table_ref, {:request_id, 1})
+      assert {:error, :missing_subscription} = Subscriptions.lookup(table_ref, {:order_id, 999})
+    end
+
     test "returns :error for non-stream conversation types", %{table_ref: table_ref} do
       assert :error = Conversations.register_stream(table_ref, Proto.MatchingSymbolsRequest, self())
       assert :error = Conversations.register_stream(table_ref, Proto.ContractDataRequest, self())

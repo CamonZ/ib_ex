@@ -603,4 +603,107 @@ defmodule IbEx.ClientTest do
       assert {:error, :missing_subscription} = Subscriptions.lookup(table_ref, global_key)
     end
   end
+
+  describe "next_valid_id/1" do
+    test "returns the current next_valid_id from state" do
+      {:ok, state} = Client.init(connection_handler: MockSuccessConnection)
+
+      # Initially nil
+      assert {:reply, nil, ^state} = Client.handle_call(:next_valid_id, {self(), make_ref()}, state)
+
+      # After setting next_valid_id (simulating TWS handshake)
+      state_with_id = %{state | next_valid_id: 42}
+      assert {:reply, 42, ^state_with_id} = Client.handle_call(:next_valid_id, {self(), make_ref()}, state_with_id)
+    end
+  end
+
+  describe "subscribe/3 with order_id correlation" do
+    test "uses next_valid_id from state for order_id correlated streams" do
+      {:ok, state} = Client.init(connection_handler: MockSuccessConnection)
+      table_ref = state.subscriptions_table_ref
+      state = %{state | next_valid_id: 100}
+
+      proto_msg = %IbEx.Client.Proto.Protobuf.PlaceOrderRequest{
+        contract: %IbEx.Client.Proto.Protobuf.Contract{symbol: "AAPL"},
+        order: %IbEx.Client.Proto.Protobuf.Order{action: "BUY", total_quantity: "100", order_type: "LMT"}
+      }
+
+      assert {:reply, {:ok, subscription_ref}, new_state} =
+               Client.handle_call({:subscribe, self(), proto_msg, []}, {self(), make_ref()}, state)
+
+      assert is_reference(subscription_ref)
+
+      # Verify ETS entry was created with order_id key using next_valid_id
+      assert {:ok, entry} = Subscriptions.lookup(table_ref, {:order_id, 100})
+      assert entry.type == :stream
+      assert entry.subscriber == self()
+      assert entry.request_module == IbEx.Client.Proto.Protobuf.PlaceOrderRequest
+
+      # next_valid_id is not locally incremented; it waits for TWS to send a new NextValidId
+      assert new_state.next_valid_id == 100
+    end
+
+    test "does not change next_valid_id for req_id correlated streams" do
+      {:ok, state} = Client.init(connection_handler: MockSuccessConnection)
+      state = %{state | next_valid_id: 100}
+
+      proto_msg = %IbEx.Client.Proto.Protobuf.MarketDataRequest{
+        contract: %IbEx.Client.Proto.Protobuf.Contract{symbol: "AAPL"}
+      }
+
+      {:reply, {:ok, _subscription_ref}, new_state} =
+        Client.handle_call({:subscribe, self(), proto_msg, []}, {self(), make_ref()}, state)
+
+      # next_valid_id should NOT have changed
+      assert new_state.next_valid_id == 100
+    end
+
+    test "order messages are delivered using the TWS-assigned order_id" do
+      {:ok, state} = Client.init(connection_handler: MockSuccessConnection)
+      state = %{state | next_valid_id: 200}
+
+      proto_msg = %IbEx.Client.Proto.Protobuf.PlaceOrderRequest{
+        contract: %IbEx.Client.Proto.Protobuf.Contract{symbol: "AAPL"},
+        order: %IbEx.Client.Proto.Protobuf.Order{action: "BUY", total_quantity: "100", order_type: "LMT"}
+      }
+
+      {:reply, {:ok, subscription_ref}, new_state} =
+        Client.handle_call({:subscribe, self(), proto_msg, []}, {self(), make_ref()}, state)
+
+      # Simulate receiving an OrderStatus response with order_id=200
+      order_status = %IbEx.Client.Proto.Protobuf.OrderStatus{
+        order_id: 200,
+        status: "PreSubmitted",
+        filled: "0",
+        remaining: "100"
+      }
+
+      wire_msg = <<203::big-integer-size(32), Protobuf.encode(order_status)::binary>>
+
+      assert {:noreply, ^new_state} = Client.handle_cast({:process_message, wire_msg}, new_state)
+
+      assert_receive {:ib_ex, ^subscription_ref, %IbEx.Client.Proto.Protobuf.OrderStatus{order_id: 200}}
+    end
+  end
+
+  describe "handle_cast/2 NextValidId updates" do
+    test "updates next_valid_id when a new NextValidId message arrives at any time" do
+      table_ref = Subscriptions.initialize()
+
+      state = %{
+        subscriptions_table_ref: table_ref,
+        status: :connected,
+        trace_messages: false,
+        next_valid_id: 1
+      }
+
+      # Simulate receiving a NextValidId with order_id=500
+      next_valid_id_msg = %IbEx.Client.Proto.Protobuf.NextValidId{order_id: 500}
+      proto_payload = Protobuf.encode(next_valid_id_msg)
+      wire_msg = <<209::big-integer-size(32), proto_payload::binary>>
+
+      assert {:noreply, new_state} = Client.handle_cast({:process_message, wire_msg}, state)
+      assert new_state.next_valid_id == 500
+    end
+  end
 end
