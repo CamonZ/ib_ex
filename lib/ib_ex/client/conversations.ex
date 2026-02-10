@@ -505,8 +505,7 @@ defmodule IbEx.Client.Conversations do
     case conversation_for(request_module) do
       {:ok, shape} ->
         {key, req_id} = build_key(shape.correlation, table_ref, request_module)
-        timer_ref = Process.send_after(client_pid, {:request_timeout, key}, timeout)
-        Subscriptions.register_request(table_ref, key, from, timer_ref, request_module)
+        do_register(table_ref, request_module, key, from, timeout, client_pid)
         {:ok, key, req_id}
 
       :error ->
@@ -524,18 +523,22 @@ defmodule IbEx.Client.Conversations do
   Returns `{:ok, key}` on success or `:error` if the request module has no
   registered conversation.
   """
-  @spec register_request_on_existing_key(reference(), module(), tuple(), GenServer.from(), non_neg_integer(), pid()) ::
+  @spec register_request_on_key(reference(), module(), tuple(), GenServer.from(), non_neg_integer(), pid()) ::
           {:ok, tuple()} | :error
-  def register_request_on_existing_key(table_ref, request_module, key, from, timeout, client_pid) do
+  def register_request_on_key(table_ref, request_module, key, from, timeout, client_pid) do
     case conversation_for(request_module) do
       {:ok, _shape} ->
-        timer_ref = Process.send_after(client_pid, {:request_timeout, key}, timeout)
-        Subscriptions.register_request(table_ref, key, from, timer_ref, request_module)
+        do_register(table_ref, request_module, key, from, timeout, client_pid)
         {:ok, key}
 
       :error ->
         :error
     end
+  end
+
+  defp do_register(table_ref, request_module, key, from, timeout, client_pid) do
+    timer_ref = Process.send_after(client_pid, {:request_timeout, key, from}, timeout)
+    Subscriptions.register_request(table_ref, key, from, timer_ref, request_module)
   end
 
   @doc """
@@ -551,7 +554,7 @@ defmodule IbEx.Client.Conversations do
   def register_stream(table_ref, request_module, subscriber) do
     case conversation_for(request_module) do
       {:ok, %{type: :stream, correlation: correlation}} ->
-        {key, req_id} = build_stream_key(correlation, table_ref, request_module)
+        {key, req_id} = build_key(correlation, table_ref, request_module)
 
         subscription_ref = make_ref()
         monitor_ref = Process.monitor(subscriber)
@@ -564,18 +567,8 @@ defmodule IbEx.Client.Conversations do
     end
   end
 
-  defp build_stream_key(:global, _table_ref, request_module) do
+  defp build_key(:global, _table_ref, request_module) do
     {{:global, request_module}, nil}
-  end
-
-  defp build_stream_key(:order_id, table_ref, _request_module) do
-    req_id = Subscriptions.allocate_request_id(table_ref)
-    {{:order_id, req_id}, req_id}
-  end
-
-  defp build_stream_key(_correlation, table_ref, _request_module) do
-    req_id = Subscriptions.allocate_request_id(table_ref)
-    {{:request_id, req_id}, req_id}
   end
 
   defp build_key(:req_id, table_ref, _request_module) do
@@ -583,13 +576,9 @@ defmodule IbEx.Client.Conversations do
     {{:request_id, req_id}, req_id}
   end
 
-  defp build_key(:global, _table_ref, request_module) do
-    {{:global, request_module}, nil}
-  end
-
-  defp build_key(:order_id, table_ref, _request_module) do
+  defp build_key(correlation, table_ref, _request_module) do
     req_id = Subscriptions.allocate_request_id(table_ref)
-    {{:order_id, req_id}, req_id}
+    {{correlation, req_id}, req_id}
   end
 
   defp end_markers do
