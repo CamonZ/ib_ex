@@ -15,8 +15,8 @@ defmodule IbEx.Client.Types.ContractDetails do
   defstruct contract: nil,
             market_name: nil,
             min_tick: 0.0,
-            order_types: nil,
-            valid_exchanges: nil,
+            order_types: [],
+            valid_exchanges: [],
             price_magnifier: 0,
             under_conid: 0,
             long_name: nil,
@@ -50,8 +50,8 @@ defmodule IbEx.Client.Types.ContractDetails do
           contract: Contract.t() | nil,
           market_name: binary() | nil,
           min_tick: float(),
-          order_types: binary() | nil,
-          valid_exchanges: binary() | nil,
+          order_types: list(String.t()),
+          valid_exchanges: list(String.t()),
           price_magnifier: non_neg_integer(),
           under_conid: non_neg_integer(),
           long_name: binary() | nil,
@@ -91,6 +91,8 @@ defmodule IbEx.Client.Types.ContractDetails do
   def new(attrs) when is_map(attrs) do
     attrs =
       attrs
+      |> parse_comma_separated(:order_types)
+      |> parse_comma_separated(:valid_exchanges)
       |> assign_params(:bond_details, BondDetails)
       |> assign_params(:fund_details, FundDetails)
       |> assign_params(:event_contract, EventContract)
@@ -106,6 +108,15 @@ defmodule IbEx.Client.Types.ContractDetails do
       value when is_map(value) -> Map.put(attrs, key, module.new(value))
       %{__struct__: _} = value -> Map.put(attrs, key, value)
       _ -> attrs
+    end
+  end
+
+  defp parse_comma_separated(attrs, key) do
+    case Map.get(attrs, key) do
+      nil -> Map.put(attrs, key, [])
+      value when is_binary(value) -> Map.put(attrs, key, String.split(value, ",", trim: true))
+      value when is_list(value) -> Map.put(attrs, key, value)
+      _ -> Map.put(attrs, key, [])
     end
   end
 end
