@@ -74,7 +74,8 @@ defmodule IbEx.Client do
   end
 
   def start_link(opts \\ []) do
-    GenServer.start_link(__MODULE__, opts)
+    {server_opts, opts} = Keyword.split(opts, [:name])
+    GenServer.start_link(__MODULE__, opts, server_opts)
   end
 
   def init(opts) do
@@ -147,6 +148,8 @@ defmodule IbEx.Client do
   def handle_cast({:process_message, str}, state) do
     case Responses.parse(str, state.status, state.trace_messages) do
       {:ok, %Messages.InitConnection.Response{} = msg} ->
+        maybe_trace(msg, state)
+
         update = %{
           server_version: msg.server_version,
           connection_timestamp: msg.connection_timestamp,
@@ -156,12 +159,15 @@ defmodule IbEx.Client do
         {:noreply, Map.merge(state, update), {:continue, :validate_server_version}}
 
       {:ok, %IbEx.Client.Proto.Protobuf.ManagedAccounts{} = msg} ->
+        maybe_trace(msg, state)
         {:noreply, Map.put(state, :managed_accounts, msg.accounts_list)}
 
       {:ok, %IbEx.Client.Proto.Protobuf.NextValidId{} = msg} ->
+        maybe_trace(msg, state)
         {:noreply, Map.put(state, :next_valid_id, msg.order_id)}
 
       {:ok, msg} ->
+        maybe_trace(msg, state)
         dispatch_message(msg, state.subscriptions_table_ref)
         {:noreply, state}
 
@@ -411,4 +417,13 @@ defmodule IbEx.Client do
       end
     end)
   end
+
+  defp maybe_trace(msg, %{trace_messages: true}) do
+    case Process.whereis(IbEx.TraceServer) do
+      pid when is_pid(pid) -> GenServer.cast(pid, {:trace, msg})
+      nil -> :ok
+    end
+  end
+
+  defp maybe_trace(_msg, _state), do: :ok
 end

@@ -7,7 +7,8 @@ defmodule IbEx.MixProject do
       version: "0.1.0",
       elixir: "~> 1.16",
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      deps: deps(),
+      aliases: aliases()
     ]
   end
 
@@ -26,7 +27,13 @@ defmodule IbEx.MixProject do
       {:decimal, "~> 2.1"},
       {:protobuf, "~> 0.16"},
       {:dialyxir, "~> 1.4", only: [:dev], runtime: false},
-      {:ex_doc, "~> 0.34.0", only: [:dev], runtime: false}
+      {:ex_doc, "~> 0.34.0", only: [:dev], runtime: false},
+      {:bandit, "~> 1.0", only: :dev},
+      {:tidewave, "~> 0.5", only: :dev}
     ]
+  end
+
+  defp aliases do
+    []
   end
 end
