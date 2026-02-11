@@ -6,10 +6,12 @@ defmodule IbEx.Application do
   use Application
 
   def start(_type, _args) do
-    children = [
-      # Starts a worker by calling: IbEx.Worker.start_link(arg)
-      # {IbEx.Worker, arg}
-    ]
+    children =
+      if Mix.env() == :dev and Code.ensure_loaded?(IbEx.DevServer) do
+        [IbEx.DevServer]
+      else
+        []
+      end
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
