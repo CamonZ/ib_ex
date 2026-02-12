@@ -481,6 +481,107 @@ defmodule IbEx.Client.OrdersTest do
     end
   end
 
+  describe "terminal order status subscription cleanup" do
+    test "cleans up subscription after Filled status" do
+      client = start_client_with_next_valid_id(100)
+
+      proto_contract = %Proto.Contract{symbol: "AAPL", sec_type: "STK", currency: "USD"}
+      proto_order = %Proto.Order{action: "BUY", total_quantity: "100", order_type: "LMT", lmt_price: 150.0}
+
+      {:ok, ref} = Orders.place(client, proto_contract, proto_order)
+
+      # Get the ETS table ref from client state
+      %{subscriptions_table_ref: table_ref} = :sys.get_state(client)
+      assert {:ok, %{type: :stream}} = IbEx.Client.Subscriptions.lookup(table_ref, {:order_id, 100})
+
+      filled_status = %Proto.OrderStatus{
+        order_id: 100,
+        status: "Filled",
+        filled: "100",
+        remaining: "0",
+        avg_fill_price: 150.0,
+        perm_id: 12345,
+        parent_id: 0,
+        last_fill_price: 150.0,
+        client_id: 0,
+        why_held: "",
+        mkt_cap_price: 0.0
+      }
+
+      Client.process_message(client, wire_message(@order_status_wire_id, filled_status))
+
+      assert_receive {:ib_ex, ^ref, %Proto.OrderStatus{status: "Filled"}}, 1_000
+
+      Process.sleep(50)
+      assert {:error, :missing_subscription} = IbEx.Client.Subscriptions.lookup(table_ref, {:order_id, 100})
+    end
+
+    test "cleans up subscription after Cancelled status" do
+      client = start_client_with_next_valid_id(200)
+
+      proto_contract = %Proto.Contract{symbol: "MSFT", sec_type: "STK", currency: "USD"}
+      proto_order = %Proto.Order{action: "BUY", total_quantity: "50", order_type: "LMT", lmt_price: 400.0}
+
+      {:ok, ref} = Orders.place(client, proto_contract, proto_order)
+
+      %{subscriptions_table_ref: table_ref} = :sys.get_state(client)
+      assert {:ok, %{type: :stream}} = IbEx.Client.Subscriptions.lookup(table_ref, {:order_id, 200})
+
+      cancelled_status = %Proto.OrderStatus{
+        order_id: 200,
+        status: "Cancelled",
+        filled: "0",
+        remaining: "50",
+        avg_fill_price: 0.0,
+        perm_id: 67890,
+        parent_id: 0,
+        last_fill_price: 0.0,
+        client_id: 0,
+        why_held: "",
+        mkt_cap_price: 0.0
+      }
+
+      Client.process_message(client, wire_message(@order_status_wire_id, cancelled_status))
+
+      assert_receive {:ib_ex, ^ref, %Proto.OrderStatus{status: "Cancelled"}}, 1_000
+
+      Process.sleep(50)
+      assert {:error, :missing_subscription} = IbEx.Client.Subscriptions.lookup(table_ref, {:order_id, 200})
+    end
+
+    test "keeps subscription for non-terminal status" do
+      client = start_client_with_next_valid_id(300)
+
+      proto_contract = %Proto.Contract{symbol: "GOOG", sec_type: "STK", currency: "USD"}
+      proto_order = %Proto.Order{action: "SELL", total_quantity: "10", order_type: "LMT", lmt_price: 170.0}
+
+      {:ok, ref} = Orders.place(client, proto_contract, proto_order)
+
+      %{subscriptions_table_ref: table_ref} = :sys.get_state(client)
+
+      submitted_status = %Proto.OrderStatus{
+        order_id: 300,
+        status: "Submitted",
+        filled: "0",
+        remaining: "10",
+        avg_fill_price: 0.0,
+        perm_id: 11111,
+        parent_id: 0,
+        last_fill_price: 0.0,
+        client_id: 0,
+        why_held: "",
+        mkt_cap_price: 0.0
+      }
+
+      Client.process_message(client, wire_message(@order_status_wire_id, submitted_status))
+
+      assert_receive {:ib_ex, ^ref, %Proto.OrderStatus{status: "Submitted"}}, 1_000
+
+      Process.sleep(50)
+      assert {:ok, %{type: :stream}} = IbEx.Client.Subscriptions.lookup(table_ref, {:order_id, 300})
+    end
+  end
+
   describe "cancel/3" do
     test "sends CancelOrderRequest and returns :ok" do
       client = start_client()
