@@ -47,6 +47,7 @@ defmodule IbEx.Client do
   require Logger
 
   @default_timeout 5_000
+  @terminal_order_statuses ~w(Filled Cancelled ApiCancelled Inactive)
 
   def connection_opened(pid) do
     GenServer.cast(pid, :connection_opened)
@@ -386,8 +387,13 @@ defmodule IbEx.Client do
 
   defp dispatch_by_order_id(key, msg, module, table_ref) do
     case Subscriptions.lookup(table_ref, key) do
-      {:ok, %{type: :stream, subscriber: subscriber, subscription_ref: ref}} ->
+      {:ok, %{type: :stream, subscriber: subscriber, subscription_ref: ref} = entry} ->
         send(subscriber, {:ib_ex, ref, msg})
+
+        if terminal_order_status?(module, msg) do
+          Process.demonitor(entry.monitor_ref, [:flush])
+          Subscriptions.remove_subscription(table_ref, key)
+        end
 
       _ ->
         dispatch_by_module(module, msg, table_ref)
@@ -457,4 +463,8 @@ defmodule IbEx.Client do
   end
 
   defp maybe_trace(_msg, _state), do: :ok
+
+  defp terminal_order_status?(module, msg) do
+    module == IbEx.Client.Proto.Protobuf.OrderStatus and msg.status in @terminal_order_statuses
+  end
 end
