@@ -520,14 +520,19 @@ defmodule IbEx.Client.Conversations do
   Validates the conversation is a `:stream` type, allocates a req_id,
   monitors the subscriber process, and registers the stream entry via Subscriptions.
 
+  For `:order_id` correlated streams (e.g. PlaceOrderRequest), an explicit
+  `next_valid_id` must be supplied so the Client's TWS-assigned order ID
+  sequence is used instead of the generic ETS counter.
+
   Returns `{:ok, req_id, subscription_ref}` on success or `:error` if the
   request module is not a registered stream conversation.
   """
-  @spec register_stream(reference(), module(), pid()) :: {:ok, non_neg_integer(), reference()} | :error
-  def register_stream(table_ref, request_module, subscriber) do
+  @spec register_stream(reference(), module(), pid(), integer() | nil) ::
+          {:ok, non_neg_integer(), reference()} | :error
+  def register_stream(table_ref, request_module, subscriber, next_valid_id \\ nil) do
     case conversation_for(request_module) do
       {:ok, %{type: :stream, correlation: correlation}} ->
-        {key, req_id} = build_stream_key(correlation, table_ref, request_module)
+        {key, req_id} = build_key(correlation, table_ref, request_module, next_valid_id)
 
         subscription_ref = make_ref()
         monitor_ref = Process.monitor(subscriber)
@@ -540,32 +545,22 @@ defmodule IbEx.Client.Conversations do
     end
   end
 
-  defp build_stream_key(:global, _table_ref, request_module) do
-    {{:global, request_module}, nil}
-  end
+  defp build_key(correlation, table_ref, request_module, next_valid_id \\ nil) do
+    case correlation do
+      :global ->
+        {{:global, request_module}, nil}
 
-  defp build_stream_key(:order_id, table_ref, _request_module) do
-    req_id = Subscriptions.allocate_request_id(table_ref)
-    {{:order_id, req_id}, req_id}
-  end
+      :order_id when is_integer(next_valid_id) ->
+        {{:order_id, next_valid_id}, next_valid_id}
 
-  defp build_stream_key(_correlation, table_ref, _request_module) do
-    req_id = Subscriptions.allocate_request_id(table_ref)
-    {{:request_id, req_id}, req_id}
-  end
+      :order_id ->
+        req_id = Subscriptions.allocate_request_id(table_ref)
+        {{:order_id, req_id}, req_id}
 
-  defp build_key(:req_id, table_ref, _request_module) do
-    req_id = Subscriptions.allocate_request_id(table_ref)
-    {{:request_id, req_id}, req_id}
-  end
-
-  defp build_key(:global, _table_ref, request_module) do
-    {{:global, request_module}, nil}
-  end
-
-  defp build_key(:order_id, table_ref, _request_module) do
-    req_id = Subscriptions.allocate_request_id(table_ref)
-    {{:order_id, req_id}, req_id}
+      _ ->
+        req_id = Subscriptions.allocate_request_id(table_ref)
+        {{:request_id, req_id}, req_id}
+    end
   end
 
   defp end_markers do
