@@ -706,4 +706,44 @@ defmodule IbEx.ClientTest do
       assert new_state.next_valid_id == 500
     end
   end
+
+  describe "handle_cast(:connection_closed)" do
+    @tag capture_log: true
+    test "sets status to :disconnected and clears server_version and connection_timestamp" do
+      state = %IbEx.Client{
+        status: :connected,
+        server_version: 213,
+        connection_timestamp: ~N[2024-06-05 17:25:52],
+        managed_accounts: "DU123456",
+        next_valid_id: 42
+      }
+
+      assert {:noreply, new_state} = Client.handle_cast(:connection_closed, state)
+
+      assert new_state.status == :disconnected
+      assert new_state.server_version == nil
+      assert new_state.connection_timestamp == nil
+
+      # These should be preserved across reconnects
+      assert new_state.managed_accounts == "DU123456"
+      assert new_state.next_valid_id == 42
+    end
+
+    @tag capture_log: true
+    test "a subsequent :connection_opened triggers the handshake again" do
+      state = %IbEx.Client{
+        status: :connected,
+        server_version: 213,
+        connection_timestamp: ~N[2024-06-05 17:25:52]
+      }
+
+      # Simulate connection drop
+      {:noreply, disconnected_state} = Client.handle_cast(:connection_closed, state)
+      assert disconnected_state.status == :disconnected
+
+      # Simulate reconnection signal
+      assert {:noreply, ^disconnected_state, {:continue, :init_connection}} =
+               Client.handle_cast(:connection_opened, disconnected_state)
+    end
+  end
 end

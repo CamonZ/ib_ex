@@ -53,6 +53,10 @@ defmodule IbEx.Client do
     GenServer.cast(pid, :connection_opened)
   end
 
+  def connection_closed(pid) do
+    GenServer.cast(pid, :connection_closed)
+  end
+
   def process_message(pid, str) do
     GenServer.cast(pid, {:process_message, str})
   end
@@ -151,6 +155,11 @@ defmodule IbEx.Client do
   # Triggered by the Connection process once the connection is open
   def handle_cast(:connection_opened, state) do
     {:noreply, state, {:continue, :init_connection}}
+  end
+
+  def handle_cast(:connection_closed, state) do
+    Logger.warning("Connection lost, status set to :disconnected")
+    {:noreply, %{state | status: :disconnected, server_version: nil, connection_timestamp: nil}}
   end
 
   def handle_cast({:process_message, str}, state) do
