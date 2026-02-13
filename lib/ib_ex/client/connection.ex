@@ -4,7 +4,13 @@ defmodule IbEx.Client.Connection do
   @default_host {127, 0, 0, 1}
   @default_port 7496
 
-  defstruct host: nil, port: nil, socket: nil, client: nil
+  @reconnect_interval_ms 2_000
+
+  defstruct host: nil,
+            port: nil,
+            socket: nil,
+            client: nil,
+            reconnect_timer_ref: nil
 
   alias IbEx.Client
   alias __MODULE__.Socket
@@ -46,12 +52,12 @@ defmodule IbEx.Client.Connection do
         {:ok, state, {:continue, :signal_connection_open}}
 
       {:error, reason} ->
-        Logger.error("Error stablishing connection: #{inspect(reason)}")
+        Logger.error("Error establishing connection: #{inspect(reason)}")
         {:stop, :connection_error}
     end
   rescue
     err ->
-      Logger.error("Error stablishing connection: #{inspect(err)}")
+      Logger.error("Error establishing connection: #{inspect(err)}")
       {:stop, :connection_error}
   end
 
@@ -69,10 +75,20 @@ defmodule IbEx.Client.Connection do
   end
 
   @impl true
-  def handle_call({:send_message, data}, _from, state) do
-    Socket.send_message(state.socket, data)
+  def handle_call({:send_message, _data}, _from, %{socket: nil} = state) do
+    {:reply, {:error, :not_connected}, state}
+  end
 
-    {:reply, :ok, state}
+  @impl true
+  def handle_call({:send_message, data}, _from, state) do
+    case Socket.send_message(state.socket, data) do
+      :ok ->
+        {:reply, :ok, state}
+
+      {:error, reason} ->
+        Logger.error("Error sending message: #{inspect(reason)}")
+        {:reply, {:error, reason}, schedule_reconnect(%{state | socket: nil})}
+    end
   end
 
   @impl true
@@ -83,13 +99,41 @@ defmodule IbEx.Client.Connection do
 
   @impl true
   def handle_info({:tcp_closed, _}, state) do
-    Logger.warning("TCP CLOSED")
-    {:noreply, state}
+    Logger.warning("TCP connection closed, scheduling reconnect in #{@reconnect_interval_ms}ms")
+    Client.connection_closed(state.client)
+    {:noreply, schedule_reconnect(%{state | socket: nil})}
+  end
+
+  @impl true
+  def handle_info({:tcp_error, _, reason}, state) do
+    Logger.warning("TCP error: #{inspect(reason)}, scheduling reconnect in #{@reconnect_interval_ms}ms")
+    Client.connection_closed(state.client)
+    {:noreply, schedule_reconnect(%{state | socket: nil})}
+  end
+
+  @impl true
+  def handle_info(:reconnect, state) do
+    state = %{state | reconnect_timer_ref: nil}
+
+    case Socket.connect(host: state.host, port: state.port) do
+      {:ok, socket} ->
+        Logger.info("Socket reconnection established")
+        {:noreply, %{state | socket: socket}, {:continue, :signal_connection_open}}
+
+      {:error, reason} ->
+        Logger.warning("Reconnect failed (#{inspect(reason)}), retrying in #{@reconnect_interval_ms}ms")
+        {:noreply, schedule_reconnect(state)}
+    end
   end
 
   @impl true
   def handle_info(msg, state) do
     Logger.warning("Received unexpected message: #{inspect(msg)}")
     {:noreply, state}
+  end
+
+  defp schedule_reconnect(state) do
+    timer_ref = Process.send_after(self(), :reconnect, @reconnect_interval_ms)
+    %{state | reconnect_timer_ref: timer_ref}
   end
 end
