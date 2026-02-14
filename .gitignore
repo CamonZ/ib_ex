@@ -26,3 +26,4 @@ ib_ex-*.tar
 /.claude
 /scratch
 /priv/proto
+/.env
