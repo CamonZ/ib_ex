@@ -47,7 +47,6 @@ defmodule IbEx.OrderManager do
   alias IbEx.Client.Orders
   alias IbEx.Client.ContractResolver
   alias IbEx.Client.Proto.Protobuf, as: Proto
-  alias IbEx.Client.Proto.Mapper
   alias IbEx.Client.Utils
 
   # ---------------------------------------------------------------------------
@@ -295,32 +294,10 @@ defmodule IbEx.OrderManager do
 
   defp resolve_and_place(state, contract_spec, action, quantity, opts) do
     with {:ok, details_list} <- ContractResolver.resolve(state.resolver, contract_spec),
-         {:ok, proto_contract} <- pick_contract(details_list, opts) do
+         {:ok, proto_contract} <- ContractResolver.pick_contract(details_list, opts) do
       proto_order = build_order(action, quantity, opts)
       Orders.place(state.client, proto_contract, proto_order, [])
     end
-  end
-
-  defp pick_contract([], _opts), do: {:error, :no_contracts_resolved}
-
-  defp pick_contract([details | _rest], opts) do
-    proto_contract = Mapper.to_proto(details.contract)
-
-    proto_contract =
-      if exchange = Keyword.get(opts, :exchange) do
-        %{proto_contract | exchange: exchange}
-      else
-        proto_contract
-      end
-
-    proto_contract =
-      if currency = Keyword.get(opts, :currency) do
-        %{proto_contract | currency: currency}
-      else
-        proto_contract
-      end
-
-    {:ok, proto_contract}
   end
 
   defp build_order(action, quantity, opts) do

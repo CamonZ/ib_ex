@@ -12,6 +12,7 @@ if Mix.env() == :dev do
       port = Keyword.get(opts, :port, 4040)
 
       children = [
+        {Phoenix.PubSub, name: IbEx.PubSub},
         IbEx.TraceServer,
         {IbEx.Client, name: IbEx.Client, trace_messages: true},
         {Bandit, plug: Tidewave, port: port}
