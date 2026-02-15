@@ -32,6 +32,7 @@ defmodule IbEx.Client.ContractResolver do
   alias IbEx.Client.Proto.Protobuf, as: Proto
   alias IbEx.Client.Proto.Mapper.Contract, as: ContractMapper
   alias IbEx.Client.Types.ContractDetails
+  alias IbEx.Client.Proto.Mapper
 
   @default_timeout 10_000
 
@@ -63,6 +64,38 @@ defmodule IbEx.Client.ContractResolver do
   @spec clear_cache(GenServer.server()) :: :ok
   def clear_cache(server) do
     GenServer.call(server, :clear_cache)
+  end
+
+  @doc """
+  Picks the first contract from a list of resolved `ContractDetails` and
+  converts it to a proto contract, applying optional overrides.
+
+  ## Options
+
+  * `:exchange` -- override the exchange
+  * `:currency` -- override the currency
+  """
+  @spec pick_contract([ContractDetails.t()], keyword()) :: {:ok, Proto.Contract.t()} | {:error, :no_contracts_resolved}
+  def pick_contract([], _opts), do: {:error, :no_contracts_resolved}
+
+  def pick_contract([details | _rest], opts) do
+    proto_contract = Mapper.to_proto(details.contract)
+
+    proto_contract =
+      if exchange = Keyword.get(opts, :exchange) do
+        %{proto_contract | exchange: exchange}
+      else
+        proto_contract
+      end
+
+    proto_contract =
+      if currency = Keyword.get(opts, :currency) do
+        %{proto_contract | currency: currency}
+      else
+        proto_contract
+      end
+
+    {:ok, proto_contract}
   end
 
   # -- GenServer callbacks --
