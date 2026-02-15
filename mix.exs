@@ -28,6 +28,7 @@ defmodule IbEx.MixProject do
       {:protobuf, "~> 0.16"},
       {:dialyxir, "~> 1.4", only: [:dev], runtime: false},
       {:ex_doc, "~> 0.34.0", only: [:dev], runtime: false},
+      {:phoenix_pubsub, "~> 2.1"},
       {:bandit, "~> 1.0", only: :dev},
       {:tidewave, "~> 0.5", only: :dev}
     ]
