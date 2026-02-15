@@ -74,6 +74,22 @@ defmodule IbEx.Client do
     GenServer.call(pid, {:unsubscribe, subscription_ref})
   end
 
+  @doc """
+  Registers the caller to receive `{:ib_ex, ref, msg}` messages for all
+  globally-correlated responses associated with `request_module`.
+
+  This is useful for conversations declared as `:bounded_stream` with
+  `:global` correlation (e.g. `AccountDataRequest`) where the initial
+  `Client.request` completes after the end marker but TWS continues
+  sending streaming updates for the same response types.
+
+  Returns `{:ok, subscription_ref}` on success.
+  """
+  @spec subscribe_global(pid(), module()) :: {:ok, reference()}
+  def subscribe_global(pid, request_module) do
+    GenServer.call(pid, {:subscribe_global, self(), request_module})
+  end
+
   def command(pid, proto_msg) do
     GenServer.call(pid, {:command, proto_msg})
   end
@@ -245,6 +261,16 @@ defmodule IbEx.Client do
 
   def handle_call(:next_valid_id, _from, state) do
     {:reply, state.next_valid_id, state}
+  end
+
+  def handle_call({:subscribe_global, subscriber, request_module}, _from, state) do
+    table_ref = state.subscriptions_table_ref
+    key = {:global, request_module}
+    subscription_ref = make_ref()
+    monitor_ref = Process.monitor(subscriber)
+
+    Subscriptions.register_stream(table_ref, key, subscriber, monitor_ref, subscription_ref, request_module)
+    {:reply, {:ok, subscription_ref}, state}
   end
 
   def handle_info({:request_timeout, key}, state) do
