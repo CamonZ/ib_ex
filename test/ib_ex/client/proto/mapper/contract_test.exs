@@ -143,10 +143,10 @@ defmodule IbEx.Client.Proto.Mapper.ContractTest do
       proto = ContractMapper.to_proto(contract)
 
       assert proto.con_id == 0
-      assert proto.symbol == ""
+      assert proto.symbol == nil
       assert proto.exchange == "SMART"
       assert proto.strike == 0.0
-      assert proto.include_expired == false
+      assert proto.include_expired == nil
     end
   end
 

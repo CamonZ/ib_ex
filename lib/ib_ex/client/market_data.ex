@@ -156,9 +156,9 @@ defmodule IbEx.Client.MarketData do
   defp build_market_data_request(proto_contract, opts) do
     %Proto.MarketDataRequest{
       contract: proto_contract,
-      generic_tick_list: Keyword.get(opts, :generic_tick_list, ""),
-      snapshot: Keyword.get(opts, :snapshot, false),
-      regulatory_snapshot: Keyword.get(opts, :regulatory_snapshot, false)
+      generic_tick_list: Keyword.get(opts, :generic_tick_list),
+      snapshot: Keyword.get(opts, :snapshot),
+      regulatory_snapshot: Keyword.get(opts, :regulatory_snapshot)
     }
   end
 
@@ -167,7 +167,7 @@ defmodule IbEx.Client.MarketData do
       contract: proto_contract,
       tick_type: Keyword.get(opts, :tick_type, "Last"),
       number_of_ticks: Keyword.get(opts, :number_of_ticks, 0),
-      ignore_size: Keyword.get(opts, :ignore_size, false)
+      ignore_size: Keyword.get(opts, :ignore_size)
     }
   end
 end

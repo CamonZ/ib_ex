@@ -296,7 +296,7 @@ defmodule IbEx.MarketDataManagerTest do
       assert %Proto.MarketDataRequest{} = decoded
       assert decoded.contract.symbol == "AAPL"
       assert decoded.contract.sec_type == "STK"
-      assert decoded.snapshot == false
+      assert decoded.snapshot == nil
 
       assert :ok = Task.await(task, 5_000)
     end
@@ -487,6 +487,743 @@ defmodule IbEx.MarketDataManagerTest do
       send(manager, {:ib_ex, client_ref, {:error, error}})
 
       refute_receive {:market_data_error, _}, 200
+    end
+  end
+
+  # ---------------------------------------------------------------------------
+  # PubSub -- TickPrice broadcast
+  # ---------------------------------------------------------------------------
+
+  describe "PubSub TickPrice broadcast" do
+    test "broadcasts {:tick_price, ...} with resolved tick_type atom and Decimal values", %{
+      manager: manager,
+      client: client,
+      pubsub: pubsub
+    } do
+      sub_id = "tick-price-1"
+      Phoenix.PubSub.subscribe(pubsub, "ib_ex:market_data:#{sub_id}")
+
+      assert :ok = subscribe_with_resolve(manager, client, sub_id, :quotes, {:stock, "AAPL"})
+
+      %{subscriptions: %{^sub_id => %{client_ref: client_ref}}} = :sys.get_state(manager)
+
+      msg = %Proto.TickPrice{req_id: 1, tick_type: 1, price: 150.25, size: "100", attr_mask: 3}
+      send(manager, {:ib_ex, client_ref, msg})
+
+      assert_receive {:tick_price, event}, 1_000
+      assert event.tick_type == :bid
+      assert Decimal.equal?(event.price, Decimal.from_float(150.25))
+      assert Decimal.equal?(event.size, Decimal.new("100"))
+      assert event.attr_mask == 3
+    end
+
+    test "resolves tick_type 2 to :ask", %{manager: manager, client: client, pubsub: pubsub} do
+      sub_id = "tick-price-ask"
+      Phoenix.PubSub.subscribe(pubsub, "ib_ex:market_data:#{sub_id}")
+
+      assert :ok = subscribe_with_resolve(manager, client, sub_id, :quotes, {:stock, "AAPL"})
+
+      %{subscriptions: %{^sub_id => %{client_ref: client_ref}}} = :sys.get_state(manager)
+
+      msg = %Proto.TickPrice{req_id: 1, tick_type: 2, price: 151.50, size: "200", attr_mask: 0}
+      send(manager, {:ib_ex, client_ref, msg})
+
+      assert_receive {:tick_price, event}, 1_000
+      assert event.tick_type == :ask
+      assert Decimal.equal?(event.price, Decimal.from_float(151.50))
+      assert Decimal.equal?(event.size, Decimal.new("200"))
+      assert event.attr_mask == 0
+    end
+
+    test "falls back to raw integer for unknown tick_type", %{
+      manager: manager,
+      client: client,
+      pubsub: pubsub
+    } do
+      sub_id = "tick-price-unknown"
+      Phoenix.PubSub.subscribe(pubsub, "ib_ex:market_data:#{sub_id}")
+
+      assert :ok = subscribe_with_resolve(manager, client, sub_id, :quotes, {:stock, "AAPL"})
+
+      %{subscriptions: %{^sub_id => %{client_ref: client_ref}}} = :sys.get_state(manager)
+
+      msg = %Proto.TickPrice{req_id: 1, tick_type: 99999, price: 100.0, size: "50", attr_mask: 0}
+      send(manager, {:ib_ex, client_ref, msg})
+
+      assert_receive {:tick_price, event}, 1_000
+      assert event.tick_type == 99999
+    end
+
+    test "does not broadcast after unsubscription", %{manager: manager, client: client, pubsub: pubsub} do
+      sub_id = "tick-price-unsub"
+      Phoenix.PubSub.subscribe(pubsub, "ib_ex:market_data:#{sub_id}")
+
+      assert :ok = subscribe_with_resolve(manager, client, sub_id, :quotes, {:stock, "AAPL"})
+
+      %{subscriptions: %{^sub_id => %{client_ref: client_ref}}} = :sys.get_state(manager)
+
+      assert :ok = MarketDataManager.unsubscribe(manager, sub_id)
+
+      msg = %Proto.TickPrice{req_id: 1, tick_type: 1, price: 150.0, size: "100", attr_mask: 0}
+      send(manager, {:ib_ex, client_ref, msg})
+
+      refute_receive {:tick_price, _}, 200
+    end
+  end
+
+  # ---------------------------------------------------------------------------
+  # PubSub -- TickSize broadcast
+  # ---------------------------------------------------------------------------
+
+  describe "PubSub TickSize broadcast" do
+    test "broadcasts {:tick_size, ...} with resolved tick_type and Decimal size", %{
+      manager: manager,
+      client: client,
+      pubsub: pubsub
+    } do
+      sub_id = "tick-size-1"
+      Phoenix.PubSub.subscribe(pubsub, "ib_ex:market_data:#{sub_id}")
+
+      assert :ok = subscribe_with_resolve(manager, client, sub_id, :quotes, {:stock, "AAPL"})
+
+      %{subscriptions: %{^sub_id => %{client_ref: client_ref}}} = :sys.get_state(manager)
+
+      msg = %Proto.TickSize{req_id: 1, tick_type: 0, size: "500"}
+      send(manager, {:ib_ex, client_ref, msg})
+
+      assert_receive {:tick_size, event}, 1_000
+      assert event.tick_type == :bid_size
+      assert Decimal.equal?(event.size, Decimal.new("500"))
+    end
+
+    test "resolves tick_type 3 to :ask_size", %{manager: manager, client: client, pubsub: pubsub} do
+      sub_id = "tick-size-ask"
+      Phoenix.PubSub.subscribe(pubsub, "ib_ex:market_data:#{sub_id}")
+
+      assert :ok = subscribe_with_resolve(manager, client, sub_id, :quotes, {:stock, "AAPL"})
+
+      %{subscriptions: %{^sub_id => %{client_ref: client_ref}}} = :sys.get_state(manager)
+
+      msg = %Proto.TickSize{req_id: 1, tick_type: 3, size: "250"}
+      send(manager, {:ib_ex, client_ref, msg})
+
+      assert_receive {:tick_size, event}, 1_000
+      assert event.tick_type == :ask_size
+      assert Decimal.equal?(event.size, Decimal.new("250"))
+    end
+  end
+
+  # ---------------------------------------------------------------------------
+  # PubSub -- TickString broadcast
+  # ---------------------------------------------------------------------------
+
+  describe "PubSub TickString broadcast" do
+    test "broadcasts {:tick_string, ...} with resolved tick_type and string value", %{
+      manager: manager,
+      client: client,
+      pubsub: pubsub
+    } do
+      sub_id = "tick-string-1"
+      Phoenix.PubSub.subscribe(pubsub, "ib_ex:market_data:#{sub_id}")
+
+      assert :ok = subscribe_with_resolve(manager, client, sub_id, :quotes, {:stock, "AAPL"})
+
+      %{subscriptions: %{^sub_id => %{client_ref: client_ref}}} = :sys.get_state(manager)
+
+      # tick_type 45 = :last_timestamp
+      msg = %Proto.TickString{req_id: 1, tick_type: 45, value: "1708700000"}
+      send(manager, {:ib_ex, client_ref, msg})
+
+      assert_receive {:tick_string, event}, 1_000
+      assert event.tick_type == :last_timestamp
+      assert event.value == "1708700000"
+    end
+  end
+
+  # ---------------------------------------------------------------------------
+  # PubSub -- TickGeneric broadcast
+  # ---------------------------------------------------------------------------
+
+  describe "PubSub TickGeneric broadcast" do
+    test "broadcasts {:tick_generic, ...} with resolved tick_type and float value", %{
+      manager: manager,
+      client: client,
+      pubsub: pubsub
+    } do
+      sub_id = "tick-generic-1"
+      Phoenix.PubSub.subscribe(pubsub, "ib_ex:market_data:#{sub_id}")
+
+      assert :ok = subscribe_with_resolve(manager, client, sub_id, :quotes, {:stock, "AAPL"})
+
+      %{subscriptions: %{^sub_id => %{client_ref: client_ref}}} = :sys.get_state(manager)
+
+      # tick_type 46 = :shortable
+      msg = %Proto.TickGeneric{req_id: 1, tick_type: 46, value: 2.5}
+      send(manager, {:ib_ex, client_ref, msg})
+
+      assert_receive {:tick_generic, event}, 1_000
+      assert event.tick_type == :shortable
+      assert event.value == 2.5
+    end
+  end
+
+  # ---------------------------------------------------------------------------
+  # PubSub -- TickOptionComputation broadcast
+  # ---------------------------------------------------------------------------
+
+  describe "PubSub TickOptionComputation broadcast" do
+    test "broadcasts {:tick_option_computation, ...} with Decimal greeks", %{
+      manager: manager,
+      client: client,
+      pubsub: pubsub
+    } do
+      sub_id = "tick-opt-comp-1"
+      Phoenix.PubSub.subscribe(pubsub, "ib_ex:market_data:#{sub_id}")
+
+      assert :ok = subscribe_with_resolve(manager, client, sub_id, :quotes, {:stock, "AAPL"})
+
+      %{subscriptions: %{^sub_id => %{client_ref: client_ref}}} = :sys.get_state(manager)
+
+      # tick_type 10 = :bid_option_computation
+      msg = %Proto.TickOptionComputation{
+        req_id: 1,
+        tick_type: 10,
+        tick_attrib: 1,
+        implied_vol: 0.35,
+        delta: 0.65,
+        opt_price: 12.50,
+        pv_dividend: 0.25,
+        gamma: 0.03,
+        vega: 0.15,
+        theta: -0.05,
+        und_price: 150.0
+      }
+
+      send(manager, {:ib_ex, client_ref, msg})
+
+      assert_receive {:tick_option_computation, event}, 1_000
+      assert event.tick_type == :bid_option_computation
+      assert event.tick_attrib == 1
+      assert Decimal.equal?(event.implied_vol, Decimal.from_float(0.35))
+      assert Decimal.equal?(event.delta, Decimal.from_float(0.65))
+      assert Decimal.equal?(event.opt_price, Decimal.from_float(12.50))
+      assert Decimal.equal?(event.pv_dividend, Decimal.from_float(0.25))
+      assert Decimal.equal?(event.gamma, Decimal.from_float(0.03))
+      assert Decimal.equal?(event.vega, Decimal.from_float(0.15))
+      assert Decimal.equal?(event.theta, Decimal.from_float(-0.05))
+      assert Decimal.equal?(event.und_price, Decimal.from_float(150.0))
+    end
+
+    test "handles nil greeks values", %{manager: manager, client: client, pubsub: pubsub} do
+      sub_id = "tick-opt-comp-nil"
+      Phoenix.PubSub.subscribe(pubsub, "ib_ex:market_data:#{sub_id}")
+
+      assert :ok = subscribe_with_resolve(manager, client, sub_id, :quotes, {:stock, "AAPL"})
+
+      %{subscriptions: %{^sub_id => %{client_ref: client_ref}}} = :sys.get_state(manager)
+
+      msg = %Proto.TickOptionComputation{
+        req_id: 1,
+        tick_type: 10,
+        tick_attrib: 0,
+        implied_vol: nil,
+        delta: nil,
+        opt_price: nil,
+        pv_dividend: nil,
+        gamma: nil,
+        vega: nil,
+        theta: nil,
+        und_price: nil
+      }
+
+      send(manager, {:ib_ex, client_ref, msg})
+
+      assert_receive {:tick_option_computation, event}, 1_000
+      assert event.tick_type == :bid_option_computation
+      assert event.implied_vol == nil
+      assert event.delta == nil
+      assert event.opt_price == nil
+      assert event.pv_dividend == nil
+      assert event.gamma == nil
+      assert event.vega == nil
+      assert event.theta == nil
+      assert event.und_price == nil
+    end
+  end
+
+  # ---------------------------------------------------------------------------
+  # PubSub -- TickReqParams broadcast
+  # ---------------------------------------------------------------------------
+
+  describe "PubSub TickReqParams broadcast" do
+    test "broadcasts {:tick_req_params, ...} with correct fields", %{
+      manager: manager,
+      client: client,
+      pubsub: pubsub
+    } do
+      sub_id = "tick-req-params-1"
+      Phoenix.PubSub.subscribe(pubsub, "ib_ex:market_data:#{sub_id}")
+
+      assert :ok = subscribe_with_resolve(manager, client, sub_id, :quotes, {:stock, "AAPL"})
+
+      %{subscriptions: %{^sub_id => %{client_ref: client_ref}}} = :sys.get_state(manager)
+
+      msg = %Proto.TickReqParams{req_id: 1, min_tick: "0.01", bbo_exchange: "SMART", snapshot_permissions: 3}
+      send(manager, {:ib_ex, client_ref, msg})
+
+      assert_receive {:tick_req_params, event}, 1_000
+      assert event.min_tick == "0.01"
+      assert event.bbo_exchange == "SMART"
+      assert event.snapshot_permissions == 3
+    end
+  end
+
+  # ---------------------------------------------------------------------------
+  # PubSub -- TickSnapshotEnd broadcast
+  # ---------------------------------------------------------------------------
+
+  describe "PubSub TickSnapshotEnd broadcast" do
+    test "broadcasts {:tick_snapshot_end, %{}} on snapshot end", %{
+      manager: manager,
+      client: client,
+      pubsub: pubsub
+    } do
+      sub_id = "tick-snapshot-end-1"
+      Phoenix.PubSub.subscribe(pubsub, "ib_ex:market_data:#{sub_id}")
+
+      assert :ok = subscribe_with_resolve(manager, client, sub_id, :quotes, {:stock, "AAPL"})
+
+      %{subscriptions: %{^sub_id => %{client_ref: client_ref}}} = :sys.get_state(manager)
+
+      msg = %Proto.TickSnapshotEnd{req_id: 1}
+      send(manager, {:ib_ex, client_ref, msg})
+
+      assert_receive {:tick_snapshot_end, event}, 1_000
+      assert event == %{}
+    end
+  end
+
+  # ---------------------------------------------------------------------------
+  # PubSub -- trades broadcast (tick-by-tick)
+  # ---------------------------------------------------------------------------
+
+  describe "PubSub trades broadcast" do
+    test "broadcasts {:trade, ...} on TickByTickData with historical_tick_last", %{
+      manager: manager,
+      client: client,
+      pubsub: pubsub
+    } do
+      sub_id = "tbt-trade-1"
+      Phoenix.PubSub.subscribe(pubsub, "ib_ex:market_data:#{sub_id}")
+
+      assert :ok = subscribe_with_resolve(manager, client, sub_id, :trades, {:stock, "AAPL"})
+
+      %{subscriptions: %{^sub_id => %{client_ref: client_ref}}} = :sys.get_state(manager)
+
+      tick_msg = %Proto.TickByTickData{
+        req_id: 1,
+        tick_type: 1,
+        tick:
+          {:historical_tick_last,
+           %Proto.HistoricalTickLast{
+             time: 1_700_000_000,
+             price: 185.50,
+             size: "100",
+             exchange: "ARCA",
+             special_conditions: "T",
+             tick_attrib_last: %Proto.TickAttribLast{
+               past_limit: true,
+               unreported: false
+             }
+           }}
+      }
+
+      send(manager, {:ib_ex, client_ref, tick_msg})
+
+      assert_receive {:trade, event}, 1_000
+
+      assert event.timestamp == ~U[2023-11-14 22:13:20Z]
+      assert Decimal.equal?(event.price, Decimal.from_float(185.50))
+      assert Decimal.equal?(event.size, Decimal.new("100"))
+      assert event.exchange == "ARCA"
+      assert event.special_conditions == "T"
+      assert event.past_limit == true
+      assert event.unreported == false
+    end
+
+    test "broadcasts {:bid_ask, ...} on TickByTickData with historical_tick_bid_ask", %{
+      manager: manager,
+      client: client,
+      pubsub: pubsub
+    } do
+      sub_id = "tbt-bidask-1"
+      Phoenix.PubSub.subscribe(pubsub, "ib_ex:market_data:#{sub_id}")
+
+      assert :ok = subscribe_with_resolve(manager, client, sub_id, :trades, {:stock, "AAPL"})
+
+      %{subscriptions: %{^sub_id => %{client_ref: client_ref}}} = :sys.get_state(manager)
+
+      tick_msg = %Proto.TickByTickData{
+        req_id: 2,
+        tick_type: 3,
+        tick:
+          {:historical_tick_bid_ask,
+           %Proto.HistoricalTickBidAsk{
+             time: 1_700_000_100,
+             price_bid: 185.45,
+             price_ask: 185.55,
+             size_bid: "200",
+             size_ask: "150",
+             tick_attrib_bid_ask: %Proto.TickAttribBidAsk{
+               bid_past_low: true,
+               ask_past_high: false
+             }
+           }}
+      }
+
+      send(manager, {:ib_ex, client_ref, tick_msg})
+
+      assert_receive {:bid_ask, event}, 1_000
+
+      assert event.timestamp == ~U[2023-11-14 22:15:00Z]
+      assert Decimal.equal?(event.bid_price, Decimal.from_float(185.45))
+      assert Decimal.equal?(event.ask_price, Decimal.from_float(185.55))
+      assert Decimal.equal?(event.bid_size, Decimal.new("200"))
+      assert Decimal.equal?(event.ask_size, Decimal.new("150"))
+      assert event.bid_past_low == true
+      assert event.ask_past_high == false
+    end
+
+    test "broadcasts {:mid_point, ...} on TickByTickData with historical_tick_mid_point", %{
+      manager: manager,
+      client: client,
+      pubsub: pubsub
+    } do
+      sub_id = "tbt-midpoint-1"
+      Phoenix.PubSub.subscribe(pubsub, "ib_ex:market_data:#{sub_id}")
+
+      assert :ok = subscribe_with_resolve(manager, client, sub_id, :trades, {:stock, "AAPL"})
+
+      %{subscriptions: %{^sub_id => %{client_ref: client_ref}}} = :sys.get_state(manager)
+
+      tick_msg = %Proto.TickByTickData{
+        req_id: 3,
+        tick_type: 4,
+        tick:
+          {:historical_tick_mid_point,
+           %Proto.HistoricalTick{
+             time: 1_700_000_200,
+             price: 185.50
+           }}
+      }
+
+      send(manager, {:ib_ex, client_ref, tick_msg})
+
+      assert_receive {:mid_point, event}, 1_000
+
+      assert event.timestamp == ~U[2023-11-14 22:16:40Z]
+      assert Decimal.equal?(event.price, Decimal.from_float(185.50))
+    end
+
+    test "handles nil tick_attrib_last gracefully (defaults booleans to false)", %{
+      manager: manager,
+      client: client,
+      pubsub: pubsub
+    } do
+      sub_id = "tbt-nil-attrib-last"
+      Phoenix.PubSub.subscribe(pubsub, "ib_ex:market_data:#{sub_id}")
+
+      assert :ok = subscribe_with_resolve(manager, client, sub_id, :trades, {:stock, "AAPL"})
+
+      %{subscriptions: %{^sub_id => %{client_ref: client_ref}}} = :sys.get_state(manager)
+
+      tick_msg = %Proto.TickByTickData{
+        req_id: 4,
+        tick_type: 1,
+        tick:
+          {:historical_tick_last,
+           %Proto.HistoricalTickLast{
+             time: 1_700_000_300,
+             price: 186.00,
+             size: "50",
+             exchange: "NYSE",
+             special_conditions: "",
+             tick_attrib_last: nil
+           }}
+      }
+
+      send(manager, {:ib_ex, client_ref, tick_msg})
+
+      assert_receive {:trade, event}, 1_000
+
+      assert event.past_limit == false
+      assert event.unreported == false
+    end
+
+    test "handles nil tick_attrib_bid_ask gracefully (defaults booleans to false)", %{
+      manager: manager,
+      client: client,
+      pubsub: pubsub
+    } do
+      sub_id = "tbt-nil-attrib-bidask"
+      Phoenix.PubSub.subscribe(pubsub, "ib_ex:market_data:#{sub_id}")
+
+      assert :ok = subscribe_with_resolve(manager, client, sub_id, :trades, {:stock, "AAPL"})
+
+      %{subscriptions: %{^sub_id => %{client_ref: client_ref}}} = :sys.get_state(manager)
+
+      tick_msg = %Proto.TickByTickData{
+        req_id: 5,
+        tick_type: 3,
+        tick:
+          {:historical_tick_bid_ask,
+           %Proto.HistoricalTickBidAsk{
+             time: 1_700_000_400,
+             price_bid: 186.10,
+             price_ask: 186.20,
+             size_bid: "300",
+             size_ask: "250",
+             tick_attrib_bid_ask: nil
+           }}
+      }
+
+      send(manager, {:ib_ex, client_ref, tick_msg})
+
+      assert_receive {:bid_ask, event}, 1_000
+
+      assert event.bid_past_low == false
+      assert event.ask_past_high == false
+    end
+
+    test "does not broadcast after unsubscription", %{
+      manager: manager,
+      client: client,
+      pubsub: pubsub
+    } do
+      sub_id = "tbt-unsub"
+      Phoenix.PubSub.subscribe(pubsub, "ib_ex:market_data:#{sub_id}")
+
+      assert :ok = subscribe_with_resolve(manager, client, sub_id, :trades, {:stock, "AAPL"})
+
+      %{subscriptions: %{^sub_id => %{client_ref: client_ref}}} = :sys.get_state(manager)
+
+      assert :ok = MarketDataManager.unsubscribe(manager, sub_id)
+
+      tick_msg = %Proto.TickByTickData{
+        req_id: 6,
+        tick_type: 1,
+        tick:
+          {:historical_tick_last,
+           %Proto.HistoricalTickLast{
+             time: 1_700_000_500,
+             price: 187.00,
+             size: "75",
+             exchange: "ARCA",
+             special_conditions: "",
+             tick_attrib_last: %Proto.TickAttribLast{past_limit: false, unreported: false}
+           }}
+      }
+
+      send(manager, {:ib_ex, client_ref, tick_msg})
+
+      refute_receive {:trade, _}, 200
+    end
+  end
+
+  # ---------------------------------------------------------------------------
+  # PubSub -- depth broadcast
+  # ---------------------------------------------------------------------------
+
+  describe "PubSub depth broadcast" do
+    test "broadcasts {:depth_update, ...} on MarketDepth with correct fields", %{
+      manager: manager,
+      client: client,
+      pubsub: pubsub
+    } do
+      sub_id = "depth-l1"
+      Phoenix.PubSub.subscribe(pubsub, "ib_ex:market_data:#{sub_id}")
+
+      assert :ok = subscribe_with_resolve(manager, client, sub_id, :depth, {:stock, "AAPL"})
+
+      %{subscriptions: %{^sub_id => %{client_ref: client_ref}}} = :sys.get_state(manager)
+
+      depth_data = %Proto.MarketDepthData{
+        position: 0,
+        operation: 0,
+        side: 1,
+        price: 150.25,
+        size: "100",
+        market_maker: "",
+        is_smart_depth: false
+      }
+
+      send(manager, {:ib_ex, client_ref, %Proto.MarketDepth{req_id: 1, market_depth_data: depth_data}})
+
+      assert_receive {:depth_update, event}, 1_000
+      assert event.position == 0
+      assert event.operation == :insert
+      assert event.side == :bid
+      assert Decimal.equal?(event.price, Decimal.from_float(150.25))
+      assert Decimal.equal?(event.size, Decimal.new("100"))
+      assert event.market_maker == ""
+      assert event.is_smart_depth == false
+    end
+
+    test "broadcasts {:depth_update, ...} on MarketDepthL2 with market_maker populated", %{
+      manager: manager,
+      client: client,
+      pubsub: pubsub
+    } do
+      sub_id = "depth-l2"
+      Phoenix.PubSub.subscribe(pubsub, "ib_ex:market_data:#{sub_id}")
+
+      assert :ok = subscribe_with_resolve(manager, client, sub_id, :depth, {:stock, "AAPL"})
+
+      %{subscriptions: %{^sub_id => %{client_ref: client_ref}}} = :sys.get_state(manager)
+
+      depth_data = %Proto.MarketDepthData{
+        position: 2,
+        operation: 1,
+        side: 0,
+        price: 149.50,
+        size: "200",
+        market_maker: "GSCO",
+        is_smart_depth: true
+      }
+
+      send(manager, {:ib_ex, client_ref, %Proto.MarketDepthL2{req_id: 1, market_depth_data: depth_data}})
+
+      assert_receive {:depth_update, event}, 1_000
+      assert event.position == 2
+      assert event.operation == :update
+      assert event.side == :ask
+      assert Decimal.equal?(event.price, Decimal.from_float(149.50))
+      assert Decimal.equal?(event.size, Decimal.new("200"))
+      assert event.market_maker == "GSCO"
+      assert event.is_smart_depth == true
+    end
+
+    test "correctly maps operation 0 to :insert", %{manager: manager, client: client, pubsub: pubsub} do
+      sub_id = "depth-op-insert"
+      Phoenix.PubSub.subscribe(pubsub, "ib_ex:market_data:#{sub_id}")
+      assert :ok = subscribe_with_resolve(manager, client, sub_id, :depth, {:stock, "AAPL"})
+      %{subscriptions: %{^sub_id => %{client_ref: client_ref}}} = :sys.get_state(manager)
+
+      depth_data = %Proto.MarketDepthData{position: 0, operation: 0, side: 1, price: 100.0, size: "10"}
+      send(manager, {:ib_ex, client_ref, %Proto.MarketDepth{req_id: 1, market_depth_data: depth_data}})
+
+      assert_receive {:depth_update, event}, 1_000
+      assert event.operation == :insert
+    end
+
+    test "correctly maps operation 1 to :update", %{manager: manager, client: client, pubsub: pubsub} do
+      sub_id = "depth-op-update"
+      Phoenix.PubSub.subscribe(pubsub, "ib_ex:market_data:#{sub_id}")
+      assert :ok = subscribe_with_resolve(manager, client, sub_id, :depth, {:stock, "AAPL"})
+      %{subscriptions: %{^sub_id => %{client_ref: client_ref}}} = :sys.get_state(manager)
+
+      depth_data = %Proto.MarketDepthData{position: 1, operation: 1, side: 0, price: 101.0, size: "20"}
+      send(manager, {:ib_ex, client_ref, %Proto.MarketDepth{req_id: 1, market_depth_data: depth_data}})
+
+      assert_receive {:depth_update, event}, 1_000
+      assert event.operation == :update
+    end
+
+    test "correctly maps operation 2 to :delete", %{manager: manager, client: client, pubsub: pubsub} do
+      sub_id = "depth-op-delete"
+      Phoenix.PubSub.subscribe(pubsub, "ib_ex:market_data:#{sub_id}")
+      assert :ok = subscribe_with_resolve(manager, client, sub_id, :depth, {:stock, "AAPL"})
+      %{subscriptions: %{^sub_id => %{client_ref: client_ref}}} = :sys.get_state(manager)
+
+      depth_data = %Proto.MarketDepthData{position: 3, operation: 2, side: 1, price: 99.0, size: "5"}
+      send(manager, {:ib_ex, client_ref, %Proto.MarketDepth{req_id: 1, market_depth_data: depth_data}})
+
+      assert_receive {:depth_update, event}, 1_000
+      assert event.operation == :delete
+    end
+
+    test "correctly maps side 0 to :ask", %{manager: manager, client: client, pubsub: pubsub} do
+      sub_id = "depth-side-ask"
+      Phoenix.PubSub.subscribe(pubsub, "ib_ex:market_data:#{sub_id}")
+      assert :ok = subscribe_with_resolve(manager, client, sub_id, :depth, {:stock, "AAPL"})
+      %{subscriptions: %{^sub_id => %{client_ref: client_ref}}} = :sys.get_state(manager)
+
+      depth_data = %Proto.MarketDepthData{position: 0, operation: 0, side: 0, price: 150.0, size: "50"}
+      send(manager, {:ib_ex, client_ref, %Proto.MarketDepth{req_id: 1, market_depth_data: depth_data}})
+
+      assert_receive {:depth_update, event}, 1_000
+      assert event.side == :ask
+    end
+
+    test "correctly maps side 1 to :bid", %{manager: manager, client: client, pubsub: pubsub} do
+      sub_id = "depth-side-bid"
+      Phoenix.PubSub.subscribe(pubsub, "ib_ex:market_data:#{sub_id}")
+      assert :ok = subscribe_with_resolve(manager, client, sub_id, :depth, {:stock, "AAPL"})
+      %{subscriptions: %{^sub_id => %{client_ref: client_ref}}} = :sys.get_state(manager)
+
+      depth_data = %Proto.MarketDepthData{position: 0, operation: 0, side: 1, price: 149.0, size: "75"}
+      send(manager, {:ib_ex, client_ref, %Proto.MarketDepth{req_id: 1, market_depth_data: depth_data}})
+
+      assert_receive {:depth_update, event}, 1_000
+      assert event.side == :bid
+    end
+
+    test "handles nil market_maker by defaulting to empty string", %{manager: manager, client: client, pubsub: pubsub} do
+      sub_id = "depth-nil-mm"
+      Phoenix.PubSub.subscribe(pubsub, "ib_ex:market_data:#{sub_id}")
+      assert :ok = subscribe_with_resolve(manager, client, sub_id, :depth, {:stock, "AAPL"})
+      %{subscriptions: %{^sub_id => %{client_ref: client_ref}}} = :sys.get_state(manager)
+
+      depth_data = %Proto.MarketDepthData{
+        position: 0,
+        operation: 0,
+        side: 1,
+        price: 150.0,
+        size: "100",
+        market_maker: nil,
+        is_smart_depth: true
+      }
+
+      send(manager, {:ib_ex, client_ref, %Proto.MarketDepth{req_id: 1, market_depth_data: depth_data}})
+
+      assert_receive {:depth_update, event}, 1_000
+      assert event.market_maker == ""
+    end
+
+    test "handles nil is_smart_depth by defaulting to false", %{manager: manager, client: client, pubsub: pubsub} do
+      sub_id = "depth-nil-smart"
+      Phoenix.PubSub.subscribe(pubsub, "ib_ex:market_data:#{sub_id}")
+      assert :ok = subscribe_with_resolve(manager, client, sub_id, :depth, {:stock, "AAPL"})
+      %{subscriptions: %{^sub_id => %{client_ref: client_ref}}} = :sys.get_state(manager)
+
+      depth_data = %Proto.MarketDepthData{
+        position: 0,
+        operation: 0,
+        side: 1,
+        price: 150.0,
+        size: "100",
+        market_maker: "ARCA",
+        is_smart_depth: nil
+      }
+
+      send(manager, {:ib_ex, client_ref, %Proto.MarketDepth{req_id: 1, market_depth_data: depth_data}})
+
+      assert_receive {:depth_update, event}, 1_000
+      assert event.is_smart_depth == false
+    end
+
+    test "does not broadcast after unsubscription", %{manager: manager, client: client, pubsub: pubsub} do
+      sub_id = "depth-unsub"
+      Phoenix.PubSub.subscribe(pubsub, "ib_ex:market_data:#{sub_id}")
+      assert :ok = subscribe_with_resolve(manager, client, sub_id, :depth, {:stock, "AAPL"})
+      %{subscriptions: %{^sub_id => %{client_ref: client_ref}}} = :sys.get_state(manager)
+
+      assert :ok = MarketDataManager.unsubscribe(manager, sub_id)
+
+      depth_data = %Proto.MarketDepthData{position: 0, operation: 0, side: 1, price: 150.0, size: "100"}
+      send(manager, {:ib_ex, client_ref, %Proto.MarketDepth{req_id: 1, market_depth_data: depth_data}})
+
+      refute_receive {:depth_update, _}, 200
     end
   end
 

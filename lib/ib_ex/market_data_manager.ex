@@ -49,17 +49,36 @@ defmodule IbEx.MarketDataManager do
 
   Events are broadcast on the topic `"ib_ex:market_data:<subscription_id>"`:
 
-  * `{:market_data_error, %{code: integer, message: String.t()}}`
+  ### Quotes events
+  * `{:tick_price, %{tick_type: atom, price: Decimal.t(), size: Decimal.t(), attr_mask: integer}}`
+  * `{:tick_size, %{tick_type: atom, size: Decimal.t()}}`
+  * `{:tick_string, %{tick_type: atom, value: String.t()}}`
+  * `{:tick_generic, %{tick_type: atom, value: float}}`
+  * `{:tick_option_computation, %{tick_type: atom, implied_vol: Decimal.t() | nil, delta: Decimal.t() | nil, ...}}`
+  * `{:tick_req_params, %{min_tick: String.t(), bbo_exchange: String.t(), snapshot_permissions: integer}}`
+  * `{:tick_snapshot_end, %{}}`
 
-  Additional event types for quotes, trades, and depth are added by subsequent tickets.
+  ### Trades events
+  * `{:trade, %{timestamp: DateTime.t(), price: Decimal.t(), size: Decimal.t(), exchange: String.t(), ...}}`
+  * `{:bid_ask, %{timestamp: DateTime.t(), bid_price: Decimal.t(), ask_price: Decimal.t(), ...}}`
+  * `{:mid_point, %{timestamp: DateTime.t(), price: Decimal.t()}}`
+
+  ### Depth events
+  * `{:depth_update, %{position: integer, operation: atom, side: atom, price: Decimal.t(), size: Decimal.t(), ...}}`
+
+  ### Error events
+  * `{:market_data_error, %{code: integer, message: String.t()}}`
   """
 
   use GenServer
 
   alias IbEx.Client
+  alias IbEx.Client.Constants.TickTypes
   alias IbEx.Client.ContractResolver
   alias IbEx.Client.MarketData
   alias IbEx.Client.MarketDepth
+  alias IbEx.Client.Proto.Protobuf, as: Proto
+  alias IbEx.Client.Utils
 
   # ---------------------------------------------------------------------------
   # Types
@@ -212,6 +231,150 @@ defmodule IbEx.MarketDataManager do
     end
   end
 
+  def handle_info({:ib_ex, ref, %Proto.TickPrice{} = msg}, state) do
+    case Map.get(state.refs, ref) do
+      nil ->
+        {:noreply, state}
+
+      sub_id ->
+        event =
+          {:tick_price,
+           %{
+             tick_type: resolve_tick_type(msg.tick_type),
+             price: Utils.to_decimal(msg.price),
+             size: Utils.to_decimal(msg.size),
+             attr_mask: msg.attr_mask
+           }}
+
+        broadcast(state.pubsub, sub_id, event)
+        {:noreply, state}
+    end
+  end
+
+  def handle_info({:ib_ex, ref, %Proto.TickSize{} = msg}, state) do
+    case Map.get(state.refs, ref) do
+      nil ->
+        {:noreply, state}
+
+      sub_id ->
+        event = {:tick_size, %{tick_type: resolve_tick_type(msg.tick_type), size: Utils.to_decimal(msg.size)}}
+        broadcast(state.pubsub, sub_id, event)
+        {:noreply, state}
+    end
+  end
+
+  def handle_info({:ib_ex, ref, %Proto.TickString{} = msg}, state) do
+    case Map.get(state.refs, ref) do
+      nil ->
+        {:noreply, state}
+
+      sub_id ->
+        event = {:tick_string, %{tick_type: resolve_tick_type(msg.tick_type), value: msg.value}}
+        broadcast(state.pubsub, sub_id, event)
+        {:noreply, state}
+    end
+  end
+
+  def handle_info({:ib_ex, ref, %Proto.TickGeneric{} = msg}, state) do
+    case Map.get(state.refs, ref) do
+      nil ->
+        {:noreply, state}
+
+      sub_id ->
+        event = {:tick_generic, %{tick_type: resolve_tick_type(msg.tick_type), value: msg.value}}
+        broadcast(state.pubsub, sub_id, event)
+        {:noreply, state}
+    end
+  end
+
+  def handle_info({:ib_ex, ref, %Proto.TickOptionComputation{} = msg}, state) do
+    case Map.get(state.refs, ref) do
+      nil ->
+        {:noreply, state}
+
+      sub_id ->
+        event =
+          {:tick_option_computation,
+           %{
+             tick_type: resolve_tick_type(msg.tick_type),
+             tick_attrib: msg.tick_attrib,
+             implied_vol: Utils.to_decimal(msg.implied_vol),
+             delta: Utils.to_decimal(msg.delta),
+             opt_price: Utils.to_decimal(msg.opt_price),
+             pv_dividend: Utils.to_decimal(msg.pv_dividend),
+             gamma: Utils.to_decimal(msg.gamma),
+             vega: Utils.to_decimal(msg.vega),
+             theta: Utils.to_decimal(msg.theta),
+             und_price: Utils.to_decimal(msg.und_price)
+           }}
+
+        broadcast(state.pubsub, sub_id, event)
+        {:noreply, state}
+    end
+  end
+
+  def handle_info({:ib_ex, ref, %Proto.TickReqParams{} = msg}, state) do
+    case Map.get(state.refs, ref) do
+      nil ->
+        {:noreply, state}
+
+      sub_id ->
+        event =
+          {:tick_req_params,
+           %{min_tick: msg.min_tick, bbo_exchange: msg.bbo_exchange, snapshot_permissions: msg.snapshot_permissions}}
+
+        broadcast(state.pubsub, sub_id, event)
+        {:noreply, state}
+    end
+  end
+
+  def handle_info({:ib_ex, ref, %Proto.TickSnapshotEnd{}}, state) do
+    case Map.get(state.refs, ref) do
+      nil ->
+        {:noreply, state}
+
+      sub_id ->
+        broadcast(state.pubsub, sub_id, {:tick_snapshot_end, %{}})
+        {:noreply, state}
+    end
+  end
+
+  def handle_info({:ib_ex, ref, %Proto.TickByTickData{} = msg}, state) do
+    case Map.get(state.refs, ref) do
+      nil ->
+        {:noreply, state}
+
+      sub_id ->
+        event = translate_tick_by_tick(msg)
+        broadcast(state.pubsub, sub_id, event)
+        {:noreply, state}
+    end
+  end
+
+  def handle_info({:ib_ex, ref, %Proto.MarketDepth{} = msg}, state) do
+    case Map.get(state.refs, ref) do
+      nil ->
+        {:noreply, state}
+
+      sub_id ->
+        event = translate_depth_data(msg.market_depth_data)
+        broadcast(state.pubsub, sub_id, event)
+        {:noreply, state}
+    end
+  end
+
+  def handle_info({:ib_ex, ref, %Proto.MarketDepthL2{} = msg}, state) do
+    case Map.get(state.refs, ref) do
+      nil ->
+        {:noreply, state}
+
+      sub_id ->
+        event = translate_depth_data(msg.market_depth_data)
+        broadcast(state.pubsub, sub_id, event)
+        {:noreply, state}
+    end
+  end
+
   def handle_info({:ib_ex, _ref, _msg}, state) do
     {:noreply, state}
   end
@@ -255,6 +418,71 @@ defmodule IbEx.MarketDataManager do
         state
     end
   end
+
+  defp resolve_tick_type(tick_type) do
+    case TickTypes.to_atom(tick_type) do
+      {:ok, atom} -> atom
+      {:error, :invalid_args} -> tick_type
+    end
+  end
+
+  defp translate_tick_by_tick(%Proto.TickByTickData{tick: {:historical_tick_last, tick}}) do
+    attrib = tick.tick_attrib_last
+
+    {:trade,
+     %{
+       timestamp: DateTime.from_unix!(tick.time),
+       price: Utils.to_decimal(tick.price),
+       size: Utils.to_decimal(tick.size),
+       exchange: tick.exchange || "",
+       special_conditions: tick.special_conditions || "",
+       past_limit: (attrib && attrib.past_limit) || false,
+       unreported: (attrib && attrib.unreported) || false
+     }}
+  end
+
+  defp translate_tick_by_tick(%Proto.TickByTickData{tick: {:historical_tick_bid_ask, tick}}) do
+    attrib = tick.tick_attrib_bid_ask
+
+    {:bid_ask,
+     %{
+       timestamp: DateTime.from_unix!(tick.time),
+       bid_price: Utils.to_decimal(tick.price_bid),
+       ask_price: Utils.to_decimal(tick.price_ask),
+       bid_size: Utils.to_decimal(tick.size_bid),
+       ask_size: Utils.to_decimal(tick.size_ask),
+       bid_past_low: (attrib && attrib.bid_past_low) || false,
+       ask_past_high: (attrib && attrib.ask_past_high) || false
+     }}
+  end
+
+  defp translate_tick_by_tick(%Proto.TickByTickData{tick: {:historical_tick_mid_point, tick}}) do
+    {:mid_point,
+     %{
+       timestamp: DateTime.from_unix!(tick.time),
+       price: Utils.to_decimal(tick.price)
+     }}
+  end
+
+  defp translate_depth_data(%Proto.MarketDepthData{} = data) do
+    {:depth_update,
+     %{
+       position: data.position,
+       operation: parse_depth_operation(data.operation),
+       side: parse_depth_side(data.side),
+       price: Utils.to_decimal(data.price),
+       size: Utils.to_decimal(data.size),
+       market_maker: data.market_maker || "",
+       is_smart_depth: data.is_smart_depth || false
+     }}
+  end
+
+  defp parse_depth_operation(0), do: :insert
+  defp parse_depth_operation(1), do: :update
+  defp parse_depth_operation(2), do: :delete
+
+  defp parse_depth_side(0), do: :ask
+  defp parse_depth_side(1), do: :bid
 
   defp broadcast(pubsub, subscription_id, event) do
     Phoenix.PubSub.broadcast(pubsub, "ib_ex:market_data:#{subscription_id}", event)
