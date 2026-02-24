@@ -99,7 +99,7 @@ defmodule IbEx.Client.MarketDepth do
     %Proto.MarketDepthRequest{
       contract: proto_contract,
       num_rows: Keyword.get(opts, :num_rows, 5),
-      is_smart_depth: Keyword.get(opts, :is_smart_depth, false),
+      is_smart_depth: Keyword.get(opts, :is_smart_depth),
       market_depth_options: Keyword.get(opts, :market_depth_options, %{})
     }
   end

@@ -33,23 +33,23 @@ defmodule IbEx.Client.Proto.Mapper.Contract do
   def to_proto(%DomainContract{} = contract) do
     %ProtoContract{
       con_id: Utils.to_integer(contract.conid, :nullable),
-      symbol: contract.symbol,
-      sec_type: contract.security_type,
-      last_trade_date_or_contract_month: contract.last_trade_date_or_contract_month,
+      symbol: presence(contract.symbol),
+      sec_type: presence(contract.security_type),
+      last_trade_date_or_contract_month: presence(contract.last_trade_date_or_contract_month),
       strike: Utils.to_float(contract.strike, :nullable),
-      right: contract.right,
+      right: presence(contract.right),
       multiplier: Utils.to_float(contract.multiplier, :nullable),
-      exchange: contract.exchange,
-      primary_exch: contract.primary_exchange,
-      currency: contract.currency,
-      local_symbol: contract.local_symbol,
-      trading_class: contract.trading_class,
-      sec_id_type: contract.security_id_type,
-      sec_id: contract.security_id,
-      description: contract.description,
-      issuer_id: contract.issuer_id,
-      include_expired: contract.include_expired,
-      combo_legs_descrip: contract.combo_legs_description,
+      exchange: presence(contract.exchange),
+      primary_exch: presence(contract.primary_exchange),
+      currency: presence(contract.currency),
+      local_symbol: presence(contract.local_symbol),
+      trading_class: presence(contract.trading_class),
+      sec_id_type: presence(contract.security_id_type),
+      sec_id: presence(contract.security_id),
+      description: presence(contract.description),
+      issuer_id: presence(contract.issuer_id),
+      include_expired: if(contract.include_expired, do: true, else: nil),
+      combo_legs_descrip: presence(contract.combo_legs_description),
       combo_legs: Enum.map(contract.combo_legs || [], &combo_leg_to_proto/1),
       delta_neutral_contract: delta_neutral_to_proto(contract.delta_neutral_contract)
     }
@@ -126,6 +126,9 @@ defmodule IbEx.Client.Proto.Mapper.Contract do
       price: Utils.to_float(dn.price, :nullable)
     }
   end
+
+  defp presence(""), do: nil
+  defp presence(value), do: value
 
   @spec delta_neutral_from_proto(ProtoDeltaNeutral.t() | nil) :: DomainDeltaNeutral.t() | nil
   defp delta_neutral_from_proto(nil), do: nil

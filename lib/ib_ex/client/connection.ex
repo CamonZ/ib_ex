@@ -69,6 +69,10 @@ defmodule IbEx.Client.Connection do
   end
 
   @impl true
+  def handle_cast(:set_packet_mode_on, %{socket: nil} = state) do
+    {:noreply, state}
+  end
+
   def handle_cast(:set_packet_mode_on, state) do
     Socket.set_packet_mode_on(state.socket)
     {:noreply, state}
