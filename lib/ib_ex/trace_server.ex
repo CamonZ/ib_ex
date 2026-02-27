@@ -1,5 +1,4 @@
-if Mix.env() in [:dev, :test] do
-  defmodule IbEx.TraceServer do
+defmodule IbEx.TraceServer do
     @moduledoc """
     Dev/test-only GenServer that captures parsed TWS messages for inspection.
 
@@ -116,5 +115,4 @@ if Mix.env() in [:dev, :test] do
         end)
       end)
     end
-  end
 end

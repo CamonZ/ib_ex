@@ -1,5 +1,4 @@
-if Mix.env() == :dev do
-  defmodule IbEx.DevServer do
+defmodule IbEx.DevServer do
     @moduledoc false
 
     use Supervisor
@@ -46,5 +45,4 @@ if Mix.env() == :dev do
       |> Enum.map(&String.to_integer/1)
       |> List.to_tuple()
     end
-  end
 end
