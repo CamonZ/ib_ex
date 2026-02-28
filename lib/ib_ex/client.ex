@@ -34,7 +34,8 @@ defmodule IbEx.Client do
             managed_accounts: nil,
             next_valid_id: nil,
             subscriptions_table_ref: nil,
-            trace_messages: false
+            trace_messages: false,
+            auto_reconnect: true
 
   alias IbEx.Client.Connection
   alias IbEx.Client.Constants
@@ -109,7 +110,7 @@ defmodule IbEx.Client do
   def init(opts) do
     connection_opts =
       opts
-      |> Keyword.take([:host, :port])
+      |> Keyword.take([:host, :port, :auto_reconnect])
       |> Keyword.put(:client, self())
 
     connection_handler = Keyword.get(opts, :connection_handler, Connection)
@@ -118,8 +119,15 @@ defmodule IbEx.Client do
       {:ok, pid} ->
         table_ref = Subscriptions.initialize()
         trace_messages = Keyword.get(opts, :trace_messages, false)
+        auto_reconnect = Keyword.get(opts, :auto_reconnect, true)
 
-        {:ok, %__MODULE__{connection: pid, subscriptions_table_ref: table_ref, trace_messages: trace_messages}}
+        {:ok,
+         %__MODULE__{
+           connection: pid,
+           subscriptions_table_ref: table_ref,
+           trace_messages: trace_messages,
+           auto_reconnect: auto_reconnect
+         }}
 
       err ->
         {:stop, {:connection_error, err}}
@@ -171,6 +179,11 @@ defmodule IbEx.Client do
   # Triggered by the Connection process once the connection is open
   def handle_cast(:connection_opened, state) do
     {:noreply, state, {:continue, :init_connection}}
+  end
+
+  def handle_cast(:connection_closed, %{auto_reconnect: false} = state) do
+    Logger.warning("Connection lost, stopping (auto_reconnect: false)")
+    {:stop, :connection_lost, %{state | status: :disconnected, server_version: nil, connection_timestamp: nil}}
   end
 
   def handle_cast(:connection_closed, state) do

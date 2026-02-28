@@ -10,7 +10,8 @@ defmodule IbEx.Client.Connection do
             port: nil,
             socket: nil,
             client: nil,
-            reconnect_timer_ref: nil
+            reconnect_timer_ref: nil,
+            auto_reconnect: true
 
   alias IbEx.Client
   alias __MODULE__.Socket
@@ -28,10 +29,11 @@ defmodule IbEx.Client.Connection do
   def start_link(opts) when is_list(opts) do
     host = Keyword.get(opts, :host, @default_host)
     port = Keyword.get(opts, :port, @default_port)
+    auto_reconnect = Keyword.get(opts, :auto_reconnect, true)
 
     case Keyword.fetch(opts, :client) do
       {:ok, client} ->
-        GenServer.start_link(__MODULE__, host: host, port: port, client: client)
+        GenServer.start_link(__MODULE__, host: host, port: port, client: client, auto_reconnect: auto_reconnect)
 
       :error ->
         {:error, :invalid_args}
@@ -43,12 +45,17 @@ defmodule IbEx.Client.Connection do
   end
 
   @impl true
-  def init(host: host, port: port, client: client) do
+  def init(opts) do
+    host = Keyword.fetch!(opts, :host)
+    port = Keyword.fetch!(opts, :port)
+    client = Keyword.fetch!(opts, :client)
+    auto_reconnect = Keyword.get(opts, :auto_reconnect, true)
+
     case Socket.connect(host: host, port: port) do
       {:ok, socket} ->
         Logger.info("Socket connection established")
 
-        state = %__MODULE__{host: host, port: port, socket: socket, client: client}
+        state = %__MODULE__{host: host, port: port, socket: socket, client: client, auto_reconnect: auto_reconnect}
         {:ok, state, {:continue, :signal_connection_open}}
 
       {:error, reason} ->
@@ -91,7 +98,12 @@ defmodule IbEx.Client.Connection do
 
       {:error, reason} ->
         Logger.error("Error sending message: #{inspect(reason)}")
-        {:reply, {:error, reason}, schedule_reconnect(%{state | socket: nil})}
+
+        if state.auto_reconnect do
+          {:reply, {:error, reason}, schedule_reconnect(%{state | socket: nil})}
+        else
+          {:stop, {:send_error, reason}, {:error, reason}, %{state | socket: nil}}
+        end
     end
   end
 
@@ -103,16 +115,28 @@ defmodule IbEx.Client.Connection do
 
   @impl true
   def handle_info({:tcp_closed, _}, state) do
-    Logger.warning("TCP connection closed, scheduling reconnect in #{@reconnect_interval_ms}ms")
     Client.connection_closed(state.client)
-    {:noreply, schedule_reconnect(%{state | socket: nil})}
+
+    if state.auto_reconnect do
+      Logger.warning("TCP connection closed, scheduling reconnect in #{@reconnect_interval_ms}ms")
+      {:noreply, schedule_reconnect(%{state | socket: nil})}
+    else
+      Logger.warning("TCP connection closed, stopping (auto_reconnect: false)")
+      {:stop, :tcp_closed, %{state | socket: nil}}
+    end
   end
 
   @impl true
   def handle_info({:tcp_error, _, reason}, state) do
-    Logger.warning("TCP error: #{inspect(reason)}, scheduling reconnect in #{@reconnect_interval_ms}ms")
     Client.connection_closed(state.client)
-    {:noreply, schedule_reconnect(%{state | socket: nil})}
+
+    if state.auto_reconnect do
+      Logger.warning("TCP error: #{inspect(reason)}, scheduling reconnect in #{@reconnect_interval_ms}ms")
+      {:noreply, schedule_reconnect(%{state | socket: nil})}
+    else
+      Logger.warning("TCP error: #{inspect(reason)}, stopping (auto_reconnect: false)")
+      {:stop, {:tcp_error, reason}, %{state | socket: nil}}
+    end
   end
 
   @impl true
