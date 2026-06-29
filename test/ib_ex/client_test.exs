@@ -416,6 +416,32 @@ defmodule IbEx.ClientTest do
       refute Process.read_timer(monitor_ref)
     end
 
+    test "preserves SMART depth flag when cancelling market depth" do
+      {:ok, state} = Client.init(connection_handler: MockRecordingConnection)
+
+      proto_msg = %IbEx.Client.Proto.Protobuf.MarketDepthRequest{
+        contract: %IbEx.Client.Proto.Protobuf.Contract{symbol: "AAPL"},
+        is_smart_depth: true
+      }
+
+      {:reply, {:ok, subscription_ref}, ^state} =
+        Client.handle_call({:subscribe, self(), proto_msg, []}, {self(), make_ref()}, state)
+
+      assert_receive {:tws_sent, _subscribe_msg}
+
+      assert {:reply, :ok, ^state} =
+               Client.handle_call({:unsubscribe, subscription_ref}, {self(), make_ref()}, state)
+
+      assert_receive {:tws_sent, cancel_msg}
+
+      <<wire_id::big-integer-size(32), payload::binary>> = cancel_msg
+      assert wire_id == 211
+
+      decoded = Protobuf.decode(payload, IbEx.Client.Proto.Protobuf.CancelMarketDepth)
+      assert decoded.req_id == 1
+      assert decoded.is_smart_depth == true
+    end
+
     test "returns {:error, :not_found} for unknown subscription ref" do
       {:ok, state} = Client.init(connection_handler: MockSuccessConnection)
 

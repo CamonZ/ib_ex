@@ -83,13 +83,15 @@ defmodule IbEx.Client.Subscriptions do
 
   The ETS key is the tagged tuple passed as `key` (e.g. `{:request_id, 1}`).
   """
-  def register_stream(table_ref, key, subscriber, monitor_ref, subscription_ref, request_module) when is_tuple(key) do
+  def register_stream(table_ref, key, subscriber, monitor_ref, subscription_ref, request_module, request \\ nil)
+      when is_tuple(key) do
     entry = %{
       type: :stream,
       subscriber: subscriber,
       monitor_ref: monitor_ref,
       subscription_ref: subscription_ref,
-      request_module: request_module
+      request_module: request_module,
+      request: request
     }
 
     :ets.insert(table_ref, {key, entry})

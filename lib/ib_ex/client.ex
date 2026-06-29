@@ -242,7 +242,13 @@ defmodule IbEx.Client do
   def handle_call({:subscribe, subscriber, %message_type{} = proto_msg, _opts}, _from, state) do
     next_valid_id = order_id_for_correlation(message_type, state)
 
-    case Conversations.register_stream(state.subscriptions_table_ref, message_type, subscriber, next_valid_id) do
+    case Conversations.register_stream(
+           state.subscriptions_table_ref,
+           message_type,
+           subscriber,
+           next_valid_id,
+           proto_msg
+         ) do
       {:ok, req_id, subscription_ref} ->
         proto_msg = set_correlation_id(message_type, proto_msg, req_id)
         send_to_tws(state, proto_msg)
@@ -342,17 +348,17 @@ defmodule IbEx.Client do
     end
   end
 
-  defp cancel_stream(state, table_ref, key, %{monitor_ref: monitor_ref, request_module: request_module}) do
+  defp cancel_stream(state, table_ref, key, %{monitor_ref: monitor_ref, request_module: request_module} = entry) do
     Process.demonitor(monitor_ref, [:flush])
 
     case Conversations.cancel_request_for(request_module) do
       {:ok, cancel_module} ->
         case key do
           {:request_id, req_id} ->
-            send_to_tws(state, struct!(cancel_module, req_id: req_id))
+            send_to_tws(state, cancel_message(cancel_module, :req_id, req_id, entry))
 
           {:order_id, order_id} ->
-            send_to_tws(state, struct!(cancel_module, order_id: order_id))
+            send_to_tws(state, cancel_message(cancel_module, :order_id, order_id, entry))
 
           {:global, _request_module} ->
             send_to_tws(state, struct!(cancel_module))
@@ -364,6 +370,35 @@ defmodule IbEx.Client do
 
     Subscriptions.remove_subscription(table_ref, key)
   end
+
+  defp cancel_message(cancel_module, id_field, id_value, %{request: request}) do
+    cancel_module
+    |> struct!(%{id_field => id_value})
+    |> copy_cancel_fields(request)
+  end
+
+  defp cancel_message(cancel_module, id_field, id_value, _entry) do
+    struct!(cancel_module, %{id_field => id_value})
+  end
+
+  defp copy_cancel_fields(cancel, request) when is_struct(request) do
+    ignored_fields = [:__unknown_fields__, :req_id, :order_id]
+
+    fields =
+      cancel
+      |> Map.from_struct()
+      |> Map.keys()
+      |> Kernel.--(ignored_fields)
+
+    request
+    |> Map.from_struct()
+    |> Map.take(fields)
+    |> Enum.reject(fn {_key, value} -> is_nil(value) end)
+    |> Map.new()
+    |> then(&struct!(cancel, &1))
+  end
+
+  defp copy_cancel_fields(cancel, _request), do: cancel
 
   defp order_id_for_correlation(message_type, state) do
     case Conversations.conversation_for(message_type) do

@@ -527,9 +527,9 @@ defmodule IbEx.Client.Conversations do
   Returns `{:ok, req_id, subscription_ref}` on success or `:error` if the
   request module is not a registered stream conversation.
   """
-  @spec register_stream(reference(), module(), pid(), integer() | nil) ::
+  @spec register_stream(reference(), module(), pid(), integer() | nil, struct() | nil) ::
           {:ok, non_neg_integer(), reference()} | :error
-  def register_stream(table_ref, request_module, subscriber, next_valid_id \\ nil) do
+  def register_stream(table_ref, request_module, subscriber, next_valid_id \\ nil, request \\ nil) do
     case conversation_for(request_module) do
       {:ok, %{type: :stream, correlation: correlation}} ->
         {key, req_id} = build_key(correlation, table_ref, request_module, next_valid_id)
@@ -537,7 +537,16 @@ defmodule IbEx.Client.Conversations do
         subscription_ref = make_ref()
         monitor_ref = Process.monitor(subscriber)
 
-        Subscriptions.register_stream(table_ref, key, subscriber, monitor_ref, subscription_ref, request_module)
+        Subscriptions.register_stream(
+          table_ref,
+          key,
+          subscriber,
+          monitor_ref,
+          subscription_ref,
+          request_module,
+          request
+        )
+
         {:ok, req_id, subscription_ref}
 
       _ ->
